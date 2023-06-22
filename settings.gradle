@@ -10,7 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
-rootProject.name = "livekit-components"
-include ':app'
+rootProject.name = "components-android"
+include ':livekit-compose-components'
+include ':sample-livestream'
