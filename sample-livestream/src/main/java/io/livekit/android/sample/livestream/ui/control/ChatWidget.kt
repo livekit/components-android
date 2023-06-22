@@ -1,5 +1,6 @@
 package io.livekit.android.sample.livestream.ui.control
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,9 +8,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -28,6 +34,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,6 +44,7 @@ import androidx.constraintlayout.compose.Dimension
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
 import io.livekit.android.sample.livestream.ui.theme.Blue500
 import io.livekit.android.sample.livestream.ui.theme.Dimens
+import io.livekit.android.sample.livestream.ui.theme.LightLine
 
 data class ChatWidgetMessage(
     val identity: String,
@@ -48,7 +56,8 @@ fun ChatWidget(
     // Ordered from oldest to newest.
     messages: List<ChatWidgetMessage>,
     onChatSend: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onOptionsClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     ConstraintLayout(modifier = modifier) {
         val (chatBar, chatLogs) = createRefs()
@@ -103,6 +112,7 @@ fun ChatWidget(
 
         ChatBar(
             onChatSend = onChatSend,
+            onOptionsClick = onOptionsClick,
             modifier = Modifier.constrainAs(chatBar) {
                 width = Dimension.fillToConstraints
                 height = Dimension.wrapContent
@@ -118,6 +128,7 @@ fun ChatWidget(
 @Composable
 fun ChatBar(
     onChatSend: (String) -> Unit,
+    onOptionsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ConstraintLayout(
@@ -125,20 +136,16 @@ fun ChatBar(
             .drawBehind {
                 val strokeWidth = 1 * density
                 drawLine(
-                    Color(0x0FFFFFFF),
+                    LightLine,
                     Offset(0f, 0f),
                     Offset(size.width, 0f),
                     strokeWidth
                 )
             }
+            .background(MaterialTheme.colorScheme.surface)
             .padding(Dimens.spacer)
     ) {
-        val (sendButton, messageInput) = createRefs()
-
-        val sendButtonColors = ButtonDefaults.buttonColors(
-            containerColor = Blue500,
-            contentColor = Color.White
-        )
+        val (sendButton, optionsButton, messageInput) = createRefs()
 
         var message by rememberSaveable {
             mutableStateOf("")
@@ -168,6 +175,11 @@ fun ChatBar(
                 }
         )
 
+        val sendButtonColors = ButtonDefaults.buttonColors(
+            containerColor = Blue500,
+            contentColor = Color.White
+        )
+
         Button(
             colors = sendButtonColors,
             shape = RoundedCornerShape(5.dp),
@@ -175,17 +187,37 @@ fun ChatBar(
                 onChatSend(message)
                 message = ""
             },
+            enabled = message.isNotEmpty(),
             contentPadding = PaddingValues(0.dp),
             modifier = Modifier
                 .padding(0.dp)
                 .constrainAs(sendButton) {
                     width = Dimension.wrapContent
                     height = Dimension.value(42.dp)
-                    end.linkTo(parent.end)
+                    end.linkTo(optionsButton.start)
                     top.linkTo(messageInput.top)
                 }
         ) {
             Text(text = "Send", modifier = Modifier.padding(0.dp))
+        }
+
+
+        IconButton(
+            onClick = {
+                onOptionsClick()
+            },
+            modifier = Modifier
+                .constrainAs(optionsButton) {
+                    width = Dimension.wrapContent
+                    height = Dimension.value(42.dp)
+                    end.linkTo(parent.end)
+                    top.linkTo(messageInput.top)
+                }
+        ) {
+            Icon(
+                painter = rememberVectorPainter(image = Icons.Default.MoreVert),
+                contentDescription = "More"
+            )
         }
     }
 }
@@ -224,6 +256,7 @@ fun ChatWidgetPreview() {
                     )
                 )
             },
+            onOptionsClick = {},
             modifier = Modifier.fillMaxSize()
         )
     }

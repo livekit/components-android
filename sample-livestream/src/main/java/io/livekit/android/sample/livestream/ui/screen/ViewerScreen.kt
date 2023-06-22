@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.RoomScope
 import io.livekit.android.compose.local.rememberVideoTrack
@@ -17,12 +18,15 @@ import io.livekit.android.compose.ui.ScaleType
 import io.livekit.android.compose.ui.VideoRenderer
 import io.livekit.android.sample.livestream.DebugServerInfo
 import io.livekit.android.sample.livestream.state.rememberVideoHostParticipant
-import io.livekit.android.sample.livestream.ui.control.ChatWidgetMessage
 import io.livekit.android.sample.livestream.ui.control.ChatWidget
+import io.livekit.android.sample.livestream.ui.control.ChatWidgetMessage
+import io.livekit.android.sample.livestream.ui.screen.destinations.StreamOptionsScreenDestination
 
 @Destination
 @Composable
-fun ViewerScreen() {
+fun ViewerScreen(
+    navigator: DestinationsNavigator
+) {
 
     RoomScope(
         url = DebugServerInfo.URL,
@@ -76,6 +80,7 @@ fun ViewerScreen() {
                         )
                     )
                 },
+                onOptionsClick = { navigator.navigate(StreamOptionsScreenDestination()) },
                 modifier = Modifier
                     .constrainAs(chatBox) {
                         width = Dimension.fillToConstraints
