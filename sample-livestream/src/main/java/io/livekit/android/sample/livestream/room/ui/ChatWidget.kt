@@ -1,10 +1,13 @@
-package io.livekit.android.sample.livestream.ui.control
+package io.livekit.android.sample.livestream.room.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
@@ -41,6 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import io.livekit.android.sample.livestream.ui.control.LKTextField
+import io.livekit.android.sample.livestream.ui.control.Spacer
+import io.livekit.android.sample.livestream.ui.screen.identityToColor
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
 import io.livekit.android.sample.livestream.ui.theme.Blue500
 import io.livekit.android.sample.livestream.ui.theme.Dimens
@@ -91,18 +98,24 @@ fun ChatWidget(
                 }
         ) {
             items(messages.asReversed()) { message ->
-                Column {
-                    Spacer(20.dp)
-                    Text(
-                        text = message.identity,
-                        fontWeight = FontWeight.W700,
-                        fontSize = 12.sp,
-                    )
-                    Text(
-                        text = message.message,
-                        fontSize = 13.sp,
-                        lineHeight = 20.sp,
-                    )
+                Spacer(20.dp)
+                Row(verticalAlignment = Alignment.Top) {
+                    Canvas(modifier = Modifier.size(32.dp), onDraw = {
+                        drawCircle(color = identityToColor(message.identity))
+                    })
+                    Spacer(12.dp)
+                    Column {
+                        Text(
+                            text = message.identity,
+                            fontWeight = FontWeight.W700,
+                            fontSize = 12.sp,
+                        )
+                        Text(
+                            text = message.message,
+                            fontSize = 13.sp,
+                            lineHeight = 20.sp,
+                        )
+                    }
                 }
             }
             item {

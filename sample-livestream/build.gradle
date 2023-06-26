@@ -51,13 +51,16 @@ dependencies {
 
     implementation project(":livekit-compose-components")
     implementation "com.github.ajalt:timberkt:1.5.1"
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${versions.serialization}"
 
     implementation 'io.github.raamcosta.compose-destinations:animations-core:1.9.42-beta'
     ksp 'io.github.raamcosta.compose-destinations:ksp:1.9.42-beta'
     implementation "androidx.navigation:navigation-compose:2.6.0"
 
-    implementation "androidx.core:core-ktx:${versions.core}"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:${versions.lifecycle}"
+    implementation "androidx.core:core-ktx:${versions.androidx_core}"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:${versions.androidx_lifecycle}"
     implementation deps.androidx.activity_compose
     implementation deps.androidx.constraintlayout_compose
 

@@ -25,9 +25,9 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import io.livekit.android.sample.livestream.destinations.ViewerScreenContainerDestination
 import io.livekit.android.sample.livestream.ui.control.BackButton
 import io.livekit.android.sample.livestream.ui.control.Spacer
-import io.livekit.android.sample.livestream.ui.screen.destinations.ViewerScreenDestination
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +91,7 @@ fun JoinScreen(
         )
         Button(
             colors = joinButtonColors,
-            onClick = { navigator.navigate(ViewerScreenDestination()) },
+            onClick = { navigator.navigate(ViewerScreenContainerDestination()) },
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints

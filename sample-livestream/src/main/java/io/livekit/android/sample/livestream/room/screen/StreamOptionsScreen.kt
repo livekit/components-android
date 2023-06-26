@@ -15,18 +15,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
-import io.livekit.android.sample.livestream.ui.screen.destinations.ViewerScreenDestination
+import io.livekit.android.sample.livestream.room.screen.HostNavGraph
+import io.livekit.android.sample.livestream.room.screen.ViewerNavGraph
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 import io.livekit.android.sample.livestream.ui.theme.LightLine
 
+@HostNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
+@Composable
+fun ColumnScope.HostStreamOptionsScreen(
+    navigator: DestinationsNavigator
+) {
+    StreamOptionsScreen(navigator = navigator)
+}
+
+@ViewerNavGraph
+@Destination(style = DestinationStyleBottomSheet::class)
+@Composable
+fun ColumnScope.ViewerStreamOptionsScreen(
+    navigator: DestinationsNavigator
+) {
+    StreamOptionsScreen(navigator = navigator)
+}
+
 @Composable
 fun ColumnScope.StreamOptionsScreen(
     navigator: DestinationsNavigator
@@ -34,8 +50,7 @@ fun ColumnScope.StreamOptionsScreen(
 
     Text(
         text = "Options",
-        fontWeight = FontWeight.W700,
-        fontSize = 20.sp,
+        style = LKTextStyle.header,
         modifier = Modifier
             .align(Alignment.CenterHorizontally)
             .padding(24.dp)
@@ -56,7 +71,7 @@ fun ColumnScope.StreamOptionsScreen(
         )
         Button(
             colors = leaveButtonColors,
-            onClick = { navigator.navigate(ViewerScreenDestination()) },
+            onClick = { },
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier
                 .fillMaxWidth()

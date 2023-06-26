@@ -25,8 +25,8 @@ import androidx.constraintlayout.compose.Dimension
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import io.livekit.android.sample.livestream.ui.screen.destinations.JoinScreenDestination
-import io.livekit.android.sample.livestream.ui.screen.destinations.StartScreenDestination
+import io.livekit.android.sample.livestream.destinations.JoinScreenDestination
+import io.livekit.android.sample.livestream.destinations.StartScreenDestination
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 
 @RootNavGraph(start = true)

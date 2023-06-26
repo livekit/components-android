@@ -1,4 +1,4 @@
-package io.livekit.android.sample.livestream.state
+package io.livekit.android.sample.livestream.room.state
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

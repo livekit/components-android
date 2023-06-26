@@ -30,10 +30,9 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import io.livekit.android.sample.livestream.destinations.HostScreenContainerDestination
 import io.livekit.android.sample.livestream.ui.control.BackButton
 import io.livekit.android.sample.livestream.ui.control.Spacer
-import io.livekit.android.sample.livestream.ui.screen.destinations.HostScreenDestination
-import io.livekit.android.sample.livestream.ui.screen.destinations.ViewerScreenDestination
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,7 +129,7 @@ fun StartScreen(
         )
         Button(
             colors = joinButtonColors,
-            onClick = { navigator.navigate(HostScreenDestination()) },
+            onClick = { navigator.navigate(HostScreenContainerDestination()) },
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints
