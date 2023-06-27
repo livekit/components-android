@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
+    id 'kotlinx-serialization'
 }
 
 android {
@@ -52,7 +53,8 @@ dependencies {
     implementation project(":livekit-compose-components")
     implementation "com.github.ajalt:timberkt:1.5.1"
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${versions.serialization}"
 
     implementation 'io.github.raamcosta.compose-destinations:animations-core:1.9.42-beta'

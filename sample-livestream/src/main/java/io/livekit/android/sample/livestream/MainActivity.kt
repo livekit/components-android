@@ -14,12 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.navigation.dependency
 import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
@@ -33,10 +36,11 @@ val defaultAnimations = RootNavGraphDefaultAnimations(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        val contentType = "application/json".toMediaType()
         val livestreamApi = Retrofit.Builder()
             .baseUrl(DebugServerInfo.API_SERVER_URL)
             .client(OkHttpClient())
+            .addConverterFactory(Json.asConverterFactory(contentType))
             .build()
             .create(LivestreamApi::class.java)
         setContent {

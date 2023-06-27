@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -14,6 +13,7 @@ import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,14 +25,18 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.github.ajalt.timberkt.Timber
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import io.livekit.android.renderer.TextureViewRenderer
 import io.livekit.android.room.track.CameraPosition
-import io.livekit.android.sample.livestream.DebugServerInfo
 import io.livekit.android.sample.livestream.destinations.HostScreenContainerDestination
+import io.livekit.android.sample.livestream.room.data.CreateStreamResponse
+import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.ui.control.BackButton
+import io.livekit.android.sample.livestream.ui.control.LoadingDialog
 import io.livekit.android.sample.livestream.ui.theme.Dimens
+import kotlinx.coroutines.launch
 import org.webrtc.Camera2Enumerator
 import org.webrtc.CameraVideoCapturer
 import org.webrtc.CameraVideoCapturer.CameraEventsHandler
@@ -42,10 +46,10 @@ import org.webrtc.RendererCommon
 import org.webrtc.SurfaceTextureHelper
 import org.webrtc.VideoFrame
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun StartPreviewScreen(
+    livestreamApi: LivestreamApi,
     navigator: DestinationsNavigator
 ) {
     ConstraintLayout(
@@ -107,13 +111,39 @@ fun StartPreviewScreen(
             }
         )
 
+
+        var isCreatingStream by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+
+        fun startLoad() {
+
+            isCreatingStream = true
+            coroutineScope.launch {
+                var response: CreateStreamResponse? = null
+                try {
+                    response = livestreamApi.createStream("name", "roomname", true, true).body()
+                } catch (e: Exception) {
+                    Timber.e(e) { "error" }
+                }
+                if (response != null) {
+                    Timber.e { "response received: $response" }
+                    navigator.navigate(HostScreenContainerDestination(response.livekitUrl, response.token))
+                } else {
+                    Timber.e { "response failed!" }
+                }
+                isCreatingStream = false
+            }
+        }
+
+        LoadingDialog(isShowingDialog = isCreatingStream)
+
         val startButtonColors = ButtonDefaults.buttonColors(
             contentColor = Color.White,
             containerColor = Color(0xFFB11FF9)
         )
         Button(
             colors = startButtonColors,
-            onClick = { navigator.navigate(HostScreenContainerDestination(url = DebugServerInfo.URL, token = DebugServerInfo.TOKEN)) },
+            onClick = { startLoad() },
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.constrainAs(startButton) {
                 width = Dimension.fillToConstraints
@@ -129,6 +159,7 @@ fun StartPreviewScreen(
                 fontWeight = FontWeight.W700,
             )
         }
+
     }
 }
 
