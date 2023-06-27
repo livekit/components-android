@@ -81,7 +81,7 @@ fun rememberLiveKitRoom(
         }
     }
     LaunchedEffect(connect, url, token, room, connectOptions, onError) {
-        if (url == null || token == null) {
+        if (url.isNullOrEmpty() || token.isNullOrEmpty()) {
             return@LaunchedEffect
         }
 
@@ -94,9 +94,11 @@ fun rememberLiveKitRoom(
         }
     }
 
-    DisposableEffect(room) {
+    DisposableEffect(room, connect) {
         onDispose {
-            room.disconnect()
+            if(connect) {
+                room.disconnect()
+            }
         }
     }
     return roomState

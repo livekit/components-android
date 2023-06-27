@@ -5,7 +5,7 @@ import retrofit2.http.GET
 
 interface LivestreamApi {
     @GET("createStream")
-    suspend fun createStream(creatorName: String, enableChat: Boolean, allowParticipation: Boolean): Response<CreateStreamResponse>
+    suspend fun createStream(creatorName: String, roomName: String, enableChat: Boolean, allowParticipation: Boolean): Response<CreateStreamResponse>
 
     @GET("joinStream")
     suspend fun joinStream(name: String, code: String): Response<JoinStreamResponse>

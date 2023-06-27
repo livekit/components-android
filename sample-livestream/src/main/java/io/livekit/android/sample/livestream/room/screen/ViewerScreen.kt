@@ -35,11 +35,14 @@ import io.livekit.android.sample.livestream.DebugServerInfo
 import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
 import io.livekit.android.sample.livestream.destinations.ViewerParticipantListScreenDestination
+import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.room.state.rememberVideoHostParticipant
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
 import io.livekit.android.sample.livestream.room.ui.RoomControls
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
 
 @NavGraph
 annotation class ViewerNavGraph(

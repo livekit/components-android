@@ -31,10 +31,10 @@ import io.livekit.android.compose.local.rememberVideoTrack
 import io.livekit.android.compose.local.rememberVideoTrackPublication
 import io.livekit.android.compose.ui.ScaleType
 import io.livekit.android.compose.ui.VideoRenderer
-import io.livekit.android.sample.livestream.DebugServerInfo
 import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
 import io.livekit.android.sample.livestream.destinations.HostParticipantListScreenDestination
+import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.room.state.rememberVideoHostParticipant
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
@@ -48,11 +48,11 @@ annotation class HostNavGraph(
 
 @Destination
 @Composable
-fun HostScreenContainer() {
+fun HostScreenContainer(url: String, token: String, livestreamApi: LivestreamApi) {
 
     RoomScope(
-        url = DebugServerInfo.URL,
-        token = DebugServerInfo.TOKEN,
+        url = url,
+        token = token,
         audio = true,
         video = true,
     ) {
@@ -74,9 +74,8 @@ fun HostScreenContainer() {
                 navController = navController,
                 engine = navHostEngine,
                 dependenciesContainerBuilder = {
-                    dependency(NavGraphs.host) {
-                        RoomLocal.current
-                    }
+                    dependency(RoomLocal.current)
+                    dependency(livestreamApi)
                 }
             )
         }
@@ -87,6 +86,7 @@ fun HostScreenContainer() {
 @Destination
 @Composable
 fun HostScreen(
+    livestreamApi: LivestreamApi,
     navigator: DestinationsNavigator
 ) {
 

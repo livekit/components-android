@@ -17,7 +17,11 @@ import com.google.accompanist.navigation.material.ExperimentalMaterialNavigation
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
+import com.ramcosta.composedestinations.navigation.dependency
+import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
 
 @OptIn(ExperimentalAnimationApi::class)
 val defaultAnimations = RootNavGraphDefaultAnimations(
@@ -29,6 +33,12 @@ val defaultAnimations = RootNavGraphDefaultAnimations(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val livestreamApi = Retrofit.Builder()
+            .baseUrl(DebugServerInfo.API_SERVER_URL)
+            .client(OkHttpClient())
+            .build()
+            .create(LivestreamApi::class.java)
         setContent {
             AppTheme {
                 Surface {
@@ -39,7 +49,10 @@ class MainActivity : ComponentActivity() {
                     DestinationsNavHost(
                         navGraph = NavGraphs.root,
                         navController = navController,
-                        engine = navHostEngine
+                        engine = navHostEngine,
+                        dependenciesContainerBuilder = {
+                            dependency(livestreamApi)
+                        }
                     )
                 }
             }
