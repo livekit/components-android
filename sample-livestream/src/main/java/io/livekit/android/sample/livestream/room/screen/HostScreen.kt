@@ -35,7 +35,7 @@ import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
 import io.livekit.android.sample.livestream.destinations.HostParticipantListScreenDestination
 import io.livekit.android.sample.livestream.room.data.LivestreamApi
-import io.livekit.android.sample.livestream.room.state.rememberVideoHostParticipant
+import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
 import io.livekit.android.sample.livestream.room.ui.RoomControls
@@ -99,7 +99,7 @@ fun HostScreen(
     ) {
         val (chatBox, hostScreen, viewerButton) = createRefs()
 
-        val hostParticipant by rememberVideoHostParticipant()
+        val hostParticipant by rememberHostParticipant()
         val videoTrackPublication by rememberVideoTrackPublication(participant = hostParticipant)
         val videoTrack by rememberVideoTrack(videoPub = videoTrackPublication)
 
@@ -115,7 +115,7 @@ fun HostScreen(
         ChatWidget(
             messages = chat.messages.value.map {
                 ChatWidgetMessage(
-                    it.participant?.identity ?: "",
+                    it.participant?.name ?: "",
                     it.message
                 )
             },

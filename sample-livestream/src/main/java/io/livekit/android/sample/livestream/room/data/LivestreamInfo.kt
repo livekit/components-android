@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LivestreamInfo(
     // Name of the room
-    val code: String,
+    val code: String = "",
     // Url to join the room
-    val url: String,
+    val url: String = "",
 )

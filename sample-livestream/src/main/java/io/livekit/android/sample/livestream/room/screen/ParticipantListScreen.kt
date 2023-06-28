@@ -28,8 +28,6 @@ import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 import io.livekit.android.sample.livestream.ui.theme.LightLine
-import okhttp3.internal.toHexString
-import timber.log.Timber
 
 @HostNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
@@ -120,28 +118,18 @@ fun LazyItemScope.ParticipantRow(participant: Participant) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        val identity = participant.identity ?: ""
+        val name = participant.name ?: ""
         // Profile icon
         Canvas(modifier = Modifier.size(32.dp), onDraw = {
-            drawCircle(color = identityToColor(identity))
+            drawCircle(color = nameToColor(name))
         })
         Spacer(size = 12.dp)
-        Text(participant.identity ?: "")
+        Text(participant.name ?: "")
     }
     Spacer(size = Dimens.spacer)
 }
 
-// Create a color based on the identity name.
-fun identityToColor(identity: String): Color {
-    Timber.e("identity: ${identity.hashCode().toHexString()}")
-    Timber.e("identity color: ${(identity.hashCode().toLong() or 0xFF000000).toHexString()}")
-
-    return Color(identity.hashCode().toLong() or 0xFF000000)
-}
-
-fun intToARGB(i: Int): String {
-    return Integer.toHexString(i shr 24 and 0xFF) +
-            Integer.toHexString(i shr 16 and 0xFF) +
-            Integer.toHexString(i shr 8 and 0xFF) +
-            Integer.toHexString(i and 0xFF)
+// Generate a color based on the name.
+fun nameToColor(name: String): Color {
+    return Color(name.hashCode().toLong() or 0xFF000000)
 }

@@ -46,6 +46,20 @@ fun StartScreen(
             .padding(Dimens.spacer)
             .fillMaxSize()
     ) {
+        var userName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+            mutableStateOf(TextFieldValue(""))
+        }
+        var roomName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+            mutableStateOf(TextFieldValue(""))
+        }
+        var chatEnabled by rememberSaveable {
+            mutableStateOf(true)
+        }
+
+        var viewerJoinRequestEnabled by rememberSaveable {
+            mutableStateOf(true)
+        }
+
         val (content, joinButton) = createRefs()
         Column(modifier = Modifier
             .constrainAs(content) {
@@ -67,12 +81,6 @@ fun StartScreen(
 
             Spacer(47.dp)
 
-            var userName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-                mutableStateOf(TextFieldValue(""))
-            }
-            var roomName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-                mutableStateOf(TextFieldValue(""))
-            }
 
             OutlinedTextField(
                 value = userName,
@@ -100,14 +108,6 @@ fun StartScreen(
             )
 
             Spacer(8.dp)
-            var chatEnabled by rememberSaveable {
-                mutableStateOf(true)
-            }
-
-            var viewerJoinRequestEnabled by rememberSaveable {
-                mutableStateOf(true)
-            }
-
             SwitchButton(
                 text = "Enable chat",
                 checked = chatEnabled,
@@ -129,7 +129,16 @@ fun StartScreen(
         )
         Button(
             colors = joinButtonColors,
-            onClick = { navigator.navigate(StartPreviewScreenDestination()) },
+            onClick = {
+                navigator.navigate(
+                    StartPreviewScreenDestination(
+                        name = userName.text,
+                        roomName = roomName.text,
+                        enableChat = chatEnabled,
+                        allowParticipation = viewerJoinRequestEnabled
+                    )
+                )
+            },
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints

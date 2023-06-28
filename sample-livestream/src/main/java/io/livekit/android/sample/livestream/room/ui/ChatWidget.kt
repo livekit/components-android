@@ -47,14 +47,14 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import io.livekit.android.sample.livestream.ui.control.LKTextField
 import io.livekit.android.sample.livestream.ui.control.Spacer
-import io.livekit.android.sample.livestream.ui.screen.identityToColor
+import io.livekit.android.sample.livestream.ui.screen.nameToColor
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
 import io.livekit.android.sample.livestream.ui.theme.Blue500
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LightLine
 
 data class ChatWidgetMessage(
-    val identity: String,
+    val name: String,
     val message: String,
 )
 
@@ -101,12 +101,12 @@ fun ChatWidget(
                 Spacer(20.dp)
                 Row(verticalAlignment = Alignment.Top) {
                     Canvas(modifier = Modifier.size(32.dp), onDraw = {
-                        drawCircle(color = identityToColor(message.identity))
+                        drawCircle(color = nameToColor(message.name))
                     })
                     Spacer(12.dp)
                     Column {
                         Text(
-                            text = message.identity,
+                            text = message.name,
                             fontWeight = FontWeight.W700,
                             fontSize = 12.sp,
                         )

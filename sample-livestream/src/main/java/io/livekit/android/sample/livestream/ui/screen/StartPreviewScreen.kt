@@ -49,6 +49,10 @@ import org.webrtc.VideoFrame
 @Destination
 @Composable
 fun StartPreviewScreen(
+    name: String,
+    roomName: String,
+    enableChat: Boolean,
+    allowParticipation: Boolean,
     livestreamApi: LivestreamApi,
     navigator: DestinationsNavigator
 ) {
@@ -121,7 +125,7 @@ fun StartPreviewScreen(
             coroutineScope.launch {
                 var response: CreateStreamResponse? = null
                 try {
-                    response = livestreamApi.createStream("name", "roomname", true, true).body()
+                    response = livestreamApi.createStream(name, roomName, enableChat, allowParticipation).body()
                 } catch (e: Exception) {
                     Timber.e(e) { "error" }
                 }

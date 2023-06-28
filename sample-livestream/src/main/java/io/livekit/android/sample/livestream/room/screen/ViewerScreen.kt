@@ -35,14 +35,11 @@ import io.livekit.android.sample.livestream.DebugServerInfo
 import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
 import io.livekit.android.sample.livestream.destinations.ViewerParticipantListScreenDestination
-import io.livekit.android.sample.livestream.room.data.LivestreamApi
-import io.livekit.android.sample.livestream.room.state.rememberVideoHostParticipant
+import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
 import io.livekit.android.sample.livestream.room.ui.RoomControls
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
 
 @NavGraph
 annotation class ViewerNavGraph(
@@ -99,7 +96,7 @@ fun ViewerScreen(
     ) {
         val (chatBox, hostScreen, viewerButton) = createRefs()
 
-        val hostParticipant by rememberVideoHostParticipant()
+        val hostParticipant by rememberHostParticipant()
         val videoTrackPublication by rememberVideoTrackPublication(participant = hostParticipant)
         val videoTrack by rememberVideoTrack(videoPub = videoTrackPublication)
 
@@ -115,7 +112,7 @@ fun ViewerScreen(
         ChatWidget(
             messages = chat.messages.value.map {
                 ChatWidgetMessage(
-                    it.participant?.identity ?: "",
+                    it.participant?.name ?: "",
                     it.message
                 )
             },

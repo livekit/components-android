@@ -5,11 +5,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ParticipantMetadata(
     // true if participant requested to join stage
-    val requested: Boolean,
+    val requested: Boolean = false,
     // true if participant has been invited to stage and accepted
-    val isOnStage: Boolean,
+    val isOnStage: Boolean = false,
     // true if room creator
-    val isCreator: Boolean,
+    val isCreator: Boolean = false,
     // url of avatar
-    val avatarUrl: String,
+    val avatarUrl: String = "",
 )
