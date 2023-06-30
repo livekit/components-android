@@ -1,5 +1,7 @@
 package io.livekit.android.compose.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.currentCompositeKeyHash
@@ -8,7 +10,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
 import io.livekit.android.renderer.TextureViewRenderer
 import io.livekit.android.room.Room
@@ -33,6 +37,16 @@ fun VideoRenderer(
     mirror: Boolean = false,
     scaleType: ScaleType,
 ) {
+
+    // Show a black box for preview.
+    if (LocalView.current.isInEditMode) {
+        Box(
+            modifier = Modifier
+                .background(Color.Black)
+                .then(modifier)
+        )
+        return
+    }
 
     val videoSinkVisibility = remember(room, videoTrack) { ComposeVisibility() }
     var boundVideoTrack by remember { mutableStateOf<VideoTrack?>(null) }

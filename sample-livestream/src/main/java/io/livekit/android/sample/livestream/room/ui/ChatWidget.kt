@@ -97,7 +97,10 @@ fun ChatWidget(
                     bottom.linkTo(chatBar.top)
                 }
         ) {
-            items(messages.asReversed()) { message ->
+            items(
+                items = messages.asReversed(),
+                key = { it.hashCode() }
+            ) { message ->
                 Spacer(20.dp)
                 Row(verticalAlignment = Alignment.Top) {
                     Canvas(modifier = Modifier.size(32.dp), onDraw = {

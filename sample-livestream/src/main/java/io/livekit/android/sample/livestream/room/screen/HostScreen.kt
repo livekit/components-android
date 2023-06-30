@@ -25,12 +25,10 @@ import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.dependency
 import io.livekit.android.compose.chat.rememberChat
-import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.RoomScope
 import io.livekit.android.compose.local.rememberVideoTrack
 import io.livekit.android.compose.local.rememberVideoTrackPublication
-import io.livekit.android.compose.ui.ScaleType
-import io.livekit.android.compose.ui.VideoRenderer
+import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
 import io.livekit.android.sample.livestream.destinations.HostParticipantListScreenDestination
@@ -38,6 +36,7 @@ import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
+import io.livekit.android.sample.livestream.room.ui.ParticipantGrid
 import io.livekit.android.sample.livestream.room.ui.RoomControls
 import kotlinx.coroutines.launch
 
@@ -74,7 +73,6 @@ fun HostScreenContainer(url: String, token: String, livestreamApi: LivestreamApi
                 navController = navController,
                 engine = navHostEngine,
                 dependenciesContainerBuilder = {
-                    dependency(RoomLocal.current)
                     dependency(livestreamApi)
                 }
             )
@@ -103,14 +101,13 @@ fun HostScreen(
         val videoTrackPublication by rememberVideoTrackPublication(participant = hostParticipant)
         val videoTrack by rememberVideoTrack(videoPub = videoTrackPublication)
 
-        VideoRenderer(
-            room = RoomLocal.current,
-            videoTrack = videoTrack,
-            scaleType = ScaleType.Fill,
-            modifier = Modifier.constrainAs(hostScreen) {
-                width = Dimension.matchParent
-                height = Dimension.matchParent
-            }
+        ParticipantGrid(
+            videoTracks = listOfNotNull(videoTrack),
+            modifier = Modifier
+                .constrainAs(hostScreen) {
+                    width = Dimension.matchParent
+                    height = Dimension.matchParent
+                }
         )
         ChatWidget(
             messages = chat.messages.value.map {
@@ -135,7 +132,7 @@ fun HostScreen(
 
         RoomControls(
             showFlipButton = true,
-            participantCount = 10,
+            participantCount = rememberParticipants().size,
             aspectType = false,
             onFlipButtonClick = {},
             onAspectButtonClick = {},

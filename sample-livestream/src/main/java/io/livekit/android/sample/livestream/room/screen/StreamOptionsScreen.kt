@@ -1,4 +1,4 @@
-package io.livekit.android.sample.livestream.ui.screen
+package io.livekit.android.sample.livestream.room.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -19,8 +19,6 @@ import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
-import io.livekit.android.sample.livestream.room.screen.HostNavGraph
-import io.livekit.android.sample.livestream.room.screen.ViewerNavGraph
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 import io.livekit.android.sample.livestream.ui.theme.LightLine

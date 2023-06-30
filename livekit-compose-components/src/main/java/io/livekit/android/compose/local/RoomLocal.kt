@@ -141,5 +141,11 @@ fun RoomScope(
     )
 }
 
+@Composable
+@Throws(IllegalStateException::class)
+fun requireRoom(passedRoom: Room?): Room {
+    return passedRoom ?: RoomLocal.current
+}
+
 val RoomLocal =
     compositionLocalOf<Room> { throw IllegalStateException("No Room object available. This should only be used within a RoomScope.") }
