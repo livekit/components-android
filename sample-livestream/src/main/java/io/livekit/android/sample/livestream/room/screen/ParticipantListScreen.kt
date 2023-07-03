@@ -1,13 +1,10 @@
 package io.livekit.android.sample.livestream.room.screen
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,114 +25,114 @@ import io.livekit.android.room.participant.Participant
 import io.livekit.android.sample.livestream.destinations.ParticipantInfoScreenDestination
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadatas
+import io.livekit.android.sample.livestream.ui.control.HorizontalLine
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
-import io.livekit.android.sample.livestream.ui.theme.LightLine
 
 @RoomNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable
-fun ColumnScope.ParticipantListScreen(
+fun ParticipantListScreen(
     isHost: IsHost,
     roomMetadataHolder: RoomMetadataHolder,
     navigator: DestinationsNavigator
 ) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(Dimens.spacer),
     ) {
         Text(
             text = "Viewers",
             style = LKTextStyle.header,
         )
-    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(LightLine)
-    ) {}
+        Spacer(Dimens.spacer)
+        HorizontalLine()
+        Spacer(Dimens.spacer)
 
-    val participants = rememberParticipants()
-    val metadatas = rememberParticipantMetadatas()
-    val hostParticipant = rememberHostParticipant(roomMetadata = roomMetadataHolder.value)
+        val participants = rememberParticipants()
+        val metadatas = rememberParticipantMetadatas()
+        val hostParticipant = rememberHostParticipant(roomMetadata = roomMetadataHolder.value)
 
-    val hosts = metadatas
-        .filter { (participant, metadata) -> metadata.isOnStage || participant == hostParticipant }
-        .map { (participant, _) -> participant }
-    val requestsToJoin = metadatas
-        .filter { (participant, metadata) -> metadata.handRaised && !metadata.invitedToStage && !hosts.contains(participant) }
-        .map { (participant, _) -> participant }
+        val hosts = metadatas
+            .filter { (participant, metadata) -> metadata.isOnStage || participant == hostParticipant }
+            .map { (participant, _) -> participant }
+        val requestsToJoin = metadatas
+            .filter { (participant, metadata) -> metadata.handRaised && !metadata.invitedToStage && !hosts.contains(participant) }
+            .map { (participant, _) -> participant }
 
-    val viewers = participants
-        .filter { p -> !requestsToJoin.contains(p) }
-        .filter { p -> !hosts.contains(p) }
+        val viewers = participants
+            .filter { p -> !requestsToJoin.contains(p) }
+            .filter { p -> !hosts.contains(p) }
 
-    LazyColumn(modifier = Modifier.padding(Dimens.spacer)) {
+        LazyColumn {
 
-        if (requestsToJoin.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Requests to join".uppercase(),
-                    style = LKTextStyle.listSectionHeader
-                )
-                Spacer(size = Dimens.spacer)
+            if (requestsToJoin.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Requests to join".uppercase(),
+                        style = LKTextStyle.listSectionHeader
+                    )
+                    Spacer(size = Dimens.spacer)
+                }
+
+                items(
+                    items = requestsToJoin,
+                    key = { it.sid }
+                ) { participant ->
+                    ParticipantRow(
+                        participant = participant,
+                        modifier = Modifier
+                            .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
+                    )
+                }
             }
 
-            items(
-                items = requestsToJoin,
-                key = { it.sid }
-            ) { participant ->
-                ParticipantRow(participant = participant)
+            if (hosts.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Hosts".uppercase(),
+                        style = LKTextStyle.listSectionHeader
+                    )
+                    Spacer(size = Dimens.spacer)
+                }
+
+                items(
+                    items = hosts,
+                    key = { it.sid }
+                ) { participant ->
+                    ParticipantRow(participant = participant)
+                }
+            }
+
+            if (viewers.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Viewers".uppercase(),
+                        style = LKTextStyle.listSectionHeader
+                    )
+                    Spacer(size = Dimens.spacer)
+                }
+
+                items(
+                    items = viewers,
+                    key = { it.sid }
+                ) { participant ->
+                    ParticipantRow(
+                        participant = participant,
+                        modifier = Modifier
+                            .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
+                    )
+                }
             }
         }
 
-        if (hosts.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Hosts".uppercase(),
-                    style = LKTextStyle.listSectionHeader
-                )
-                Spacer(size = Dimens.spacer)
-            }
-
-            items(
-                items = hosts,
-                key = { it.sid }
-            ) { participant ->
-                ParticipantRow(participant = participant)
-            }
-        }
-
-        if (viewers.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Viewers".uppercase(),
-                    style = LKTextStyle.listSectionHeader
-                )
-                Spacer(size = Dimens.spacer)
-            }
-
-            items(
-                items = viewers,
-                key = { it.sid }
-            ) { participant ->
-                ParticipantRow(
-                    participant = participant,
-                    modifier = Modifier
-                        .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
-                )
-            }
-        }
     }
 }
 
 @Composable
-fun LazyItemScope.ParticipantRow(
+private fun LazyItemScope.ParticipantRow(
     participant: Participant,
     modifier: Modifier = Modifier
 ) {

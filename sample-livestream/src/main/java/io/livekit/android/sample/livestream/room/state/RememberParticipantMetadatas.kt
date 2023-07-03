@@ -8,16 +8,19 @@ import io.livekit.android.sample.livestream.room.data.ParticipantMetadata
 import io.livekit.android.util.flow
 
 @Composable
+fun rememberParticipantMetadata(participant: Participant): ParticipantMetadata {
+    return participant::metadata.flow
+        .collectAsState()
+        .value
+        ?.takeIf { it.isNotBlank() }
+        ?.let { metadata ->
+            ParticipantMetadata.fromJson(metadata)
+        }
+        ?: ParticipantMetadata(handRaised = false, invitedToStage = false)
+}
+
+@Composable
 fun rememberParticipantMetadatas(): Map<Participant, ParticipantMetadata> {
     val participants = rememberParticipants()
-    return participants.associateWith { participant ->
-        participant::metadata.flow
-            .collectAsState()
-            .value
-            ?.takeIf { it.isNotBlank() }
-            ?.let { metadata ->
-                ParticipantMetadata.fromJson(metadata)
-            }
-            ?: ParticipantMetadata(handRaised = false, invitedToStage = false)
-    }
+    return participants.associateWith { rememberParticipantMetadata(it) }
 }

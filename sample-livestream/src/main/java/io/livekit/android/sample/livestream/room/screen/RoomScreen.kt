@@ -92,6 +92,8 @@ fun RoomScreenContainer(
             .create(AuthenticatedLivestreamApi::class.java)
     }
 
+    val roomCoroutineScope = rememberCoroutineScope()
+
     RoomScope(
         url = connectionDetails.wsUrl,
         token = connectionDetails.token,
@@ -120,6 +122,7 @@ fun RoomScreenContainer(
                     dependency(authedApi)
                     dependency(IsHost(value = isHost))
                     dependency(RoomMetadataHolder(value = roomMetadata))
+                    dependency(roomCoroutineScope)
                 },
             )
         }

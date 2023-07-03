@@ -16,6 +16,7 @@ import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 fun LargeTextButton(
     modifier: Modifier = Modifier,
     text: String = "",
+    enabled: Boolean = true,
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     onClick: () -> Unit,
 ) {
@@ -23,6 +24,7 @@ fun LargeTextButton(
         colors = colors,
         onClick = onClick,
         shape = RoundedCornerShape(10.dp),
+        enabled = enabled,
         modifier = Modifier
             .height(Dimens.buttonHeight)
             .then(modifier)

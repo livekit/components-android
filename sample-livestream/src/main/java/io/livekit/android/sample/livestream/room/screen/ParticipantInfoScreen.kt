@@ -1,11 +1,14 @@
 package io.livekit.android.sample.livestream.room.screen
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -16,16 +19,25 @@ import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.state.rememberParticipantInfo
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
+import io.livekit.android.sample.livestream.room.data.IdentityRequest
+import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
+import io.livekit.android.sample.livestream.ui.control.HorizontalLine
+import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.control.Spacer
+import io.livekit.android.sample.livestream.ui.theme.Dimens
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @RoomNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable
-fun ColumnScope.ParticipantInfoScreen(
+fun ParticipantInfoScreen(
     participantSid: String,
+    roomMetadataHolder: RoomMetadataHolder,
+    isHost: IsHost,
     authedApi: AuthenticatedLivestreamApi,
+    coroutineScope: CoroutineScope,
     navigator: DestinationsNavigator,
-    isHost: IsHost
 ) {
     val room = RoomLocal.current
     val participant = remember(room, participantSid) {
@@ -37,21 +49,76 @@ fun ColumnScope.ParticipantInfoScreen(
         return
     }
 
+    val roomMetadata = roomMetadataHolder.value
     val participantInfo = rememberParticipantInfo(participant)
+    val participantMetadata = rememberParticipantMetadata(participant)
 
-    Canvas(modifier = Modifier.size(108.dp), onDraw = {
-        drawCircle(color = nameToColor(participant.name))
-    })
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Dimens.spacer)
+    ) {
 
-    Spacer(8.dp)
+        Text(
+            text = "Moderation",
+            fontWeight = FontWeight.W700,
+            fontSize = 20.sp,
+        )
 
-    Text(
-        text = participantInfo.name ?: "",
-        fontWeight = FontWeight.W700,
-        fontSize = 14.sp,
-    )
+        Spacer(Dimens.spacer)
+        HorizontalLine()
+        Spacer(Dimens.spacer)
 
-    if (isHost.value) {
+        Canvas(
+            modifier = Modifier
+                .size(108.dp)
+                .align(Alignment.CenterHorizontally), onDraw = {
+                drawCircle(color = nameToColor(participant.identity))
+            })
 
+        Spacer(8.dp)
+
+        Text(
+            text = participantInfo.identity ?: "",
+            fontWeight = FontWeight.W700,
+            fontSize = 14.sp,
+        )
+
+        val identity = participant.identity
+        if (isHost.value &&
+            identity != roomMetadata.creatorIdentity &&
+            identity != null
+        ) {
+            if (participantMetadata.isOnStage) {
+                LargeTextButton(
+                    text = "Remove from stage",
+                    onClick = {
+                        coroutineScope.launch {
+                            authedApi.removeFromStage(IdentityRequest(identity))
+                        }
+                    }
+                )
+            } else {
+                LargeTextButton(
+                    text = "Invite to stage",
+                    enabled = !participantMetadata.invitedToStage,
+                    onClick = {
+                        coroutineScope.launch {
+                            authedApi.inviteToStage(IdentityRequest(identity))
+                        }
+                    }
+                )
+            }
+
+            LargeTextButton(
+                text = "Remove from stream",
+                onClick = {
+                    coroutineScope.launch {
+                        TODO("No API available")
+                    }
+                }
+            )
+        }
     }
 }
