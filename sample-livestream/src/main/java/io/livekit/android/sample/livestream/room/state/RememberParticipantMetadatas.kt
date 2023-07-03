@@ -8,7 +8,7 @@ import io.livekit.android.sample.livestream.room.data.ParticipantMetadata
 import io.livekit.android.util.flow
 
 @Composable
-fun rememberParticipantMetadatas(): Map<Participant, ParticipantMetadata?> {
+fun rememberParticipantMetadatas(): Map<Participant, ParticipantMetadata> {
     val participants = rememberParticipants()
     return participants.associateWith { participant ->
         participant::metadata.flow
@@ -18,5 +18,6 @@ fun rememberParticipantMetadatas(): Map<Participant, ParticipantMetadata?> {
             ?.let { metadata ->
                 ParticipantMetadata.fromJson(metadata)
             }
+            ?: ParticipantMetadata(handRaised = false, invitedToStage = false)
     }
 }

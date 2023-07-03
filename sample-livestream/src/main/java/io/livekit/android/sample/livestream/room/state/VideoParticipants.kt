@@ -10,9 +10,7 @@ fun rememberOnStageParticipants(): Set<Participant> {
 
     return remember(metadatas) {
         metadatas
-            .filter { (_, metadata) ->
-                metadata != null && metadata.isOnStage
-            }
+            .filter { (_, metadata) -> metadata.isOnStage }
             .keys
     }
 }

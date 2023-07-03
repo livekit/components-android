@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,11 +23,10 @@ import com.github.ajalt.timberkt.Timber
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
-import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.sample.livestream.destinations.ParticipantInfoScreenDestination
-import io.livekit.android.sample.livestream.room.data.RoomMetadata
+import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadatas
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
@@ -64,18 +62,13 @@ fun ColumnScope.ParticipantListScreen(
 
     val participants = rememberParticipants()
     val metadatas = rememberParticipantMetadatas()
-
-    val requestsToJoin = metadatas
-        .filter { (_, metadata) -> metadata?.requested ?: false }
-        .map { (participant, _) -> participant }
+    val hostParticipant = rememberHostParticipant(roomMetadata = roomMetadataHolder.value)
 
     val hosts = metadatas
-        .filter { (_, metadata) ->
-            if (metadata == null) {
-                return@filter false
-            }
-            return@filter metadata.isCreator || metadata.isOnStage
-        }
+        .filter { (participant, metadata) -> metadata.isOnStage || participant == hostParticipant }
+        .map { (participant, _) -> participant }
+    val requestsToJoin = metadatas
+        .filter { (participant, metadata) -> metadata.handRaised && !metadata.invitedToStage && !hosts.contains(participant) }
         .map { (participant, _) -> participant }
 
     val viewers = participants
@@ -147,7 +140,7 @@ fun LazyItemScope.ParticipantRow(
     modifier: Modifier = Modifier
 ) {
 
-    Timber.e { "participant row ${participant.name ?: ""}" }
+    Timber.e { "participant row ${participant.identity ?: ""}" }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -155,20 +148,20 @@ fun LazyItemScope.ParticipantRow(
             .fillMaxWidth()
             .then(modifier)
     ) {
-        val name = participant.name ?: ""
+        val name = participant.identity ?: ""
         // Profile icon
         Canvas(modifier = Modifier.size(32.dp), onDraw = {
             drawCircle(color = nameToColor(name))
         })
         Spacer(size = 12.dp)
-        Text(participant.name ?: "")
+        Text(participant.identity ?: "")
     }
     Spacer(size = Dimens.spacer)
 }
 
 // Generate a color based on the name.
 fun nameToColor(name: String?): Color {
-    if (name == null) {
+    if (name.isNullOrEmpty()) {
         return Color.White
     }
     return Color(name.hashCode().toLong() or 0xFF000000)
