@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -21,19 +23,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.github.ajalt.timberkt.Timber
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import io.livekit.android.sample.livestream.destinations.RoomScreenContainerDestination
+import io.livekit.android.sample.livestream.room.data.JoinStreamRequest
+import io.livekit.android.sample.livestream.room.data.JoinStreamResponse
+import io.livekit.android.sample.livestream.room.data.LivestreamApi
+import io.livekit.android.sample.livestream.room.data.RoomMetadata
 import io.livekit.android.sample.livestream.ui.control.BackButton
 import io.livekit.android.sample.livestream.ui.control.LargeTextButton
+import io.livekit.android.sample.livestream.ui.control.LoadingDialog
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
 fun JoinScreen(
+    livestreamApi: LivestreamApi,
     navigator: DestinationsNavigator
 ) {
+    var userName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
+    var roomName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
+
     ConstraintLayout(
         modifier = Modifier
             .padding(Dimens.spacer)
@@ -58,13 +76,6 @@ fun JoinScreen(
 
             Spacer(47.dp)
 
-            var userName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-                mutableStateOf(TextFieldValue(""))
-            }
-            var roomName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-                mutableStateOf(TextFieldValue(""))
-            }
-
             OutlinedTextField(
                 value = userName,
                 onValueChange = { userName = it },
@@ -82,6 +93,45 @@ fun JoinScreen(
             )
 
         }
+        var isCreatingStream by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+
+        fun startLoad() {
+            isCreatingStream = true
+            coroutineScope.launch {
+                var response: JoinStreamResponse? = null
+                try {
+                    response = livestreamApi.joinStream(
+                        JoinStreamRequest(
+                            roomName = roomName.text,
+                            identity = userName.text,
+                        )
+                    ).body()
+                } catch (e: Exception) {
+                    Timber.e(e) { "error" }
+                }
+                if (response != null) {
+                    Timber.e { "response received: $response" }
+                    navigator.navigate(
+                        RoomScreenContainerDestination(
+                            apiAuthToken = response.authToken,
+                            connectionDetails = response.connectionDetails,
+                            roomMetadata = RoomMetadata(
+                                creatorIdentity = "UserName",
+                                enableChat = true,
+                                allowParticipation = true,
+                            ),
+                            isHost = false
+                        )
+                    )
+                } else {
+                    Timber.e { "response failed!" }
+                }
+                isCreatingStream = false
+            }
+        }
+
+        LoadingDialog(isShowingDialog = isCreatingStream)
 
         val joinButtonColors = ButtonDefaults.buttonColors(
             contentColor = Color.White,
@@ -90,7 +140,7 @@ fun JoinScreen(
         LargeTextButton(
             text = "Join livestream",
             colors = joinButtonColors,
-            onClick = {},
+            onClick = { startLoad() },
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints
                 height = Dimension.value(Dimens.buttonHeight)

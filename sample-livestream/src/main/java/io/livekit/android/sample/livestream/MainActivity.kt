@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
         val client = OkHttpClient.Builder()
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
-                    setLevel(HttpLoggingInterceptor.Level.BODY)
+                    setLevel(HttpLoggingInterceptor.Level.HEADERS)
                 }
             )
             .build()
@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
                         engine = navHostEngine,
                         dependenciesContainerBuilder = {
                             dependency(retrofit)
+                            dependency(client)
                             dependency(livestreamApi)
                         }
                     )

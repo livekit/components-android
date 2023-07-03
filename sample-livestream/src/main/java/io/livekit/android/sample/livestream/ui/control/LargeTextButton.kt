@@ -1,5 +1,6 @@
 package io.livekit.android.sample.livestream.ui.control
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -27,6 +28,7 @@ fun LargeTextButton(
         enabled = enabled,
         modifier = Modifier
             .height(Dimens.buttonHeight)
+            .fillMaxWidth()
             .then(modifier)
     ) {
         Text(

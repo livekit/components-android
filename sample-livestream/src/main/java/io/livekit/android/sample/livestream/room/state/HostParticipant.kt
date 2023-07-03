@@ -3,7 +3,6 @@ package io.livekit.android.sample.livestream.room.state
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
-import com.github.ajalt.timberkt.Timber
 import io.livekit.android.compose.state.rememberParticipantInfo
 import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.room.participant.Participant
@@ -18,7 +17,6 @@ fun rememberHostParticipant(roomMetadata: RoomMetadata): Participant? {
         derivedStateOf {
             participantInfos.firstNotNullOfOrNull { (participant, info) ->
                 participant.takeIf {
-                    Timber.e { "${info.identity} == ${roomMetadata.creatorIdentity}: ${info.identity == roomMetadata.creatorIdentity}" }
                     info.identity == roomMetadata.creatorIdentity
                 }
             }

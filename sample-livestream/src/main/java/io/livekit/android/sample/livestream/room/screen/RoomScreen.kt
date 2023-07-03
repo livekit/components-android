@@ -36,6 +36,7 @@ import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
 import io.livekit.android.sample.livestream.destinations.ParticipantListScreenDestination
+import io.livekit.android.sample.livestream.destinations.StreamOptionsScreenDestination
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.ConnectionDetails
 import io.livekit.android.sample.livestream.room.data.RoomMetadata
@@ -69,6 +70,7 @@ data class RoomMetadataHolder(val value: RoomMetadata)
 @Destination
 @Composable
 fun RoomScreenContainer(
+    okHttpClient: OkHttpClient,
     apiAuthToken: String,
     connectionDetails: ConnectionDetails,
     roomMetadata: RoomMetadata,
@@ -78,16 +80,16 @@ fun RoomScreenContainer(
 ) {
 
     val authedApi = remember {
-        val okHttpClient = OkHttpClient.Builder()
+        val authedClient = okHttpClient.newBuilder()
             .addInterceptor { chain ->
                 var request = chain.request()
-                request = request.newBuilder().header("Authorization", "Bearer $apiAuthToken").build()
+                request = request.newBuilder().header("Authorization", "Token $apiAuthToken").build()
 
                 return@addInterceptor chain.proceed(request)
             }
             .build()
         retrofit.newBuilder()
-            .client(okHttpClient)
+            .client(authedClient)
             .build()
             .create(AuthenticatedLivestreamApi::class.java)
     }
@@ -97,8 +99,8 @@ fun RoomScreenContainer(
     RoomScope(
         url = connectionDetails.wsUrl,
         token = connectionDetails.token,
-        audio = true,
-        video = true,
+        audio = isHost,
+        video = isHost,
     ) {
         val navController = rememberAnimatedNavController()
         val bottomSheetNavigator = rememberBottomSheetNavigator()
@@ -172,7 +174,7 @@ fun RoomScreen(
             onChatSend = {
                 scope.launch { chat.send(it) }
             },
-            onOptionsClick = { },
+            onOptionsClick = { navigator.navigate(StreamOptionsScreenDestination()) },
             modifier = Modifier
                 .constrainAs(chatBox) {
                     width = Dimension.fillToConstraints

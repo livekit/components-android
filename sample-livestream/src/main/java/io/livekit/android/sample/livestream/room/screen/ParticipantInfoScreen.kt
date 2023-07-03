@@ -85,6 +85,10 @@ fun ParticipantInfoScreen(
             fontSize = 14.sp,
         )
 
+        Spacer(Dimens.spacer)
+        HorizontalLine()
+        Spacer(Dimens.spacer)
+
         val identity = participant.identity
         if (isHost.value &&
             identity != roomMetadata.creatorIdentity &&
@@ -110,6 +114,8 @@ fun ParticipantInfoScreen(
                     }
                 )
             }
+
+            Spacer(8.dp)
 
             LargeTextButton(
                 text = "Remove from stream",

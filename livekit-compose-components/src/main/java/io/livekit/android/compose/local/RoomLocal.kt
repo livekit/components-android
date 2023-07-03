@@ -1,11 +1,11 @@
 package io.livekit.android.compose.local
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import io.livekit.android.ConnectOptions
@@ -13,18 +13,50 @@ import io.livekit.android.LiveKit
 import io.livekit.android.LiveKitOverrides
 import io.livekit.android.RoomOptions
 import io.livekit.android.room.Room
-import io.livekit.android.room.participant.Participant
 import io.livekit.android.util.flow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class RoomState(val room: Room) {
-    val participants = mutableStateOf(listOf<Participant>(room.localParticipant).plus(room.remoteParticipants.values))
+/**
+ * A simple handler for listening to room state changes.
+ * @param states the types of states to listen to, or empty list to listen to all state changes.
+ * @param passedRoom the room to use, or null to use [RoomLocal] if inside a [RoomScope].
+ * @param onState the listener to be called back. Will be called with the existing state.
+ */
+@Composable
+fun HandleRoomState(
+    states: List<Room.State> = emptyList(),
+    passedRoom: Room? = null,
+    onState: (suspend CoroutineScope.(Room, Room.State) -> Unit)?
+) {
+    val room = requireRoom(passedRoom = passedRoom)
 
-    val metadata = mutableStateOf(room.metadata)
+    if (onState != null) {
+        LaunchedEffect(room, onState) {
+            Log.e("handleRoomState", "handling $onState")
+            launch {
+                room::state.flow.collectLatest { currentState ->
+                    if (states.isEmpty() || states.contains(currentState)) {
+                        onState.invoke(this, room, currentState)
+                    }
+                }
+            }
+        }
+    }
+}
 
-    val connectionState = mutableStateOf(room.state)
+/**
+ * @see HandleRoomState
+ */
+@Composable
+fun HandleRoomState(
+    state: Room.State? = null,
+    passedRoom: Room? = null,
+    onState: (suspend CoroutineScope.(Room, Room.State) -> Unit)?
+) {
+    val states = if (state == null) emptyList() else listOf(state)
+    HandleRoomState(states, passedRoom, onState)
 }
 
 @Composable
@@ -51,32 +83,16 @@ fun rememberLiveKitRoom(
         )
     }
 
-    LaunchedEffect(room, onConnected, onDisconnected, onError) {
-        launch {
-            room::state.flow.collectLatest { state ->
-                when (state) {
-                    Room.State.CONNECTED -> {
-                        if (audio) {
-                            room.localParticipant.setMicrophoneEnabled(true)
-                        }
-                        if (video) {
-                            room.localParticipant.setCameraEnabled(true)
-                        }
-                        onConnected?.invoke(this, room)
-                    }
-
-                    Room.State.DISCONNECTED -> {
-                        onDisconnected?.invoke(this, room)
-                    }
-
-                    else -> {
-                        /* do nothing */
-                    }
-                }
-            }
-        }
+    HandleRoomState(Room.State.CONNECTED, room) { _, _ -> onConnected?.invoke(this, room) }
+    HandleRoomState(Room.State.CONNECTED, room) { _, _ ->
+        room.localParticipant.setMicrophoneEnabled(audio)
     }
-    LaunchedEffect(connect, url, token, room, connectOptions, onError) {
+    HandleRoomState(Room.State.CONNECTED, room) { _, _ ->
+        room.localParticipant.setCameraEnabled(video)
+    }
+    HandleRoomState(Room.State.DISCONNECTED, room) { _, _ -> onDisconnected?.invoke(this, room) }
+
+    LaunchedEffect(room, connect, url, token, room, connectOptions, onError) {
         if (url.isNullOrEmpty() || token.isNullOrEmpty()) {
             return@LaunchedEffect
         }
