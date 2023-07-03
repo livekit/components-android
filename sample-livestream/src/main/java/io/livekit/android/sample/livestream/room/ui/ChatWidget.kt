@@ -47,7 +47,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import io.livekit.android.sample.livestream.ui.control.LKTextField
 import io.livekit.android.sample.livestream.ui.control.Spacer
-import io.livekit.android.sample.livestream.ui.screen.nameToColor
+import io.livekit.android.sample.livestream.room.screen.nameToColor
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
 import io.livekit.android.sample.livestream.ui.theme.Blue500
 import io.livekit.android.sample.livestream.ui.theme.Dimens

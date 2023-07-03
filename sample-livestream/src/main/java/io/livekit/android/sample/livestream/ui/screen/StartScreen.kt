@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -32,6 +30,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import io.livekit.android.sample.livestream.destinations.StartPreviewScreenDestination
 import io.livekit.android.sample.livestream.ui.control.BackButton
+import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 
@@ -127,7 +126,8 @@ fun StartScreen(
             contentColor = Color.White,
             containerColor = Color(0xFFB11FF9)
         )
-        Button(
+        LargeTextButton(
+            text = "Start livestream",
             colors = joinButtonColors,
             onClick = {
                 navigator.navigate(
@@ -139,7 +139,6 @@ fun StartScreen(
                     )
                 )
             },
-            shape = RoundedCornerShape(10.dp),
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints
                 height = Dimension.value(Dimens.buttonHeight)
@@ -147,13 +146,7 @@ fun StartScreen(
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
             }
-        ) {
-            Text(
-                text = "Start livestream",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.W700,
-            )
-        }
+        )
     }
 }
 

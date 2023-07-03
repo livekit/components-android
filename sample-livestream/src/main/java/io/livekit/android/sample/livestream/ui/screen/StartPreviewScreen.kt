@@ -30,9 +30,11 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import io.livekit.android.renderer.TextureViewRenderer
 import io.livekit.android.room.track.CameraPosition
-import io.livekit.android.sample.livestream.destinations.HostScreenContainerDestination
+import io.livekit.android.sample.livestream.destinations.RoomScreenContainerDestination
+import io.livekit.android.sample.livestream.room.data.CreateStreamRequest
 import io.livekit.android.sample.livestream.room.data.CreateStreamResponse
 import io.livekit.android.sample.livestream.room.data.LivestreamApi
+import io.livekit.android.sample.livestream.room.data.RoomMetadata
 import io.livekit.android.sample.livestream.ui.control.BackButton
 import io.livekit.android.sample.livestream.ui.control.LoadingDialog
 import io.livekit.android.sample.livestream.ui.theme.Dimens
@@ -120,18 +122,35 @@ fun StartPreviewScreen(
         val coroutineScope = rememberCoroutineScope()
 
         fun startLoad() {
-
             isCreatingStream = true
             coroutineScope.launch {
                 var response: CreateStreamResponse? = null
+                val roomMetadata =
+                    RoomMetadata(
+                        creatorIdentity = name,
+                        enableChat = enableChat,
+                        allowParticipation = allowParticipation,
+                    )
                 try {
-                    response = livestreamApi.createStream(name, roomName, enableChat, allowParticipation).body()
+                    response = livestreamApi.createStream(
+                        CreateStreamRequest(
+                            roomName = roomName,
+                            metadata = roomMetadata,
+                        )
+                    ).body()
                 } catch (e: Exception) {
                     Timber.e(e) { "error" }
                 }
                 if (response != null) {
                     Timber.e { "response received: $response" }
-                    navigator.navigate(HostScreenContainerDestination(response.livekitUrl, response.token))
+                    navigator.navigate(
+                        RoomScreenContainerDestination(
+                            apiAuthToken = response.authToken,
+                            connectionDetails = response.connectionDetails,
+                            roomMetadata = roomMetadata,
+                            isHost = true
+                        )
+                    )
                 } else {
                     Timber.e { "response failed!" }
                 }

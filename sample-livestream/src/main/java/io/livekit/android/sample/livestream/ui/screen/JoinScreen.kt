@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -25,8 +23,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import io.livekit.android.sample.livestream.destinations.ViewerScreenContainerDestination
 import io.livekit.android.sample.livestream.ui.control.BackButton
+import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 
@@ -89,10 +87,10 @@ fun JoinScreen(
             contentColor = Color.White,
             containerColor = Color(0xFFB11FF9)
         )
-        Button(
+        LargeTextButton(
+            text = "Join livestream",
             colors = joinButtonColors,
-            onClick = { navigator.navigate(ViewerScreenContainerDestination()) },
-            shape = RoundedCornerShape(10.dp),
+            onClick = {},
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints
                 height = Dimension.value(Dimens.buttonHeight)
@@ -100,14 +98,6 @@ fun JoinScreen(
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
             }
-        ) {
-            Text(
-                text = "Join livestream",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.W700,
-            )
-        }
-
+        )
     }
-
 }

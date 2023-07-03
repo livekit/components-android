@@ -24,6 +24,7 @@ import io.livekit.android.sample.livestream.ui.theme.AppTheme
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -36,13 +37,23 @@ val defaultAnimations = RootNavGraphDefaultAnimations(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val contentType = "application/json".toMediaType()
-        val livestreamApi = Retrofit.Builder()
+        val client = OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    setLevel(HttpLoggingInterceptor.Level.BODY)
+                }
+            )
+            .build()
+
+        val retrofit = Retrofit.Builder()
             .baseUrl(DebugServerInfo.API_SERVER_URL)
-            .client(OkHttpClient())
+            .client(client)
             .addConverterFactory(Json.asConverterFactory(contentType))
             .build()
-            .create(LivestreamApi::class.java)
+        val livestreamApi = retrofit.create(LivestreamApi::class.java)
+
         setContent {
             AppTheme {
                 Surface {
@@ -55,6 +66,7 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         engine = navHostEngine,
                         dependenciesContainerBuilder = {
+                            dependency(retrofit)
                             dependency(livestreamApi)
                         }
                     )

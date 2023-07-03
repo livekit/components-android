@@ -23,3 +23,9 @@ fun ParticipantScope(
         content = content,
     )
 }
+
+@Composable
+@Throws(IllegalStateException::class)
+fun requireParticipant(passedParticipant: Participant? = null): Participant {
+    return passedParticipant ?: ParticipantLocal.current
+}

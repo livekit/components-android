@@ -1,8 +1,10 @@
-package io.livekit.android.sample.livestream.ui.screen
+package io.livekit.android.sample.livestream.room.screen
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,7 +15,7 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,37 +24,23 @@ import com.github.ajalt.timberkt.Timber
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
+import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.room.participant.Participant
-import io.livekit.android.sample.livestream.room.data.ParticipantMetadata
-import io.livekit.android.sample.livestream.room.screen.HostNavGraph
-import io.livekit.android.sample.livestream.room.screen.ViewerNavGraph
+import io.livekit.android.sample.livestream.destinations.ParticipantInfoScreenDestination
+import io.livekit.android.sample.livestream.room.data.RoomMetadata
+import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadatas
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 import io.livekit.android.sample.livestream.ui.theme.LightLine
-import io.livekit.android.util.flow
 
-@HostNavGraph
+@RoomNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable
-fun HostParticipantListScreen(
-    navigator: DestinationsNavigator
-) {
-    ParticipantListScreen(navigator = navigator)
-}
-
-@ViewerNavGraph
-@Destination(style = DestinationStyleBottomSheet::class)
-@Composable
-fun ViewerParticipantListScreen(
-    navigator: DestinationsNavigator
-) {
-    ParticipantListScreen(navigator = navigator)
-}
-
-@Composable
-fun ParticipantListScreen(
+fun ColumnScope.ParticipantListScreen(
+    isHost: IsHost,
+    roomMetadataHolder: RoomMetadataHolder,
     navigator: DestinationsNavigator
 ) {
     Box(
@@ -75,15 +63,7 @@ fun ParticipantListScreen(
     ) {}
 
     val participants = rememberParticipants()
-    val metadatas = participants.associateWith { participant ->
-        participant::metadata.flow
-            .collectAsState()
-            .value
-            ?.takeIf { it.isNotBlank() }
-            ?.let { metadata ->
-                ParticipantMetadata.fromJson(metadata)
-            }
-    }
+    val metadatas = rememberParticipantMetadatas()
 
     val requestsToJoin = metadatas
         .filter { (_, metadata) -> metadata?.requested ?: false }
@@ -151,20 +131,29 @@ fun ParticipantListScreen(
                 items = viewers,
                 key = { it.sid }
             ) { participant ->
-                ParticipantRow(participant = participant)
+                ParticipantRow(
+                    participant = participant,
+                    modifier = Modifier
+                        .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
+                )
             }
         }
     }
 }
 
 @Composable
-fun LazyItemScope.ParticipantRow(participant: Participant) {
+fun LazyItemScope.ParticipantRow(
+    participant: Participant,
+    modifier: Modifier = Modifier
+) {
 
     Timber.e { "participant row ${participant.name ?: ""}" }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier)
     ) {
         val name = participant.name ?: ""
         // Profile icon
@@ -178,6 +167,9 @@ fun LazyItemScope.ParticipantRow(participant: Participant) {
 }
 
 // Generate a color based on the name.
-fun nameToColor(name: String): Color {
+fun nameToColor(name: String?): Color {
+    if (name == null) {
+        return Color.White
+    }
     return Color(name.hashCode().toLong() or 0xFF000000)
 }

@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,6 +25,7 @@ import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import io.livekit.android.sample.livestream.destinations.JoinScreenDestination
 import io.livekit.android.sample.livestream.destinations.StartScreenDestination
+import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 
 @RootNavGraph(start = true)
@@ -84,10 +83,10 @@ fun HomeScreen(
             contentColor = Color.White,
             containerColor = Color(0xFFB11FF9)
         )
-        Button(
+        LargeTextButton(
+            text = "Start a livestream",
             colors = startButtonColors,
             onClick = { navigator.navigate(StartScreenDestination()) },
-            shape = RoundedCornerShape(10.dp),
             modifier = Modifier.constrainAs(startButton) {
                 width = Dimension.fillToConstraints
                 height = Dimension.value(Dimens.buttonHeight)
@@ -95,22 +94,16 @@ fun HomeScreen(
                 start.linkTo(parent.start, margin = Dimens.spacer)
                 end.linkTo(parent.end, margin = Dimens.spacer)
             }
-        ) {
-            Text(
-                text = "Start a livestream",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.W700,
-            )
-        }
+        )
 
         val joinButtonColors = ButtonDefaults.buttonColors(
             contentColor = Color.White,
             containerColor = Color(0xFF131313)
         )
-        Button(
+        LargeTextButton(
+            text = "Join a livestream",
             colors = joinButtonColors,
             onClick = { navigator.navigate(JoinScreenDestination()) },
-            shape = RoundedCornerShape(10.dp),
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints
                 height = Dimension.value(Dimens.buttonHeight)
@@ -118,12 +111,6 @@ fun HomeScreen(
                 start.linkTo(parent.start, margin = Dimens.spacer)
                 end.linkTo(parent.end, margin = Dimens.spacer)
             }
-        ) {
-            Text(
-                text = "Join a livestream",
-                fontSize = 17.sp,
-                fontWeight = FontWeight.W700,
-            )
-        }
+        )
     }
 }

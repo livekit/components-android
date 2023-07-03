@@ -4,9 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -42,18 +40,16 @@ fun rememberLiveKitRoom(
     onConnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
     onDisconnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
     onError: ((Exception?) -> Unit)? = null,
-    passedRoom: Room?
-): MutableState<Room> {
+    passedRoom: Room? = null,
+): Room {
     val context = LocalContext.current
-    val roomState = remember {
-        val r = passedRoom ?: LiveKit.create(
+    val room = remember(passedRoom) {
+        passedRoom ?: LiveKit.create(
             appContext = context.applicationContext,
             options = roomOptions ?: RoomOptions(),
             overrides = liveKitOverrides ?: LiveKitOverrides(),
         )
-        mutableStateOf(r)
     }
-    val room by roomState
 
     LaunchedEffect(room, onConnected, onDisconnected, onError) {
         launch {
@@ -96,12 +92,12 @@ fun rememberLiveKitRoom(
 
     DisposableEffect(room, connect) {
         onDispose {
-            if(connect) {
+            if (connect) {
                 room.disconnect()
             }
         }
     }
-    return roomState
+    return room
 }
 
 @Composable
@@ -120,7 +116,7 @@ fun RoomScope(
     passedRoom: Room? = null,
     content: @Composable () -> Unit
 ) {
-    val room by rememberLiveKitRoom(
+    val room = rememberLiveKitRoom(
         url = url,
         token = token,
         audio = audio,
@@ -143,7 +139,7 @@ fun RoomScope(
 
 @Composable
 @Throws(IllegalStateException::class)
-fun requireRoom(passedRoom: Room?): Room {
+fun requireRoom(passedRoom: Room? = null): Room {
     return passedRoom ?: RoomLocal.current
 }
 
