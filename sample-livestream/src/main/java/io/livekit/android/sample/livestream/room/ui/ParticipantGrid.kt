@@ -36,6 +36,7 @@ fun ParticipantGrid(videoTracks: List<VideoTrack?>, modifier: Modifier = Modifie
 
 @Composable
 private fun SingleArrangement(videoTrack: VideoTrack?, modifier: Modifier) {
+    // Full screen
     VideoRenderer(
         room = RoomLocal.current,
         videoTrack = videoTrack,
@@ -46,7 +47,7 @@ private fun SingleArrangement(videoTrack: VideoTrack?, modifier: Modifier) {
 
 @Composable
 private fun TwoArrangement(videoTracks: List<VideoTrack?>, modifier: Modifier) {
-    Timber.e { "TwoVideoArrangement" }
+    // Vertically two stacked.
     Column(modifier = modifier) {
         VideoRenderer(
             room = RoomLocal.current,

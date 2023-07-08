@@ -8,7 +8,9 @@ import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.sample.livestream.room.data.RoomMetadata
 
-
+/**
+ * Finds the creator of the room.
+ */
 @Composable
 fun rememberHostParticipant(roomMetadata: RoomMetadata): Participant? {
     val participantInfos = rememberParticipants().associateWith { rememberParticipantInfo(it) }

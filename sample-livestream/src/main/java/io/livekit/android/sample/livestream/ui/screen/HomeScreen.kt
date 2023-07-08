@@ -28,6 +28,9 @@ import io.livekit.android.sample.livestream.destinations.StartScreenDestination
 import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 
+/**
+ * The start screen shown upon launch of the app.
+ */
 @RootNavGraph(start = true)
 @Destination
 @Composable

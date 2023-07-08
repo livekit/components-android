@@ -25,6 +25,9 @@ import io.livekit.android.sample.livestream.ui.theme.LightLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+/**
+ * Displays options relevant to the current livestream.
+ */
 @RoomNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable

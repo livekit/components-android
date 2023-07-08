@@ -48,6 +48,9 @@ import org.webrtc.RendererCommon
 import org.webrtc.SurfaceTextureHelper
 import org.webrtc.VideoFrame
 
+/**
+ * Allows for previewing the camera before starting the livestream.
+ */
 @Destination
 @Composable
 fun StartPreviewScreen(
@@ -116,7 +119,7 @@ fun StartPreviewScreen(
                 bottom.linkTo(startButton.top, 16.dp)
             }
         )
-        
+
         var isCreatingStream by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
 

@@ -28,6 +28,9 @@ import io.livekit.android.sample.livestream.ui.theme.Dimens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+/**
+ * A BottomSheet screen that can show information on a participant as well as moderation controls if [isHost].
+ */
 @RoomNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable

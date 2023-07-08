@@ -30,6 +30,9 @@ import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 
+/**
+ * A BottomSheet screen that shows all the participants in the room.
+ */
 @RoomNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable

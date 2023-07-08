@@ -6,6 +6,9 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 
+/**
+ * Apis used for the Livestream example.
+ */
 interface LivestreamApi {
     @POST("/api/create_stream")
     suspend fun createStream(
@@ -18,6 +21,9 @@ interface LivestreamApi {
     ): Response<JoinStreamResponse>
 }
 
+/**
+ * Apis that require an Authentication: Token <token> header
+ */
 interface AuthenticatedLivestreamApi {
 
     @POST("/api/invite_to_stage")

@@ -50,7 +50,6 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
-
 @NavGraph
 annotation class RoomNavGraph(
     val start: Boolean = false
@@ -67,6 +66,9 @@ data class IsHost(val value: Boolean)
 
 data class RoomMetadataHolder(val value: RoomMetadata)
 
+/**
+ * A container for [RoomScreen] that sets up the needed nav host and dependencies.
+ */
 @Destination
 @Composable
 fun RoomScreenContainer(
@@ -131,7 +133,9 @@ fun RoomScreenContainer(
     }
 }
 
-
+/**
+ * The room screen, for both hosts and participants to view the stream.
+ */
 @RoomNavGraph(start = true)
 @Destination
 @Composable

@@ -27,10 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import io.livekit.android.sample.livestream.room.screen.RoomScreen
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 
+/**
+ * A composable for displaying all the controls shown at the top of [RoomScreen]
+ */
 @Composable
 fun RoomControls(
     showFlipButton: Boolean,

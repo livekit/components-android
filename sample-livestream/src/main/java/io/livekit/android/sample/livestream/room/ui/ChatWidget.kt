@@ -58,6 +58,9 @@ data class ChatWidgetMessage(
     val message: String,
 )
 
+/**
+ * A composable for displaying all chats that come through the livestream.
+ */
 @Composable
 fun ChatWidget(
     // Ordered from oldest to newest.

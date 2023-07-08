@@ -34,6 +34,9 @@ import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 
+/**
+ * Screen for setting up options for the livestream before starting.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination
 @Composable
