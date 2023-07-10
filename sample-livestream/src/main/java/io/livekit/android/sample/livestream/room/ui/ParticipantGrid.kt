@@ -24,7 +24,6 @@ import io.livekit.android.sample.livestream.ui.control.Spacer
  */
 @Composable
 fun ParticipantGrid(videoTracks: List<VideoTrack?>, modifier: Modifier = Modifier) {
-    Timber.e { "VideoGrid: $videoTracks" }
     when (videoTracks.size) {
         0 -> Box(modifier = modifier)
         1 -> SingleArrangement(videoTrack = videoTracks[0], modifier = modifier)

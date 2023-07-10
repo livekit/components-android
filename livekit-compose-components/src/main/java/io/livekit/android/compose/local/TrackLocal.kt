@@ -43,7 +43,7 @@ fun rememberVideoTrackPublication(
     participant: Participant?,
     sources: List<Track.Source> = listOf(Track.Source.SCREEN_SHARE, Track.Source.CAMERA),
     predicate: (TrackPublication) -> Boolean = { false }
-): State<TrackPublication?> {
+): TrackPublication? {
     val trackPubState = remember { mutableStateOf<TrackPublication?>(null) }
 
     LaunchedEffect(participant) {
@@ -73,11 +73,11 @@ fun rememberVideoTrackPublication(
         }
     }
 
-    return trackPubState
+    return trackPubState.value
 }
 
 @Composable
-fun rememberVideoTrack(videoPub: TrackPublication?): State<VideoTrack?> {
+fun rememberVideoTrack(videoPub: TrackPublication?): VideoTrack? {
     val trackState = remember { mutableStateOf<VideoTrack?>(null) }
 
     LaunchedEffect(videoPub) {
@@ -90,5 +90,5 @@ fun rememberVideoTrack(videoPub: TrackPublication?): State<VideoTrack?> {
         }
     }
 
-    return trackState
+    return trackState.value
 }

@@ -34,7 +34,6 @@ fun HandleRoomState(
 
     if (onState != null) {
         LaunchedEffect(room, onState) {
-            Log.e("handleRoomState", "handling $onState")
             launch {
                 room::state.flow.collectLatest { currentState ->
                     if (states.isEmpty() || states.contains(currentState)) {

@@ -7,16 +7,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.plusAssign
-import com.github.ajalt.timberkt.Timber
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.navigation.material.ModalBottomSheetLayout
@@ -41,6 +42,7 @@ import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.ConnectionDetails
 import io.livekit.android.sample.livestream.room.data.RoomMetadata
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
+import io.livekit.android.sample.livestream.room.state.rememberOnStageParticipants
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
 import io.livekit.android.sample.livestream.room.ui.ParticipantGrid
@@ -65,6 +67,7 @@ class ParentDestinationsNavigator(delegate: DestinationsNavigator) : Destination
 data class IsHost(val value: Boolean)
 
 data class RoomMetadataHolder(val value: RoomMetadata)
+
 
 /**
  * A container for [RoomScreen] that sets up the needed nav host and dependencies.
@@ -98,12 +101,28 @@ fun RoomScreenContainer(
 
     val roomCoroutineScope = rememberCoroutineScope()
 
+    var enableAudio by remember { mutableStateOf(isHost) }
+    var enableVideo by remember { mutableStateOf(isHost) }
     RoomScope(
         url = connectionDetails.wsUrl,
         token = connectionDetails.token,
-        audio = isHost,
-        video = isHost,
+        audio = enableAudio,
+        video = enableVideo,
     ) {
+
+        // Publish video if have permissions as viewer.
+        if (!isHost) {
+            val room = RoomLocal.current
+            LaunchedEffect(room) {
+                room.localParticipant::permissions.flow.collect { permissions ->
+                    val canPublish = permissions?.canPublish ?: false
+                    enableAudio = canPublish
+                    enableVideo = canPublish
+                }
+            }
+        }
+
+        // Setup nav host for RoomScreen
         val navController = rememberAnimatedNavController()
         val bottomSheetNavigator = rememberBottomSheetNavigator()
         val navHostEngine = rememberAnimatedNavHostEngine(
@@ -113,7 +132,6 @@ fun RoomScreenContainer(
         navController.navigatorProvider += bottomSheetNavigator
         ModalBottomSheetLayout(
             bottomSheetNavigator = bottomSheetNavigator,
-            // other configuration for you bottom sheet screens, like:
             sheetShape = RoundedCornerShape(16.dp),
             sheetBackgroundColor = MaterialTheme.colorScheme.background
         ) {
@@ -147,21 +165,20 @@ fun RoomScreen(
     val chat by rememberChat()
     val scope = rememberCoroutineScope()
 
-    val room = RoomLocal.current
-    val roomMetadata = room::metadata.flow.collectAsState()
-    Timber.e { "Room screen: ${roomMetadata.value}" }
     ConstraintLayout(
         modifier = Modifier
             .fillMaxSize()
     ) {
         val (chatBox, hostScreen, viewerButton) = createRefs()
 
-        val hostParticipant = rememberHostParticipant(roomMetadataHolder.value)
-        val videoTrackPublication by rememberVideoTrackPublication(participant = hostParticipant)
-        val videoTrack by rememberVideoTrack(videoPub = videoTrackPublication)
+        val hostParticipant = rememberHostParticipant(roomMetadataHolder.value.creatorIdentity)
+        val videoParticipants = rememberOnStageParticipants(roomMetadataHolder.value.creatorIdentity)
+        val participants = listOf(hostParticipant).plus(videoParticipants)
+        val videoTrackPublications = participants.map { rememberVideoTrackPublication(participant = it) }
+        val videoTracks = videoTrackPublications.map { rememberVideoTrack(videoPub = it) }
 
         ParticipantGrid(
-            videoTracks = listOfNotNull(videoTrack),
+            videoTracks = videoTracks,
             modifier = Modifier
                 .constrainAs(hostScreen) {
                     width = Dimension.matchParent
@@ -171,7 +188,7 @@ fun RoomScreen(
         ChatWidget(
             messages = chat.messages.value.map {
                 ChatWidgetMessage(
-                    it.participant?.name ?: "",
+                    it.participant?.identity ?: "",
                     it.message
                 )
             },

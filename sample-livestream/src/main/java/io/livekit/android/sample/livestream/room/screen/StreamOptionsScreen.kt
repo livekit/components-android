@@ -65,8 +65,6 @@ fun ColumnScope.StreamOptionsScreen(
                 colors = leaveButtonColors,
                 onClick = {
                     coroutineScope.launch {
-
-                        Timber.e { "ending stream" }
                         authedApi.stopStream()
                         parentNavigator.navigateUp()
                     }
@@ -80,7 +78,6 @@ fun ColumnScope.StreamOptionsScreen(
                 text = "Raise Hand",
                 onClick = {
                     coroutineScope.launch {
-                        Timber.e { "raising hand" }
                         authedApi.requestToJoin()
                     }
                 },
