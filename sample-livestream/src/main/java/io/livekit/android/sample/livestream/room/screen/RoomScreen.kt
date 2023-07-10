@@ -2,6 +2,7 @@
 
 package io.livekit.android.sample.livestream.room.screen
 
+import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -36,7 +38,9 @@ import io.livekit.android.compose.local.rememberVideoTrackPublication
 import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
+import io.livekit.android.sample.livestream.destinations.JoinScreenDestination
 import io.livekit.android.sample.livestream.destinations.ParticipantListScreenDestination
+import io.livekit.android.sample.livestream.destinations.StartPreviewScreenDestination
 import io.livekit.android.sample.livestream.destinations.StreamOptionsScreenDestination
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.ConnectionDetails
@@ -103,11 +107,22 @@ fun RoomScreenContainer(
 
     var enableAudio by remember { mutableStateOf(isHost) }
     var enableVideo by remember { mutableStateOf(isHost) }
+
+    val context = LocalContext.current
     RoomScope(
         url = connectionDetails.wsUrl,
         token = connectionDetails.token,
         audio = enableAudio,
         video = enableVideo,
+        onDisconnected = {
+            Toast.makeText(context, "Disconnected from livestream.", Toast.LENGTH_LONG).show()
+            val route = if (isHost) {
+                StartPreviewScreenDestination.route
+            } else {
+                JoinScreenDestination.route
+            }
+            navigator.popBackStack(route, false)
+        }
     ) {
 
         // Publish video if have permissions as viewer.
