@@ -204,7 +204,8 @@ fun RoomScreen(
             messages = chat.messages.value.map {
                 ChatWidgetMessage(
                     it.participant?.identity ?: "",
-                    it.message
+                    it.message,
+                    it.timestamp,
                 )
             },
             onChatSend = {

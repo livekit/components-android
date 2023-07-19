@@ -56,6 +56,7 @@ import io.livekit.android.sample.livestream.ui.theme.LightLine
 data class ChatWidgetMessage(
     val name: String,
     val message: String,
+    val timestamp: Long,
 )
 
 /**
