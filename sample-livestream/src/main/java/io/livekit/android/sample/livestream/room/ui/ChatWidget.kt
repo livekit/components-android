@@ -1,6 +1,5 @@
 package io.livekit.android.sample.livestream.room.ui
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import io.livekit.android.sample.livestream.room.screen.nameToColor
 import io.livekit.android.sample.livestream.ui.control.LKTextField
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
@@ -57,6 +55,7 @@ import java.util.Date
 data class ChatWidgetMessage(
     val name: String,
     val message: String,
+    val avatarUrl: String,
     val timestamp: Long,
 )
 
@@ -108,9 +107,11 @@ fun ChatWidget(
             ) { message ->
                 Spacer(20.dp)
                 Row(verticalAlignment = Alignment.Top) {
-                    Canvas(modifier = Modifier.size(32.dp), onDraw = {
-                        drawCircle(color = nameToColor(message.name))
-                    })
+                    AvatarIcon(
+                        imageUrl = message.avatarUrl,
+                        name = message.name,
+                        modifier = Modifier.size(32.dp)
+                    )
                     Spacer(12.dp)
                     Column {
                         Text(
@@ -254,16 +255,19 @@ fun ChatWidgetPreview() {
             ChatWidgetMessage(
                 "HealthyLifestyle101",
                 "I struggle with procrastination. Any tips to overcome it?",
+                "",
                 Date().time
             ),
             ChatWidgetMessage(
                 "FitnessGuru21",
                 "Thanks for joining, WellnessEnthusiast22! Today we'll be discussing tips for staying motivated and productive. Feel free to ask questions too!",
+                "",
                 Date().time
             ),
             ChatWidgetMessage(
                 "WellnessEnthusiast22",
                 "Hey there! Just joined the live. What's the topic for today?",
+                "",
                 Date().time
             ),
         )
@@ -277,6 +281,7 @@ fun ChatWidgetPreview() {
                     ChatWidgetMessage(
                         "You",
                         it,
+                        "",
                         Date().time
                     )
                 )

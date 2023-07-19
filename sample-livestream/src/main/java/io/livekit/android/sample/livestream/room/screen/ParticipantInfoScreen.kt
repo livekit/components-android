@@ -1,6 +1,5 @@
 package io.livekit.android.sample.livestream.room.screen
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +20,7 @@ import io.livekit.android.compose.state.rememberParticipantInfo
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.IdentityRequest
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
+import io.livekit.android.sample.livestream.room.ui.AvatarIcon
 import io.livekit.android.sample.livestream.ui.control.HorizontalLine
 import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.control.Spacer
@@ -73,12 +73,13 @@ fun ParticipantInfoScreen(
         HorizontalLine()
         Spacer(Dimens.spacer)
 
-        Canvas(
+        AvatarIcon(
+            imageUrl = participantMetadata.avatarImageUrl,
+            name = participant.identity,
             modifier = Modifier
                 .size(108.dp)
-                .align(Alignment.CenterHorizontally), onDraw = {
-                drawCircle(color = nameToColor(participant.identity))
-            })
+                .align(Alignment.CenterHorizontally)
+        )
 
         Spacer(8.dp)
 

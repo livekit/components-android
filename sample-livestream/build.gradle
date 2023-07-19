@@ -48,6 +48,8 @@ android {
     }
 }
 
+def coil_version = "2.4.0"
+
 dependencies {
 
     implementation project(":livekit-compose-components")
@@ -63,6 +65,12 @@ dependencies {
     implementation "androidx.navigation:navigation-compose:2.6.0"
 
     implementation "com.google.accompanist:accompanist-permissions:0.30.1"
+
+    implementation platform("io.coil-kt:coil-bom:$coil_version")
+    implementation "io.coil-kt:coil"
+    implementation "io.coil-kt:coil-svg"
+    implementation "io.coil-kt:coil-compose"
+
 
     implementation "androidx.core:core-ktx:${versions.androidx_core}"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:${versions.androidx_lifecycle}"

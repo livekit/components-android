@@ -16,6 +16,9 @@ data class ParticipantMetadata(
      */
     @SerialName("invited_to_stage")
     val invitedToStage: Boolean = false,
+
+    @SerialName("avatar_image")
+    val avatarImageUrl: String = ""
 ) {
 
     /**
@@ -25,12 +28,12 @@ data class ParticipantMetadata(
         get() = handRaised && invitedToStage
 
     fun toJson(): String {
-        return Json.encodeToString(this)
+        return LKJson.encodeToString(this)
     }
 
     companion object {
         fun fromJson(str: String): ParticipantMetadata {
-            return Json.decodeFromString(str)
+            return LKJson.decodeFromString(str)
         }
     }
 }

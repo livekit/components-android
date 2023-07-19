@@ -19,9 +19,9 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.navigation.dependency
+import io.livekit.android.sample.livestream.room.data.LKJson
 import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
-import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
         val retrofit = Retrofit.Builder()
             .baseUrl(DebugServerInfo.API_SERVER_URL)
             .client(client)
-            .addConverterFactory(Json.asConverterFactory(contentType))
+            .addConverterFactory(LKJson.asConverterFactory(contentType))
             .build()
         val livestreamApi = retrofit.create(LivestreamApi::class.java)
 

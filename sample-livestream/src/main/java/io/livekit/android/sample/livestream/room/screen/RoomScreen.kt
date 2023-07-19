@@ -49,6 +49,7 @@ import io.livekit.android.sample.livestream.room.state.rememberEnableCamera
 import io.livekit.android.sample.livestream.room.state.rememberEnableMic
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.state.rememberOnStageParticipants
+import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
 import io.livekit.android.sample.livestream.room.state.requirePermissions
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
@@ -191,6 +192,9 @@ fun RoomScreen(
     ) {
         val (chatBox, hostScreen, viewerButton) = createRefs()
 
+        val localParticipant = RoomLocal.current.localParticipant
+        val localParticipantMetadata = rememberParticipantMetadata(localParticipant)
+
         val hostParticipant = rememberHostParticipant(roomMetadataHolder.value.creatorIdentity)
         val videoParticipants = rememberOnStageParticipants(roomMetadataHolder.value.creatorIdentity)
         val participants = listOf(hostParticipant).plus(videoParticipants)
@@ -210,6 +214,7 @@ fun RoomScreen(
                 ChatWidgetMessage(
                     it.participant?.identity ?: "",
                     it.message,
+                    localParticipantMetadata.avatarImageUrl,
                     it.timestamp,
                 )
             },
