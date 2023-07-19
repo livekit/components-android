@@ -1,6 +1,7 @@
 package io.livekit.android.sample.livestream.room.screen
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,9 +38,14 @@ import io.livekit.android.sample.livestream.ui.theme.LKButtonColors
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 import kotlinx.coroutines.launch
 
+private const val headerRequestKey = "header_request_key"
+private const val headerHostKey = "header_host_key"
+private const val headerViewerKey = "header_viewer_key"
+
 /**
  * A BottomSheet screen that shows all the participants in the room.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @RoomNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable
@@ -86,10 +92,11 @@ fun ParticipantListScreen(
         LazyColumn {
 
             if (requestsToJoin.isNotEmpty()) {
-                item {
+                item(headerRequestKey) {
                     Text(
                         text = "Requests to join".uppercase(),
-                        style = LKTextStyle.listSectionHeader
+                        style = LKTextStyle.listSectionHeader,
+                        modifier = Modifier.animateItemPlacement(),
                     )
                     Spacer(size = Dimens.spacer)
                 }
@@ -109,15 +116,17 @@ fun ParticipantListScreen(
                         },
                         modifier = Modifier
                             .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
+                            .animateItemPlacement()
                     )
                 }
             }
 
             if (hosts.isNotEmpty()) {
-                item {
+                item(headerHostKey) {
                     Text(
                         text = "Hosts".uppercase(),
-                        style = LKTextStyle.listSectionHeader
+                        style = LKTextStyle.listSectionHeader,
+                        modifier = Modifier.animateItemPlacement(),
                     )
                     Spacer(size = Dimens.spacer)
                 }
@@ -130,15 +139,17 @@ fun ParticipantListScreen(
                         name = participant.identity ?: "",
                         modifier = Modifier
                             .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
+                            .animateItemPlacement()
                     )
                 }
             }
 
             if (viewers.isNotEmpty()) {
-                item {
+                item(headerViewerKey) {
                     Text(
                         text = "Viewers".uppercase(),
-                        style = LKTextStyle.listSectionHeader
+                        style = LKTextStyle.listSectionHeader,
+                        modifier = Modifier.animateItemPlacement(),
                     )
                     Spacer(size = Dimens.spacer)
                 }
@@ -151,6 +162,7 @@ fun ParticipantListScreen(
                         name = participant.identity ?: "",
                         modifier = Modifier
                             .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
+                            .animateItemPlacement()
                     )
                 }
             }
