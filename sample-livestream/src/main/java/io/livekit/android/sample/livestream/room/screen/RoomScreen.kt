@@ -45,8 +45,11 @@ import io.livekit.android.sample.livestream.destinations.StreamOptionsScreenDest
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.ConnectionDetails
 import io.livekit.android.sample.livestream.room.data.RoomMetadata
+import io.livekit.android.sample.livestream.room.state.rememberEnableCamera
+import io.livekit.android.sample.livestream.room.state.rememberEnableMic
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.state.rememberOnStageParticipants
+import io.livekit.android.sample.livestream.room.state.requirePermissions
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
 import io.livekit.android.sample.livestream.room.ui.ParticipantGrid
@@ -108,12 +111,14 @@ fun RoomScreenContainer(
     var enableAudio by remember { mutableStateOf(isHost) }
     var enableVideo by remember { mutableStateOf(isHost) }
 
+    requirePermissions(enableAudio || enableVideo)
+
     val context = LocalContext.current
     RoomScope(
         url = connectionDetails.wsUrl,
         token = connectionDetails.token,
-        audio = enableAudio,
-        video = enableVideo,
+        audio = rememberEnableMic(enableAudio),
+        video = rememberEnableCamera(enableVideo),
         onDisconnected = {
             Toast.makeText(context, "Disconnected from livestream.", Toast.LENGTH_LONG).show()
             val route = if (isHost) {

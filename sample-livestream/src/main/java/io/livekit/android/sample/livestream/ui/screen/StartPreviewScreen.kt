@@ -1,5 +1,6 @@
 package io.livekit.android.sample.livestream.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,9 @@ import io.livekit.android.sample.livestream.room.data.CreateStreamRequest
 import io.livekit.android.sample.livestream.room.data.CreateStreamResponse
 import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.room.data.RoomMetadata
+import io.livekit.android.sample.livestream.room.state.rememberEnableCamera
+import io.livekit.android.sample.livestream.room.state.rememberEnableMic
+import io.livekit.android.sample.livestream.room.state.requirePermissions
 import io.livekit.android.sample.livestream.ui.control.BackButton
 import io.livekit.android.sample.livestream.ui.control.LoadingDialog
 import io.livekit.android.sample.livestream.ui.theme.Dimens
@@ -61,6 +65,14 @@ fun StartPreviewScreen(
     livestreamApi: LivestreamApi,
     navigator: DestinationsNavigator
 ) {
+
+
+    requirePermissions(true)
+
+    val canEnableVideo = rememberEnableCamera(enabled = true)
+    val canEnableAudio = rememberEnableMic(enabled = true)
+    val context = LocalContext.current
+
     ConstraintLayout(
         modifier = Modifier
             .padding(Dimens.spacer)
@@ -76,12 +88,15 @@ fun StartPreviewScreen(
             top.linkTo(title.bottom, 14.dp)
             bottom.linkTo(explanationText.top, 15.dp)
         }) {
-            CameraPreview(
-                cameraPosition = CameraPosition.FRONT,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp))
-            )
+
+            if (canEnableVideo) {
+                CameraPreview(
+                    cameraPosition = CameraPosition.FRONT,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
         }
 
         BackButton(
@@ -168,7 +183,13 @@ fun StartPreviewScreen(
         )
         Button(
             colors = startButtonColors,
-            onClick = { startLoad() },
+            onClick = {
+                if (canEnableVideo && canEnableAudio) {
+                    startLoad()
+                } else {
+                    Toast.makeText(context, "Camera and Mic permissions are required to create a livestream.", Toast.LENGTH_LONG).show()
+                }
+            },
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier.constrainAs(startButton) {
                 width = Dimension.fillToConstraints

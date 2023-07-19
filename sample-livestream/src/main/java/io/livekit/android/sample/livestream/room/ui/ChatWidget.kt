@@ -45,13 +45,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import io.livekit.android.sample.livestream.room.screen.nameToColor
 import io.livekit.android.sample.livestream.ui.control.LKTextField
 import io.livekit.android.sample.livestream.ui.control.Spacer
-import io.livekit.android.sample.livestream.room.screen.nameToColor
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
 import io.livekit.android.sample.livestream.ui.theme.Blue500
 import io.livekit.android.sample.livestream.ui.theme.Dimens
 import io.livekit.android.sample.livestream.ui.theme.LightLine
+import java.util.Date
 
 data class ChatWidgetMessage(
     val name: String,
@@ -252,15 +253,18 @@ fun ChatWidgetPreview() {
         mutableStateListOf(
             ChatWidgetMessage(
                 "HealthyLifestyle101",
-                "I struggle with procrastination. Any tips to overcome it?"
+                "I struggle with procrastination. Any tips to overcome it?",
+                Date().time
             ),
             ChatWidgetMessage(
                 "FitnessGuru21",
-                "Thanks for joining, WellnessEnthusiast22! Today we'll be discussing tips for staying motivated and productive. Feel free to ask questions too!"
+                "Thanks for joining, WellnessEnthusiast22! Today we'll be discussing tips for staying motivated and productive. Feel free to ask questions too!",
+                Date().time
             ),
             ChatWidgetMessage(
                 "WellnessEnthusiast22",
-                "Hey there! Just joined the live. What's the topic for today?"
+                "Hey there! Just joined the live. What's the topic for today?",
+                Date().time
             ),
         )
     }
@@ -272,7 +276,8 @@ fun ChatWidgetPreview() {
                     index = 0,
                     ChatWidgetMessage(
                         "You",
-                        it
+                        it,
+                        Date().time
                     )
                 )
             },
