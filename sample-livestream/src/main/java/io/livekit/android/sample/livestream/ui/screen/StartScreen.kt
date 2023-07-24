@@ -88,6 +88,7 @@ fun StartScreen(
                 value = userName,
                 onValueChange = { userName = it },
                 label = { Text("Your Name") },
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -97,6 +98,7 @@ fun StartScreen(
                 value = roomName,
                 onValueChange = { roomName = it },
                 label = { Text("Room Name") },
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 

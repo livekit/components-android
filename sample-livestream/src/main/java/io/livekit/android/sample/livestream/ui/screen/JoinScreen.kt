@@ -80,6 +80,7 @@ fun JoinScreen(
                 value = userName,
                 onValueChange = { userName = it },
                 label = { Text("Your Name") },
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -89,6 +90,7 @@ fun JoinScreen(
                 value = roomName,
                 onValueChange = { roomName = it },
                 label = { Text("Room Name") },
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
