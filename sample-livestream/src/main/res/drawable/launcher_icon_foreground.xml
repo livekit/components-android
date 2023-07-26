@@ -1,0 +1,10 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp">
+    <item
+        android:width="18dp"
+        android:height="18dp"
+        android:drawable="@drawable/livekit_icon"
+        android:gravity="center" />
+
+</layer-list>
