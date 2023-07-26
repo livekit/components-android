@@ -89,7 +89,7 @@ fun JoinScreen(
             OutlinedTextField(
                 value = roomName,
                 onValueChange = { roomName = it },
-                label = { Text("Room Name") },
+                label = { Text("Livestream Code") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )

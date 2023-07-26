@@ -94,16 +94,6 @@ fun StartScreen(
 
             Spacer(40.dp)
 
-            OutlinedTextField(
-                value = roomName,
-                onValueChange = { roomName = it },
-                label = { Text("Room Name") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(40.dp)
-
             Text(
                 text = "OPTIONS",
                 fontWeight = FontWeight.W700,
