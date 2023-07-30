@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.github.ajalt.timberkt.Timber
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.ui.ScaleType
 import io.livekit.android.compose.ui.VideoRenderer
@@ -23,35 +22,37 @@ import io.livekit.android.sample.livestream.ui.control.Spacer
  * A video grid that adapts to layouts required for 1-N participants.
  */
 @Composable
-fun ParticipantGrid(videoTracks: List<VideoTrack?>, modifier: Modifier = Modifier) {
+fun ParticipantGrid(videoTracks: List<VideoTrack?>, isHost: Boolean, modifier: Modifier = Modifier) {
     when (videoTracks.size) {
         0 -> Box(modifier = modifier)
-        1 -> SingleArrangement(videoTrack = videoTracks[0], modifier = modifier)
-        2 -> TwoArrangement(videoTracks = videoTracks, modifier = modifier)
-        3, 4 -> ThreeOrFourArrangement(videoTracks = videoTracks, modifier = modifier)
-        else -> ManyArrangement(videoTracks = videoTracks, modifier = modifier)
+        1 -> SingleArrangement(videoTrack = videoTracks[0], isHost = isHost, modifier = modifier)
+        2 -> TwoArrangement(videoTracks = videoTracks, isHost = isHost, modifier = modifier)
+        3, 4 -> ThreeOrFourArrangement(videoTracks = videoTracks, isHost = isHost, modifier = modifier)
+        else -> ManyArrangement(videoTracks = videoTracks, isHost = isHost, modifier = modifier)
     }
 }
 
 @Composable
-private fun SingleArrangement(videoTrack: VideoTrack?, modifier: Modifier) {
+private fun SingleArrangement(videoTrack: VideoTrack?, isHost: Boolean, modifier: Modifier) {
     // Full screen
     VideoRenderer(
         room = RoomLocal.current,
         videoTrack = videoTrack,
         scaleType = ScaleType.Fill,
+        mirror = isHost,
         modifier = modifier
     )
 }
 
 @Composable
-private fun TwoArrangement(videoTracks: List<VideoTrack?>, modifier: Modifier) {
+private fun TwoArrangement(videoTracks: List<VideoTrack?>, isHost: Boolean, modifier: Modifier) {
     // Vertically two stacked.
     Column(modifier = modifier) {
         VideoRenderer(
             room = RoomLocal.current,
             videoTrack = videoTracks[0],
             scaleType = ScaleType.Fill,
+            mirror = isHost,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -71,7 +72,7 @@ private fun TwoArrangement(videoTracks: List<VideoTrack?>, modifier: Modifier) {
 }
 
 @Composable
-private fun ThreeOrFourArrangement(videoTracks: List<VideoTrack?>, modifier: Modifier) {
+private fun ThreeOrFourArrangement(videoTracks: List<VideoTrack?>, isHost: Boolean, modifier: Modifier) {
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
@@ -82,6 +83,7 @@ private fun ThreeOrFourArrangement(videoTracks: List<VideoTrack?>, modifier: Mod
                 room = RoomLocal.current,
                 videoTrack = videoTracks[0],
                 scaleType = ScaleType.Fill,
+                mirror = isHost,
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f)
@@ -132,7 +134,7 @@ private fun ThreeOrFourArrangement(videoTracks: List<VideoTrack?>, modifier: Mod
 }
 
 @Composable
-private fun ManyArrangement(videoTracks: List<VideoTrack?>, modifier: Modifier) {
+private fun ManyArrangement(videoTracks: List<VideoTrack?>, isHost: Boolean, modifier: Modifier) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -144,6 +146,7 @@ private fun ManyArrangement(videoTracks: List<VideoTrack?>, modifier: Modifier) 
                 room = RoomLocal.current,
                 videoTrack = videoTracks[it],
                 scaleType = ScaleType.Fill,
+                mirror = isHost,
                 modifier = Modifier.height(240.dp)
             )
         }
