@@ -1,6 +1,5 @@
 package io.livekit.android.compose.local
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -82,6 +81,25 @@ fun rememberLiveKitRoom(
         )
     }
 
+    DisposableEffect(roomOptions) {
+        roomOptions?.audioTrackCaptureDefaults?.let {
+            room.audioTrackCaptureDefaults = it
+        }
+        roomOptions?.videoTrackCaptureDefaults?.let {
+            room.videoTrackCaptureDefaults = it
+        }
+
+        roomOptions?.audioTrackPublishDefaults?.let {
+            room.audioTrackPublishDefaults = it
+        }
+        roomOptions?.videoTrackPublishDefaults?.let {
+            room.videoTrackPublishDefaults = it
+        }
+        roomOptions?.adaptiveStream?.let {
+            room.adaptiveStream = it
+        }
+        onDispose { }
+    }
     HandleRoomState(Room.State.CONNECTED, room) { _, _ -> onConnected?.invoke(this, room) }
     HandleRoomState(Room.State.CONNECTED, room) { _, _ ->
         room.localParticipant.setMicrophoneEnabled(audio)
@@ -129,7 +147,7 @@ fun RoomScope(
     onDisconnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
     onError: ((Exception?) -> Unit)? = null,
     passedRoom: Room? = null,
-    content: @Composable () -> Unit
+    content: @Composable (room: Room) -> Unit
 ) {
     val room = rememberLiveKitRoom(
         url = url,
@@ -148,7 +166,7 @@ fun RoomScope(
 
     CompositionLocalProvider(
         RoomLocal provides room,
-        content = content,
+        content = { content(room) },
     )
 }
 
