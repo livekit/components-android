@@ -31,7 +31,6 @@ import io.livekit.android.sample.livestream.destinations.RoomScreenContainerDest
 import io.livekit.android.sample.livestream.room.data.JoinStreamRequest
 import io.livekit.android.sample.livestream.room.data.JoinStreamResponse
 import io.livekit.android.sample.livestream.room.data.LivestreamApi
-import io.livekit.android.sample.livestream.room.data.RoomMetadata
 import io.livekit.android.sample.livestream.ui.control.BackButton
 import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.control.LoadingDialog
