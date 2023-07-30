@@ -26,6 +26,7 @@ import androidx.constraintlayout.compose.Dimension
 import com.github.ajalt.timberkt.Timber
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import io.livekit.android.room.track.CameraPosition
 import io.livekit.android.sample.livestream.destinations.RoomScreenContainerDestination
 import io.livekit.android.sample.livestream.room.data.JoinStreamRequest
 import io.livekit.android.sample.livestream.room.data.JoinStreamResponse
@@ -118,12 +119,8 @@ fun JoinScreen(
                         RoomScreenContainerDestination(
                             apiAuthToken = response.authToken,
                             connectionDetails = response.connectionDetails,
-                            roomMetadata = RoomMetadata(
-                                creatorIdentity = "UserName",
-                                enableChat = true,
-                                allowParticipation = true,
-                            ),
-                            isHost = false
+                            isHost = false,
+                            initialCameraPosition = CameraPosition.FRONT,
                         )
                     )
                 } else {

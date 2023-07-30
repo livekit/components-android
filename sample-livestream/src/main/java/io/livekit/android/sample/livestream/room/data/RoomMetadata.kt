@@ -12,7 +12,7 @@ data class RoomMetadata(
     val creatorIdentity: String,
     @SerialName("enable_chat")
     val enableChat: Boolean,
-    @SerialName("allow_participation")
+    @SerialName("allow_participant")
     val allowParticipation: Boolean
 ) {
     fun toJson(): String {
