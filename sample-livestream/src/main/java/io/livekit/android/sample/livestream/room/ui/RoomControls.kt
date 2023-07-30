@@ -42,6 +42,7 @@ import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
  */
 @Composable
 fun RoomControls(
+    showFlipButton: Boolean,
     participantCount: Int,
     showParticipantIndicator: Boolean,
     onFlipButtonClick: () -> Unit,
@@ -51,19 +52,21 @@ fun RoomControls(
     ConstraintLayout(modifier = modifier) {
         val (flipButton, liveButton, participantCountButton) = createRefs()
 
-        ControlButton(
-            onClick = onFlipButtonClick,
-            modifier = Modifier.constrainAs(flipButton) {
-                width = Dimension.value(43.dp)
-                start.linkTo(parent.start)
-                top.linkTo(parent.top)
+        if (showFlipButton) {
+            ControlButton(
+                onClick = onFlipButtonClick,
+                modifier = Modifier.constrainAs(flipButton) {
+                    width = Dimension.value(43.dp)
+                    start.linkTo(parent.start)
+                    top.linkTo(parent.top)
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
             }
-        ) {
-            Icon(
-                imageVector = Icons.Default.Refresh,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp)
-            )
         }
 
         ParticipantCountButton(

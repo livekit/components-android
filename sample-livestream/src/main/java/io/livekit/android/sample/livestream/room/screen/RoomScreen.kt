@@ -39,6 +39,7 @@ import io.livekit.android.compose.local.rememberVideoTrack
 import io.livekit.android.compose.local.rememberVideoTrackPublication
 import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.compose.ui.flipped
+import io.livekit.android.room.RoomException
 import io.livekit.android.room.track.CameraPosition
 import io.livekit.android.room.track.LocalVideoTrack
 import io.livekit.android.room.track.LocalVideoTrackOptions
@@ -144,6 +145,23 @@ fun RoomScreenContainer(
                 JoinScreenDestination.route
             }
             navigator.popBackStack(route, false)
+        },
+        onError = { _, error ->
+            if (error is RoomException.ConnectException) {
+                Toast.makeText(
+                    context,
+                    "Error while joining the stream. Please check the code and try again.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                val route = if (isHost) {
+                    StartScreenDestination.route
+                } else {
+                    JoinScreenDestination.route
+                }
+                navigator.popBackStack(route, false)
+            }
+
         }
     ) { room ->
 
@@ -263,6 +281,7 @@ fun RoomScreen(
                 scope.launch { chat.send(it) }
             },
             onOptionsClick = { navigator.navigate(StreamOptionsScreenDestination()) },
+            chatEnabled = roomMetadata.enableChat,
             modifier = Modifier
                 .constrainAs(chatBox) {
                     width = Dimension.fillToConstraints
@@ -274,6 +293,7 @@ fun RoomScreen(
         )
 
         RoomControls(
+            showFlipButton = isHost.value,
             participantCount = rememberParticipants().size,
             showParticipantIndicator = hasRaisedHands,
             onFlipButtonClick = { cameraPosition.value = cameraPosition.value.flipped() },

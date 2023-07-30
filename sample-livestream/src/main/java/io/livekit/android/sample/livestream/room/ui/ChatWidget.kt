@@ -38,6 +38,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,6 +70,7 @@ fun ChatWidget(
     messages: List<ChatWidgetMessage>,
     onChatSend: (String) -> Unit,
     onOptionsClick: () -> Unit,
+    chatEnabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     ConstraintLayout(modifier = modifier) {
@@ -135,6 +138,7 @@ fun ChatWidget(
         ChatBar(
             onChatSend = onChatSend,
             onOptionsClick = onOptionsClick,
+            chatEnabled = chatEnabled,
             modifier = Modifier.constrainAs(chatBar) {
                 width = Dimension.fillToConstraints
                 height = Dimension.wrapContent
@@ -151,6 +155,7 @@ fun ChatWidget(
 fun ChatBar(
     onChatSend: (String) -> Unit,
     onOptionsClick: () -> Unit,
+    chatEnabled: Boolean,
     modifier: Modifier = Modifier
 ) {
     ConstraintLayout(
@@ -184,8 +189,13 @@ fun ChatBar(
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
             ),
+            enabled = chatEnabled,
             placeholder = {
-                Text("Type your message...")
+                if (chatEnabled) {
+                    Text("Type your message...")
+                } else {
+                    Text("Chat disabled", style = TextStyle(fontStyle = FontStyle.Italic))
+                }
             },
             modifier = Modifier
                 .constrainAs(messageInput) {
@@ -287,6 +297,7 @@ fun ChatWidgetPreview() {
                 )
             },
             onOptionsClick = {},
+            chatEnabled = true,
             modifier = Modifier.fillMaxSize()
         )
     }

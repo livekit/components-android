@@ -13,6 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +27,7 @@ import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.IdentityRequest
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
+import io.livekit.android.sample.livestream.room.state.rememberRoomMetadata
 import io.livekit.android.sample.livestream.ui.control.HorizontalLine
 import io.livekit.android.sample.livestream.ui.control.LKTextField
 import io.livekit.android.sample.livestream.ui.control.LargeTextButton
@@ -49,12 +51,13 @@ fun StreamOptionsScreen(
     authedApi: AuthenticatedLivestreamApi,
     parentNavigator: ParentDestinationsNavigator,
 ) {
-
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
 
         val room = RoomLocal.current
+        val roomMetadata by rememberRoomMetadata()
+
         val localParticipant = room.localParticipant
         val metadata = rememberParticipantMetadata(participant = localParticipant)
 
@@ -113,13 +116,19 @@ fun StreamOptionsScreen(
                     .fillMaxWidth()
             )
         } else {
+            val text = if(roomMetadata.allowParticipation) {
+                "Raise Hand"
+            } else {
+                "Raise Hand Disabled"
+            }
             LargeTextButton(
-                text = "Raise Hand",
+                text = text,
                 onClick = {
                     coroutineScope.launch {
                         authedApi.requestToJoin()
                     }
                 },
+                enabled = roomMetadata.allowParticipation,
                 modifier = Modifier
                     .fillMaxWidth()
             )

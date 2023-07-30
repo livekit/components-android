@@ -245,6 +245,7 @@ fun StartScreen(
                     Toast.makeText(context, "Camera and Mic permissions are required to create a livestream.", Toast.LENGTH_LONG).show()
                 }
             },
+            enabled = userName.text.isNotBlank(),
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints
                 height = Dimension.value(Dimens.buttonHeight)

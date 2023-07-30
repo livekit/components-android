@@ -12,6 +12,7 @@ import io.livekit.android.LiveKit
 import io.livekit.android.LiveKitOverrides
 import io.livekit.android.RoomOptions
 import io.livekit.android.room.Room
+import io.livekit.android.room.RoomException
 import io.livekit.android.util.flow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
@@ -69,7 +70,7 @@ fun rememberLiveKitRoom(
     connectOptions: ConnectOptions? = null,
     onConnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
     onDisconnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
-    onError: ((Exception?) -> Unit)? = null,
+    onError: ((Room, Exception?) -> Unit)? = null,
     passedRoom: Room? = null,
 ): Room {
     val context = LocalContext.current
@@ -118,7 +119,7 @@ fun rememberLiveKitRoom(
             try {
                 room.connect(url, token, connectOptions ?: ConnectOptions())
             } catch (e: Exception) {
-                onError?.invoke(e)
+                onError?.invoke(room, RoomException.ConnectException(e.message, e))
             }
         }
     }
@@ -145,7 +146,7 @@ fun RoomScope(
     connectOptions: ConnectOptions? = null,
     onConnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
     onDisconnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
-    onError: ((Exception?) -> Unit)? = null,
+    onError: ((Room, Exception?) -> Unit)? = null,
     passedRoom: Room? = null,
     content: @Composable (room: Room) -> Unit
 ) {
