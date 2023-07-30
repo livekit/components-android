@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,17 +31,23 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.dependency
+import io.livekit.android.RoomOptions
 import io.livekit.android.compose.chat.rememberChat
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.RoomScope
 import io.livekit.android.compose.local.rememberVideoTrack
 import io.livekit.android.compose.local.rememberVideoTrackPublication
 import io.livekit.android.compose.state.rememberParticipants
+import io.livekit.android.compose.ui.flipped
+import io.livekit.android.room.track.CameraPosition
+import io.livekit.android.room.track.LocalVideoTrack
+import io.livekit.android.room.track.LocalVideoTrackOptions
+import io.livekit.android.room.track.Track
 import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
 import io.livekit.android.sample.livestream.destinations.JoinScreenDestination
 import io.livekit.android.sample.livestream.destinations.ParticipantListScreenDestination
-import io.livekit.android.sample.livestream.destinations.StartPreviewScreenDestination
+import io.livekit.android.sample.livestream.destinations.StartScreenDestination
 import io.livekit.android.sample.livestream.destinations.StreamOptionsScreenDestination
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.ConnectionDetails
@@ -50,6 +57,8 @@ import io.livekit.android.sample.livestream.room.state.rememberEnableMic
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.state.rememberOnStageParticipants
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
+import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadatas
+import io.livekit.android.sample.livestream.room.state.rememberRoomMetadata
 import io.livekit.android.sample.livestream.room.state.requirePermissions
 import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
@@ -86,8 +95,8 @@ fun RoomScreenContainer(
     okHttpClient: OkHttpClient,
     apiAuthToken: String,
     connectionDetails: ConnectionDetails,
-    roomMetadata: RoomMetadata,
     isHost: Boolean,
+    initialCameraPosition: CameraPosition,
     retrofit: Retrofit,
     navigator: DestinationsNavigator,
 ) {
@@ -114,26 +123,43 @@ fun RoomScreenContainer(
 
     requirePermissions(enableAudio || enableVideo)
 
+    val cameraPosition = remember { mutableStateOf(initialCameraPosition) }
+
     val context = LocalContext.current
     RoomScope(
         url = connectionDetails.wsUrl,
         token = connectionDetails.token,
         audio = rememberEnableMic(enableAudio),
         video = rememberEnableCamera(enableVideo),
+        roomOptions = RoomOptions(
+            videoTrackCaptureDefaults = LocalVideoTrackOptions(
+                position = initialCameraPosition
+            )
+        ),
         onDisconnected = {
             Toast.makeText(context, "Disconnected from livestream.", Toast.LENGTH_LONG).show()
             val route = if (isHost) {
-                StartPreviewScreenDestination.route
+                StartScreenDestination.route
             } else {
                 JoinScreenDestination.route
             }
             navigator.popBackStack(route, false)
         }
-    ) {
+    ) { room ->
+
+        // Handle camera position changes
+        LaunchedEffect(cameraPosition.value) {
+            val track = room.localParticipant.getTrackPublication(Track.Source.CAMERA)
+                ?.track as? LocalVideoTrack
+                ?: return@LaunchedEffect
+
+            if (track.options.position != cameraPosition.value) {
+                track.restartTrack(LocalVideoTrackOptions(position = cameraPosition.value))
+            }
+        }
 
         // Publish video if have permissions as viewer.
         if (!isHost) {
-            val room = RoomLocal.current
             LaunchedEffect(room) {
                 room.localParticipant::permissions.flow.collect { permissions ->
                     val canPublish = permissions?.canPublish ?: false
@@ -164,8 +190,8 @@ fun RoomScreenContainer(
                     dependency(ParentDestinationsNavigator(navigator))
                     dependency(authedApi)
                     dependency(IsHost(value = isHost))
-                    dependency(RoomMetadataHolder(value = roomMetadata))
                     dependency(roomCoroutineScope)
+                    dependency(cameraPosition)
                 },
             )
         }
@@ -179,10 +205,12 @@ fun RoomScreenContainer(
 @Destination
 @Composable
 fun RoomScreen(
-    roomMetadataHolder: RoomMetadataHolder,
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    cameraPosition: MutableState<CameraPosition>,
+    isHost: IsHost,
 ) {
 
+    val roomMetadata by rememberRoomMetadata()
     val chat by rememberChat()
     val scope = rememberCoroutineScope()
 
@@ -195,14 +223,27 @@ fun RoomScreen(
         val localParticipant = RoomLocal.current.localParticipant
         val localParticipantMetadata = rememberParticipantMetadata(localParticipant)
 
-        val hostParticipant = rememberHostParticipant(roomMetadataHolder.value.creatorIdentity)
-        val videoParticipants = rememberOnStageParticipants(roomMetadataHolder.value.creatorIdentity)
+        val hostParticipant = rememberHostParticipant(roomMetadata.creatorIdentity)
+        val videoParticipants = rememberOnStageParticipants(roomMetadata.creatorIdentity)
         val participants = listOf(hostParticipant).plus(videoParticipants)
         val videoTrackPublications = participants.map { rememberVideoTrackPublication(participant = it) }
         val videoTracks = videoTrackPublications.map { rememberVideoTrack(videoPub = it) }
 
+        val metadatas = rememberParticipantMetadatas()
+        val hasRaisedHands = if (isHost.value) {
+            remember(metadatas) {
+                metadatas.any { (_, metadata) ->
+                    metadata.handRaised
+                }
+            }
+        } else {
+            // Don't show for viewers.
+            false
+        }
+
         ParticipantGrid(
             videoTracks = videoTracks,
+            isHost = isHost.value,
             modifier = Modifier
                 .constrainAs(hostScreen) {
                     width = Dimension.matchParent
@@ -233,11 +274,9 @@ fun RoomScreen(
         )
 
         RoomControls(
-            showFlipButton = true,
             participantCount = rememberParticipants().size,
-            aspectType = false,
-            onFlipButtonClick = {},
-            onAspectButtonClick = {},
+            showParticipantIndicator = hasRaisedHands,
+            onFlipButtonClick = { cameraPosition.value = cameraPosition.value.flipped() },
             onParticipantButtonClick = { navigator.navigate(ParticipantListScreenDestination()) },
             modifier = Modifier.constrainAs(viewerButton) {
                 width = Dimension.fillToConstraints
