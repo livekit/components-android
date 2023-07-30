@@ -22,6 +22,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -32,6 +34,7 @@ import io.livekit.android.sample.livestream.R
 import io.livekit.android.sample.livestream.room.screen.RoomScreen
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
+import io.livekit.android.sample.livestream.ui.theme.Indicator
 import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
 
 /**
@@ -39,39 +42,20 @@ import io.livekit.android.sample.livestream.ui.theme.LKTextStyle
  */
 @Composable
 fun RoomControls(
-    showFlipButton: Boolean,
-    aspectType: Boolean,
     participantCount: Int,
+    showParticipantIndicator: Boolean,
     onFlipButtonClick: () -> Unit,
-    onAspectButtonClick: () -> Unit,
     onParticipantButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ConstraintLayout(modifier = modifier) {
-        val (flipButton, aspectButton, liveButton, participantCountButton) = createRefs()
-
-        if (showFlipButton) {
-            ControlButton(
-                onClick = onFlipButtonClick,
-                modifier = Modifier.constrainAs(flipButton) {
-                    width = Dimension.value(43.dp)
-                    start.linkTo(parent.start)
-                    top.linkTo(parent.top)
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
+        val (flipButton, liveButton, participantCountButton) = createRefs()
 
         ControlButton(
-            onClick = onAspectButtonClick,
-            modifier = Modifier.constrainAs(aspectButton) {
+            onClick = onFlipButtonClick,
+            modifier = Modifier.constrainAs(flipButton) {
                 width = Dimension.value(43.dp)
-                start.linkTo(flipButton.end, 4.dp)
+                start.linkTo(parent.start)
                 top.linkTo(parent.top)
             }
         ) {
@@ -84,6 +68,7 @@ fun RoomControls(
 
         ParticipantCountButton(
             participantCount = participantCount,
+            showIndicator = showParticipantIndicator,
             onClick = onParticipantButtonClick,
             modifier = Modifier.constrainAs(participantCountButton) {
                 end.linkTo(parent.end)
@@ -111,9 +96,21 @@ fun RoomControls(
 private fun ParticipantCountButton(
     participantCount: Int,
     onClick: () -> Unit,
+    showIndicator: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    ControlButton(onClick = onClick, modifier = modifier) {
+    ControlButton(onClick = onClick, modifier = modifier
+        .drawWithContent {
+            drawContent()
+
+            if (showIndicator) {
+                drawCircle(
+                    color = Indicator,
+                    radius = 16.dp.value,
+                    center = Offset(size.width - 6.dp.value, 30.dp.value)
+                )
+            }
+        }) {
         Image(
             painter = painterResource(id = R.drawable.eye),
             contentDescription = null,
@@ -127,8 +124,9 @@ private fun ParticipantCountButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ControlButton(
+fun ControlButton(
     modifier: Modifier = Modifier,
     color: Color = Color(0x80808080),
     onClick: () -> Unit,
