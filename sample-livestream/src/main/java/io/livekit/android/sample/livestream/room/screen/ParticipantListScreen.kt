@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.IdentityRequest
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadatas
+import io.livekit.android.sample.livestream.room.state.rememberRoomMetadata
 import io.livekit.android.sample.livestream.room.ui.AvatarIcon
 import io.livekit.android.sample.livestream.ui.control.HorizontalLine
 import io.livekit.android.sample.livestream.ui.control.SmallTextButton
@@ -52,7 +54,6 @@ private const val headerViewerKey = "header_viewer_key"
 fun ParticipantListScreen(
     isHost: IsHost,
     authedApi: AuthenticatedLivestreamApi,
-    roomMetadataHolder: RoomMetadataHolder,
     navigator: DestinationsNavigator
 ) {
     Column(
@@ -68,9 +69,10 @@ fun ParticipantListScreen(
         HorizontalLine()
         Spacer(Dimens.spacer)
 
+        val roomMetadata by rememberRoomMetadata()
         val participants = rememberParticipants()
         val metadatas = rememberParticipantMetadatas()
-        val hostParticipant = rememberHostParticipant(roomMetadataHolder.value.creatorIdentity)
+        val hostParticipant = rememberHostParticipant(roomMetadata.creatorIdentity)
 
         val hosts = metadatas
             .filter { (participant, metadata) -> metadata.isOnStage || participant == hostParticipant }

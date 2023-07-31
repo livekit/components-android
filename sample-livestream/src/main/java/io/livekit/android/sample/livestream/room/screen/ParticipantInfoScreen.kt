@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import io.livekit.android.compose.state.rememberParticipantInfo
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.IdentityRequest
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
+import io.livekit.android.sample.livestream.room.state.rememberRoomMetadata
 import io.livekit.android.sample.livestream.room.ui.AvatarIcon
 import io.livekit.android.sample.livestream.ui.control.HorizontalLine
 import io.livekit.android.sample.livestream.ui.control.LargeTextButton
@@ -52,7 +54,7 @@ fun ParticipantInfoScreen(
         return
     }
 
-    val roomMetadata = roomMetadataHolder.value
+    val roomMetadata by rememberRoomMetadata()
     val participantInfo = rememberParticipantInfo(participant)
     val participantMetadata = rememberParticipantMetadata(participant)
 
