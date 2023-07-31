@@ -116,7 +116,7 @@ fun ParticipantListScreen(
                 ) { (participant, metadata) ->
                     ParticipantRow(
                         name = participant.identity ?: "",
-                        imageUrl = metadata.avatarImageUrl,
+                        imageUrl = metadata.avatarImageUrlWithFallback(participant.identity ?: ""),
                         isRequestingToJoin = true,
                         onAllowClick = {
                             authedApi.inviteToStage(IdentityRequest(participant.identity ?: ""))
@@ -147,7 +147,7 @@ fun ParticipantListScreen(
                 ) { (participant, metadata) ->
                     ParticipantRow(
                         name = participant.identity ?: "",
-                        imageUrl = metadata.avatarImageUrl,
+                        imageUrl = metadata.avatarImageUrlWithFallback(participant.identity ?: ""),
                         modifier = Modifier
                             .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
                             .animateItemPlacement()
@@ -171,7 +171,7 @@ fun ParticipantListScreen(
                 ) { (participant, metadata) ->
                     ParticipantRow(
                         name = participant.identity ?: "",
-                        imageUrl = metadata.avatarImageUrl,
+                        imageUrl = metadata.avatarImageUrlWithFallback(participant.identity ?: ""),
                         modifier = Modifier
                             .clickable { navigator.navigate(ParticipantInfoScreenDestination(participant.sid)) }
                             .animateItemPlacement()

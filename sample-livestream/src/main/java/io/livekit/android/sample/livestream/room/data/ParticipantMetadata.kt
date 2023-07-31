@@ -4,7 +4,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Serializable
 data class ParticipantMetadata(
@@ -30,6 +29,13 @@ data class ParticipantMetadata(
     fun toJson(): String {
         return LKJson.encodeToString(this)
     }
+
+    fun avatarImageUrlWithFallback(identity: String) =
+        if (avatarImageUrl.isNotBlank()) {
+            avatarImageUrl
+        } else {
+            "https://api.multiavatar.com/${identity}.png"
+        }
 
     companion object {
         fun fromJson(str: String): ParticipantMetadata {

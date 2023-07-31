@@ -76,7 +76,7 @@ fun ParticipantInfoScreen(
         Spacer(Dimens.spacer)
 
         AvatarIcon(
-            imageUrl = participantMetadata.avatarImageUrl,
+            imageUrl = participantMetadata.avatarImageUrlWithFallback(participant.identity ?: ""),
             name = participant.identity,
             modifier = Modifier
                 .size(108.dp)

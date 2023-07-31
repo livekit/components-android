@@ -274,7 +274,7 @@ fun RoomScreen(
                 ChatWidgetMessage(
                     it.participant?.identity ?: "",
                     it.message,
-                    participantMetadata.avatarImageUrl,
+                    participantMetadata.avatarImageUrlWithFallback(it.participant?.identity ?: ""),
                     it.timestamp,
                 )
             },
