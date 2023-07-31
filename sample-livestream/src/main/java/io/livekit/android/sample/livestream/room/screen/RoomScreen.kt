@@ -269,11 +269,12 @@ fun RoomScreen(
                 }
         )
         ChatWidget(
-            messages = chat.messages.value.map {
+            messages = chat.messages.value.mapNotNull {
+                val participantMetadata = metadatas[it.participant] ?: return@mapNotNull null
                 ChatWidgetMessage(
                     it.participant?.identity ?: "",
                     it.message,
-                    localParticipantMetadata.avatarImageUrl,
+                    participantMetadata.avatarImageUrl,
                     it.timestamp,
                 )
             },
