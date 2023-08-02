@@ -110,7 +110,7 @@ fun rememberLiveKitRoom(
     }
     HandleRoomState(Room.State.DISCONNECTED, room) { _, _ -> onDisconnected?.invoke(this, room) }
 
-    LaunchedEffect(room, connect, url, token, room, connectOptions, onError) {
+    LaunchedEffect(room, connect, url, token, connectOptions) {
         if (url.isNullOrEmpty() || token.isNullOrEmpty()) {
             return@LaunchedEffect
         }
