@@ -22,18 +22,21 @@ import kotlinx.coroutines.launch
  * A simple handler for listening to room state changes.
  * @param states the types of states to listen to, or empty list to listen to all state changes.
  * @param passedRoom the room to use, or null to use [RoomLocal] if inside a [RoomScope].
- * @param onState the listener to be called back. Will be called with the existing state.
+ * @param onState the listener to be called back. Will be called immediately with the existing state if it is a matching state.
+ * @param keys any keys that should be tracked to relaunch the handler with new keys.
  */
 @Composable
 fun HandleRoomState(
     states: List<Room.State> = emptyList(),
     passedRoom: Room? = null,
-    onState: (suspend CoroutineScope.(Room, Room.State) -> Unit)?
+    vararg keys: Any,
+    onState: (suspend CoroutineScope.(Room, Room.State) -> Unit)?,
 ) {
     val room = requireRoom(passedRoom = passedRoom)
 
     if (onState != null) {
-        LaunchedEffect(room, onState) {
+        val effectKeys = listOf(room, onState).plus(keys).toTypedArray()
+        LaunchedEffect(*effectKeys) {
             launch {
                 room::state.flow.collectLatest { currentState ->
                     if (states.isEmpty() || states.contains(currentState)) {
@@ -52,10 +55,16 @@ fun HandleRoomState(
 fun HandleRoomState(
     state: Room.State? = null,
     passedRoom: Room? = null,
+    vararg keys: Any,
     onState: (suspend CoroutineScope.(Room, Room.State) -> Unit)?
 ) {
     val states = if (state == null) emptyList() else listOf(state)
-    HandleRoomState(states, passedRoom, onState)
+    HandleRoomState(
+        states = states,
+        passedRoom = passedRoom,
+        keys = keys,
+        onState = onState
+    )
 }
 
 @Composable
@@ -102,10 +111,10 @@ fun rememberLiveKitRoom(
         onDispose { }
     }
     HandleRoomState(Room.State.CONNECTED, room) { _, _ -> onConnected?.invoke(this, room) }
-    HandleRoomState(Room.State.CONNECTED, room) { _, _ ->
+    HandleRoomState(Room.State.CONNECTED, room, audio) { _, _ ->
         room.localParticipant.setMicrophoneEnabled(audio)
     }
-    HandleRoomState(Room.State.CONNECTED, room) { _, _ ->
+    HandleRoomState(Room.State.CONNECTED, room, video) { _, _ ->
         room.localParticipant.setCameraEnabled(video)
     }
     HandleRoomState(Room.State.DISCONNECTED, room) { _, _ -> onDisconnected?.invoke(this, room) }
