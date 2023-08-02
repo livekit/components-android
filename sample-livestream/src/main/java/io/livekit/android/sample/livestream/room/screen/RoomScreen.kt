@@ -251,7 +251,7 @@ fun RoomScreen(
         val hasRaisedHands = if (isHost.value) {
             remember(metadatas) {
                 metadatas.any { (_, metadata) ->
-                    metadata.handRaised
+                    metadata.handRaised && !metadata.isOnStage
                 }
             }
         } else {
