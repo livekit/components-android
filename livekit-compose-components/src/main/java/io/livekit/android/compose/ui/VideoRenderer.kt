@@ -35,7 +35,7 @@ fun VideoRenderer(
     videoTrack: VideoTrack?,
     modifier: Modifier = Modifier,
     mirror: Boolean = false,
-    scaleType: ScaleType,
+    scaleType: ScaleType = ScaleType.Fill,
 ) {
 
     // Show a black box for preview.
