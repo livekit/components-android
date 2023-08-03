@@ -40,7 +40,7 @@ android {
 
 dependencies {
 
-    api "io.livekit:livekit-android:1.2.1"
+    api "io.livekit:livekit-android:1.2.2"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${versions.serialization}"
 
