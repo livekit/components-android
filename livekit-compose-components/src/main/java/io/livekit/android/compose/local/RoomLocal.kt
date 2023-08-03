@@ -53,12 +53,12 @@ fun HandleRoomState(
  */
 @Composable
 fun HandleRoomState(
-    state: Room.State? = null,
+    state: Room.State,
     passedRoom: Room? = null,
     vararg keys: Any,
     onState: (suspend CoroutineScope.(Room, Room.State) -> Unit)?
 ) {
-    val states = if (state == null) emptyList() else listOf(state)
+    val states = listOf(state)
     HandleRoomState(
         states = states,
         passedRoom = passedRoom,
