@@ -33,12 +33,14 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.dependency
 import io.livekit.android.RoomOptions
 import io.livekit.android.compose.chat.rememberChat
+import io.livekit.android.compose.local.HandleRoomState
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.RoomScope
 import io.livekit.android.compose.local.rememberVideoTrack
 import io.livekit.android.compose.local.rememberVideoTrackPublication
 import io.livekit.android.compose.state.rememberParticipants
 import io.livekit.android.compose.ui.flipped
+import io.livekit.android.room.Room
 import io.livekit.android.room.RoomException
 import io.livekit.android.room.track.CameraPosition
 import io.livekit.android.room.track.LocalVideoTrack
@@ -57,7 +59,6 @@ import io.livekit.android.sample.livestream.room.state.rememberEnableCamera
 import io.livekit.android.sample.livestream.room.state.rememberEnableMic
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.state.rememberOnStageParticipants
-import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadatas
 import io.livekit.android.sample.livestream.room.state.rememberRoomMetadata
 import io.livekit.android.sample.livestream.room.state.requirePermissions
@@ -65,6 +66,7 @@ import io.livekit.android.sample.livestream.room.ui.ChatWidget
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
 import io.livekit.android.sample.livestream.room.ui.ParticipantGrid
 import io.livekit.android.sample.livestream.room.ui.RoomControls
+import io.livekit.android.sample.livestream.ui.control.LoadingDialog
 import io.livekit.android.util.flow
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -228,6 +230,7 @@ fun RoomScreen(
     isHost: IsHost,
 ) {
 
+    val room = RoomLocal.current
     val roomMetadata by rememberRoomMetadata()
     val chat by rememberChat()
     val scope = rememberCoroutineScope()
@@ -237,9 +240,6 @@ fun RoomScreen(
             .fillMaxSize()
     ) {
         val (chatBox, hostScreen, viewerButton) = createRefs()
-
-        val localParticipant = RoomLocal.current.localParticipant
-        val localParticipantMetadata = rememberParticipantMetadata(localParticipant)
 
         val hostParticipant = rememberHostParticipant(roomMetadata.creatorIdentity)
         val videoParticipants = rememberOnStageParticipants(roomMetadata.creatorIdentity)
@@ -310,4 +310,11 @@ fun RoomScreen(
             },
         )
     }
+    var isConnected by remember {
+        mutableStateOf(false)
+    }
+    HandleRoomState { _, state ->
+        isConnected = state == Room.State.CONNECTED
+    }
+    LoadingDialog(isShowingDialog = !isConnected)
 }
