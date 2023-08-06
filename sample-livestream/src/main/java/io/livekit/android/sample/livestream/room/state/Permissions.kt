@@ -9,6 +9,9 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 
+/**
+ * Handles requesting the required permissions if needed.
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun requirePermissions(enabled: Boolean) {
@@ -28,6 +31,9 @@ fun requirePermissions(enabled: Boolean) {
     }
 }
 
+/**
+ * @return true if both enabled is true and the camera permission is granted.
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun rememberEnableCamera(enabled: Boolean): Boolean {
@@ -41,6 +47,9 @@ fun rememberEnableCamera(enabled: Boolean): Boolean {
     }.value
 }
 
+/**
+ * @return true if both enabled is true and the mic permission is granted.
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun rememberEnableMic(enabled: Boolean): Boolean {

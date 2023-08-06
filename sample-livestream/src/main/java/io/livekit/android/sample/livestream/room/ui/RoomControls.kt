@@ -79,6 +79,7 @@ fun RoomControls(
             }
         )
 
+        // Not actually a usable button, but displaying it as one to share look and feel.
         ControlButton(
             onClick = {},
             color = MaterialTheme.colorScheme.primary,

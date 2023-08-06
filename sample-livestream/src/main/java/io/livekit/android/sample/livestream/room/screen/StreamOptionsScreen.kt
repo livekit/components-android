@@ -42,7 +42,6 @@ import kotlinx.coroutines.launch
 /**
  * Displays options relevant to the current livestream.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @RoomNavGraph
 @Destination(style = DestinationStyleBottomSheet::class)
 @Composable

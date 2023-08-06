@@ -32,10 +32,8 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.dependency
-import io.livekit.android.RoomOptions
 import io.livekit.android.compose.chat.rememberChat
 import io.livekit.android.compose.local.HandleRoomState
-import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.RoomScope
 import io.livekit.android.compose.local.rememberVideoTrack
 import io.livekit.android.compose.local.rememberVideoTrackPublication
@@ -56,6 +54,7 @@ import io.livekit.android.sample.livestream.destinations.StreamOptionsScreenDest
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.ConnectionDetails
 import io.livekit.android.sample.livestream.room.data.DefaultLKOverrides
+import io.livekit.android.sample.livestream.room.data.DefaultRoomOptions
 import io.livekit.android.sample.livestream.room.data.RoomMetadata
 import io.livekit.android.sample.livestream.room.state.rememberEnableCamera
 import io.livekit.android.sample.livestream.room.state.rememberEnableMic
@@ -69,6 +68,7 @@ import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
 import io.livekit.android.sample.livestream.room.ui.ParticipantGrid
 import io.livekit.android.sample.livestream.room.ui.RoomControls
 import io.livekit.android.sample.livestream.ui.control.LoadingDialog
+import io.livekit.android.sample.livestream.util.KeepScreenOn
 import io.livekit.android.util.flow
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -129,7 +129,7 @@ fun RoomScreenContainer(
     requirePermissions(enableAudio || enableVideo)
 
     val cameraPosition = remember { mutableStateOf(initialCameraPosition) }
-    var showOptionsDialogOnce = remember { mutableStateOf(false) }
+    val showOptionsDialogOnce = remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     RoomScope(
@@ -137,15 +137,16 @@ fun RoomScreenContainer(
         token = connectionDetails.token,
         audio = rememberEnableMic(enableAudio),
         video = rememberEnableCamera(enableVideo),
-        roomOptions = RoomOptions(
-            adaptiveStream = true,
-            dynacast = true,
-            videoTrackCaptureDefaults = LocalVideoTrackOptions(
-                position = initialCameraPosition
+        roomOptions = DefaultRoomOptions { options ->
+            options.copy(
+                videoTrackCaptureDefaults = LocalVideoTrackOptions(
+                    position = initialCameraPosition
+                )
             )
-        ),
+        },
         liveKitOverrides = DefaultLKOverrides(context),
         onConnected = {
+            // Show options dialog on connection to display livestream code
             if (isHost) {
                 showOptionsDialogOnce.value = true
             }
@@ -243,7 +244,6 @@ fun RoomScreen(
     isHost: IsHost,
 ) {
 
-    val room = RoomLocal.current
     val roomMetadata by rememberRoomMetadata()
     val chat by rememberChat()
     val scope = rememberCoroutineScope()
@@ -279,6 +279,7 @@ fun RoomScreen(
             false
         }
 
+        // Display video tracks as needed.
         ParticipantGrid(
             videoTracks = videoTracks,
             isHost = isHost.value,
@@ -288,6 +289,8 @@ fun RoomScreen(
                     height = Dimension.matchParent
                 }
         )
+
+        // Chat overlay
         ChatWidget(
             messages = chat.messages.value.mapNotNull {
                 val participantMetadata = metadatas[it.participant] ?: return@mapNotNull null
@@ -330,6 +333,8 @@ fun RoomScreen(
             },
         )
     }
+
+    // Loading dialog while connecting.
     var isConnected by remember {
         mutableStateOf(false)
     }
