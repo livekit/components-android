@@ -22,6 +22,7 @@ import com.ramcosta.composedestinations.navigation.dependency
 import io.livekit.android.sample.livestream.room.data.LKJson
 import io.livekit.android.sample.livestream.room.data.LivestreamApi
 import io.livekit.android.sample.livestream.ui.theme.AppTheme
+import io.livekit.android.sample.livestream.util.PreferencesManager
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val preferencesManager = PreferencesManager(this)
         val contentType = "application/json".toMediaType()
         val client = OkHttpClient.Builder()
             .addInterceptor(
@@ -69,6 +71,7 @@ class MainActivity : ComponentActivity() {
                             dependency(retrofit)
                             dependency(client)
                             dependency(livestreamApi)
+                            dependency(preferencesManager)
                         }
                     )
                 }

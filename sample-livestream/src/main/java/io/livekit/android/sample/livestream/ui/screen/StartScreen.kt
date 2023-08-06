@@ -58,6 +58,7 @@ import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.control.LoadingDialog
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
+import io.livekit.android.sample.livestream.util.PreferencesManager
 import kotlinx.coroutines.launch
 
 /**
@@ -68,7 +69,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun StartScreen(
     livestreamApi: LivestreamApi,
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    preferencesManager: PreferencesManager
 ) {
     val context = LocalContext.current
     requirePermissions(true)
@@ -239,6 +241,7 @@ fun StartScreen(
             text = "Start livestream",
             colors = joinButtonColors,
             onClick = {
+                preferencesManager.setUsername(userName.text)
                 if (canEnableVideo && canEnableAudio) {
                     startLoad()
                 } else {

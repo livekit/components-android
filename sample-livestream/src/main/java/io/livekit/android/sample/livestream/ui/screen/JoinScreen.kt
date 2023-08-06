@@ -38,6 +38,7 @@ import io.livekit.android.sample.livestream.ui.control.LargeTextButton
 import io.livekit.android.sample.livestream.ui.control.LoadingDialog
 import io.livekit.android.sample.livestream.ui.control.Spacer
 import io.livekit.android.sample.livestream.ui.theme.Dimens
+import io.livekit.android.sample.livestream.util.PreferencesManager
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,11 +46,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun JoinScreen(
     livestreamApi: LivestreamApi,
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    preferencesManager: PreferencesManager,
 ) {
     val context = LocalContext.current
     var userName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(""))
+        mutableStateOf(TextFieldValue(preferencesManager.getUsername()))
     }
     var roomName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
@@ -145,7 +147,10 @@ fun JoinScreen(
         LargeTextButton(
             text = "Join livestream",
             colors = joinButtonColors,
-            onClick = { startLoad() },
+            onClick = {
+                preferencesManager.setUsername(userName.text)
+                startLoad()
+            },
             enabled = userName.text.isNotBlank() && roomName.text.isNotBlank(),
             modifier = Modifier.constrainAs(joinButton) {
                 width = Dimension.fillToConstraints
