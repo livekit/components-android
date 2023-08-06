@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -128,6 +129,7 @@ fun RoomScreenContainer(
     requirePermissions(enableAudio || enableVideo)
 
     val cameraPosition = remember { mutableStateOf(initialCameraPosition) }
+    var showOptionsDialogOnce = remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     RoomScope(
@@ -143,6 +145,11 @@ fun RoomScreenContainer(
             )
         ),
         liveKitOverrides = DefaultLKOverrides(context),
+        onConnected = {
+            if (isHost) {
+                showOptionsDialogOnce.value = true
+            }
+        },
         onDisconnected = {
             Toast.makeText(context, "Disconnected from livestream.", Toast.LENGTH_LONG).show()
             val route = if (isHost) {
@@ -216,6 +223,7 @@ fun RoomScreenContainer(
                     dependency(IsHost(value = isHost))
                     dependency(roomCoroutineScope)
                     dependency(cameraPosition)
+                    dependency(showOptionsDialogOnce)
                 },
             )
         }
@@ -231,6 +239,7 @@ fun RoomScreenContainer(
 fun RoomScreen(
     navigator: DestinationsNavigator,
     cameraPosition: MutableState<CameraPosition>,
+    showOptionsDialogOnce: MutableState<Boolean>,
     isHost: IsHost,
 ) {
 
@@ -238,6 +247,13 @@ fun RoomScreen(
     val roomMetadata by rememberRoomMetadata()
     val chat by rememberChat()
     val scope = rememberCoroutineScope()
+
+    SideEffect {
+        if (showOptionsDialogOnce.value) {
+            showOptionsDialogOnce.value = false
+            navigator.navigate(StreamOptionsScreenDestination())
+        }
+    }
 
     ConstraintLayout(
         modifier = Modifier

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.spec.DestinationStyleBottomSheet
 import io.livekit.android.compose.local.RoomLocal
+import io.livekit.android.compose.state.rememberRoomInfo
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.IdentityRequest
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
@@ -56,6 +57,7 @@ fun StreamOptionsScreen(
     ) {
 
         val room = RoomLocal.current
+        val roomInfo = rememberRoomInfo()
         val roomMetadata by rememberRoomMetadata()
 
         val localParticipant = room.localParticipant
@@ -78,7 +80,7 @@ fun StreamOptionsScreen(
             color = Color.White
         )
         Spacer(8.dp)
-        TextWithCopyButton(text = room.name ?: "")
+        TextWithCopyButton(text = roomInfo.name.value ?: "")
 
         Spacer(Dimens.spacer)
         HorizontalLine()
@@ -116,7 +118,7 @@ fun StreamOptionsScreen(
                     .fillMaxWidth()
             )
         } else {
-            val text = if(roomMetadata.allowParticipation) {
+            val text = if (roomMetadata.allowParticipation) {
                 "Raise Hand"
             } else {
                 "Raise Hand Disabled"
