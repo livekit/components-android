@@ -54,6 +54,7 @@ import io.livekit.android.sample.livestream.destinations.StartScreenDestination
 import io.livekit.android.sample.livestream.destinations.StreamOptionsScreenDestination
 import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.ConnectionDetails
+import io.livekit.android.sample.livestream.room.data.DefaultLKOverrides
 import io.livekit.android.sample.livestream.room.data.RoomMetadata
 import io.livekit.android.sample.livestream.room.state.rememberEnableCamera
 import io.livekit.android.sample.livestream.room.state.rememberEnableMic
@@ -135,10 +136,13 @@ fun RoomScreenContainer(
         audio = rememberEnableMic(enableAudio),
         video = rememberEnableCamera(enableVideo),
         roomOptions = RoomOptions(
+            adaptiveStream = true,
+            dynacast = true,
             videoTrackCaptureDefaults = LocalVideoTrackOptions(
                 position = initialCameraPosition
             )
         ),
+        liveKitOverrides = DefaultLKOverrides(context),
         onDisconnected = {
             Toast.makeText(context, "Disconnected from livestream.", Toast.LENGTH_LONG).show()
             val route = if (isHost) {
