@@ -38,7 +38,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun ParticipantInfoScreen(
     participantSid: String,
-    roomMetadataHolder: RoomMetadataHolder,
     isHost: IsHost,
     authedApi: AuthenticatedLivestreamApi,
     coroutineScope: CoroutineScope,

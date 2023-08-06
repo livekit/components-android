@@ -10,7 +10,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +33,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.dependency
 import io.livekit.android.compose.chat.rememberChat
 import io.livekit.android.compose.local.HandleRoomState
+import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.RoomScope
 import io.livekit.android.compose.local.rememberVideoTrack
 import io.livekit.android.compose.local.rememberVideoTrackPublication
@@ -47,6 +47,7 @@ import io.livekit.android.room.track.LocalVideoTrackOptions
 import io.livekit.android.room.track.Track
 import io.livekit.android.sample.livestream.NavGraphs
 import io.livekit.android.sample.livestream.defaultAnimations
+import io.livekit.android.sample.livestream.destinations.InvitedToStageScreenDestination
 import io.livekit.android.sample.livestream.destinations.JoinScreenDestination
 import io.livekit.android.sample.livestream.destinations.ParticipantListScreenDestination
 import io.livekit.android.sample.livestream.destinations.StartScreenDestination
@@ -60,6 +61,7 @@ import io.livekit.android.sample.livestream.room.state.rememberEnableCamera
 import io.livekit.android.sample.livestream.room.state.rememberEnableMic
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
 import io.livekit.android.sample.livestream.room.state.rememberOnStageParticipants
+import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadata
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadatas
 import io.livekit.android.sample.livestream.room.state.rememberRoomMetadata
 import io.livekit.android.sample.livestream.room.state.requirePermissions
@@ -87,9 +89,6 @@ class ParentDestinationsNavigator(delegate: DestinationsNavigator) : Destination
  * These data types are just value holders to get around it.
  */
 data class IsHost(val value: Boolean)
-
-data class RoomMetadataHolder(val value: RoomMetadata)
-
 
 /**
  * A container for [RoomScreen] that sets up the needed nav host and dependencies.
@@ -251,12 +250,12 @@ fun RoomScreen(
     val chat by rememberChat()
     val scope = rememberCoroutineScope()
 
-    SideEffect {
-        if (showOptionsDialogOnce.value) {
-            showOptionsDialogOnce.value = false
-            navigator.navigate(StreamOptionsScreenDestination())
-        }
+    if (showOptionsDialogOnce.value) {
+        showOptionsDialogOnce.value = false
+        navigator.navigate(StreamOptionsScreenDestination())
     }
+
+    HandleInvitedToStage(navigator = navigator)
 
     ConstraintLayout(
         modifier = Modifier
@@ -345,4 +344,19 @@ fun RoomScreen(
         isConnected = state == Room.State.CONNECTED
     }
     LoadingDialog(isShowingDialog = !isConnected)
+}
+
+@Composable
+fun HandleInvitedToStage(navigator: DestinationsNavigator) {
+    val room = RoomLocal.current
+    val localParticipantMetadata = rememberParticipantMetadata(participant = room.localParticipant)
+    var showInvitedDialogOnce by remember { mutableStateOf(true) }
+
+    if (!localParticipantMetadata.invitedToStage) {
+        showInvitedDialogOnce = true
+    }
+    if (showInvitedDialogOnce && localParticipantMetadata.invitedToStage) {
+        showInvitedDialogOnce = false
+        navigator.navigate(InvitedToStageScreenDestination())
+    }
 }
