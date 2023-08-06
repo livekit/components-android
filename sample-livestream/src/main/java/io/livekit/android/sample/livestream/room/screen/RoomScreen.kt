@@ -106,6 +106,9 @@ fun RoomScreenContainer(
     navigator: DestinationsNavigator,
 ) {
 
+    // Prevent device from sleeping during stream
+    KeepScreenOn()
+
     val authedApi = remember {
         val authedClient = okHttpClient.newBuilder()
             .addInterceptor { chain ->
