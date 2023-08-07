@@ -83,7 +83,7 @@ fun StartScreen(
             .fillMaxSize()
     ) {
         var userName by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-            mutableStateOf(TextFieldValue(""))
+            mutableStateOf(TextFieldValue(preferencesManager.getUsername()))
         }
 
         var chatEnabled by rememberSaveable {
