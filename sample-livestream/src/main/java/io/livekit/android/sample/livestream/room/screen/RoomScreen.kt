@@ -288,7 +288,9 @@ fun RoomScreen(
             modifier = Modifier
                 .constrainAs(hostScreen) {
                     width = Dimension.matchParent
-                    height = Dimension.matchParent
+                    height = Dimension.fillToConstraints
+                    top.linkTo(parent.top)
+                    bottom.linkTo(chatBar.top)
                 }
         )
 
@@ -328,6 +330,7 @@ fun RoomScreen(
                     bottom.linkTo(parent.bottom)
                 }
         )
+
         RoomControls(
             showFlipButton = isHost.value,
             participantCount = rememberParticipants().size,
