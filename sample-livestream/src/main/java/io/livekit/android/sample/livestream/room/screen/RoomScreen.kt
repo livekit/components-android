@@ -56,7 +56,6 @@ import io.livekit.android.sample.livestream.room.data.AuthenticatedLivestreamApi
 import io.livekit.android.sample.livestream.room.data.ConnectionDetails
 import io.livekit.android.sample.livestream.room.data.DefaultLKOverrides
 import io.livekit.android.sample.livestream.room.data.DefaultRoomOptions
-import io.livekit.android.sample.livestream.room.data.RoomMetadata
 import io.livekit.android.sample.livestream.room.state.rememberEnableCamera
 import io.livekit.android.sample.livestream.room.state.rememberEnableMic
 import io.livekit.android.sample.livestream.room.state.rememberHostParticipant
@@ -65,7 +64,8 @@ import io.livekit.android.sample.livestream.room.state.rememberParticipantMetada
 import io.livekit.android.sample.livestream.room.state.rememberParticipantMetadatas
 import io.livekit.android.sample.livestream.room.state.rememberRoomMetadata
 import io.livekit.android.sample.livestream.room.state.requirePermissions
-import io.livekit.android.sample.livestream.room.ui.ChatWidget
+import io.livekit.android.sample.livestream.room.ui.ChatBar
+import io.livekit.android.sample.livestream.room.ui.ChatLog
 import io.livekit.android.sample.livestream.room.ui.ChatWidgetMessage
 import io.livekit.android.sample.livestream.room.ui.ParticipantGrid
 import io.livekit.android.sample.livestream.room.ui.RoomControls
@@ -261,7 +261,7 @@ fun RoomScreen(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        val (chatBox, hostScreen, viewerButton) = createRefs()
+        val (chatLog, chatBar, hostScreen, viewerButton) = createRefs()
 
         val hostParticipant = rememberHostParticipant(roomMetadata.creatorIdentity)
         val videoParticipants = rememberOnStageParticipants(roomMetadata.creatorIdentity)
@@ -293,7 +293,7 @@ fun RoomScreen(
         )
 
         // Chat overlay
-        ChatWidget(
+        ChatLog(
             messages = chat.messages.value.mapNotNull {
                 val participantMetadata = metadatas[it.participant] ?: return@mapNotNull null
                 ChatWidgetMessage(
@@ -303,21 +303,31 @@ fun RoomScreen(
                     it.timestamp,
                 )
             },
+            modifier = Modifier
+                .constrainAs(chatLog) {
+                    width = Dimension.fillToConstraints
+                    height = Dimension.percent(0.5f)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(chatBar.top)
+                }
+        )
+
+        ChatBar(
             onChatSend = {
                 scope.launch { chat.send(it) }
             },
             onOptionsClick = { navigator.navigate(StreamOptionsScreenDestination()) },
             chatEnabled = roomMetadata.enableChat,
             modifier = Modifier
-                .constrainAs(chatBox) {
+                .constrainAs(chatBar) {
                     width = Dimension.fillToConstraints
-                    height = Dimension.percent(0.5f)
+                    height = Dimension.wrapContent
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                     bottom.linkTo(parent.bottom)
                 }
         )
-
         RoomControls(
             showFlipButton = isHost.value,
             participantCount = rememberParticipants().size,

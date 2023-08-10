@@ -4,11 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -65,89 +67,71 @@ data class ChatWidgetMessage(
  * A composable for displaying all chats that come through the livestream.
  */
 @Composable
-fun ChatWidget(
+fun ChatLog(
     // Ordered from oldest to newest.
     messages: List<ChatWidgetMessage>,
-    onChatSend: (String) -> Unit,
-    onOptionsClick: () -> Unit,
-    chatEnabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    ConstraintLayout(modifier = modifier) {
-        val (chatBar, chatLogs) = createRefs()
 
-        LazyColumn(
-            reverseLayout = true,
-            modifier = Modifier
-                .padding(horizontal = Dimens.spacer)
-                .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-                .drawWithContent {
-                    val colors = arrayOf(
-                        0.0f to Color.Transparent,
-                        0.3f to Color.Black,
-                        1.0f to Color.Black,
-                    )
-                    drawContent()
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colorStops = colors
-                        ),
-                        blendMode = BlendMode.DstIn
-                    )
-                }
-                .constrainAs(chatLogs) {
-                    width = Dimension.fillToConstraints
-                    height = Dimension.fillToConstraints
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    top.linkTo(parent.top)
-                    bottom.linkTo(chatBar.top)
-                }
-        ) {
-            items(
-                items = messages.asReversed(),
-                key = { it.hashCode() }
-            ) { message ->
-                Spacer(20.dp)
-                Row(verticalAlignment = Alignment.Top) {
-                    AvatarIcon(
-                        imageUrl = message.avatarUrl,
-                        name = message.name,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(12.dp)
-                    Column {
-                        Text(
-                            text = message.name,
-                            fontWeight = FontWeight.W700,
-                            fontSize = 12.sp,
-                        )
-                        Text(
-                            text = message.message,
-                            fontSize = 13.sp,
-                            lineHeight = 20.sp,
-                        )
-                    }
-                }
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(messages.size) {
+        listState.scrollToItem(0)
+    }
+    LazyColumn(
+        reverseLayout = true,
+        state = listState,
+        modifier = Modifier
+            .padding(horizontal = Dimens.spacer)
+            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+            .drawWithContent {
+                val colors = arrayOf(
+                    0.0f to Color.Transparent,
+                    0.3f to Color.Black,
+                    1.0f to Color.Black,
+                )
+                drawContent()
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colorStops = colors
+                    ),
+                    blendMode = BlendMode.DstIn
+                )
             }
-            item {
-                Spacer(50.dp)
+            .then(modifier)
+    ) {
+
+        items(
+            items = messages.asReversed(),
+            key = { it.hashCode() }
+        ) { message ->
+            Spacer(20.dp)
+            Row(verticalAlignment = Alignment.Top) {
+                AvatarIcon(
+                    imageUrl = message.avatarUrl,
+                    name = message.name,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(12.dp)
+                Column {
+                    Text(
+                        text = message.name,
+                        fontWeight = FontWeight.W700,
+                        fontSize = 12.sp,
+                    )
+                    Text(
+                        text = message.message,
+                        fontSize = 13.sp,
+                        lineHeight = 20.sp,
+                    )
+                }
             }
         }
-
-        ChatBar(
-            onChatSend = onChatSend,
-            onOptionsClick = onOptionsClick,
-            chatEnabled = chatEnabled,
-            modifier = Modifier.constrainAs(chatBar) {
-                width = Dimension.fillToConstraints
-                height = Dimension.wrapContent
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-                bottom.linkTo(parent.bottom)
-            }
-        )
+        item {
+            Spacer(50.dp)
+        }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -283,22 +267,29 @@ fun ChatWidgetPreview() {
         )
     }
     AppTheme {
-        ChatWidget(
-            messages = messages,
-            onChatSend = {
-                messages.add(
-                    index = 0,
-                    ChatWidgetMessage(
-                        "You",
-                        it,
-                        "",
-                        Date().time
+        Column {
+            ChatLog(
+                messages = messages,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
+            ChatBar(
+                onChatSend = {
+                    messages.add(
+                        index = 0,
+                        ChatWidgetMessage(
+                            "You",
+                            it,
+                            "",
+                            Date().time
+                        )
                     )
-                )
-            },
-            onOptionsClick = {},
-            chatEnabled = true,
-            modifier = Modifier.fillMaxSize()
-        )
+                },
+                onOptionsClick = {},
+                chatEnabled = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
