@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'kotlinx-serialization'
+    id 'org.jetbrains.dokka'
 }
 
 android {
@@ -38,9 +39,39 @@ android {
     }
 }
 
-dependencies {
+dokkaHtml {
+    moduleName.set("livekit-compose-components")
+    dokkaSourceSets {
+        configureEach {
+            skipEmptyPackages.set(true)
+            includeNonPublic.set(false)
+            includes.from("module.md")
+            displayName.set("SDK")
+            sourceLink {
+                localDirectory.set(file("src/main/java"))
 
-    api "io.livekit:livekit-android:1.2.2"
+                // URL showing where the source code can be accessed through the web browser
+                remoteUrl.set(new URL(
+                        "https://github.com/livekit/client-sdk-android/tree/master/livekit-android-sdk/src/main/java"))
+                // Suffix which is used to append the line number to the URL. Use #L for GitHub
+                remoteLineSuffix.set("#L")
+            }
+
+            perPackageOption {
+                matchingRegex.set(".*\\.dagger.*")
+                suppress.set(true)
+            }
+
+            perPackageOption {
+                matchingRegex.set(".*\\.util.*")
+                suppress.set(true)
+            }
+        }
+    }
+}
+
+dependencies {
+    api "io.livekit:livekit-android:1.4.0"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${versions.serialization}"
 
@@ -54,4 +85,23 @@ dependencies {
     testImplementation deps.junit
     androidTestImplementation deps.androidx_test.junit
     androidTestImplementation deps.espresso
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.release
+
+                // You can then customize attributes of the publication as shown below.
+                groupId = GROUP
+                artifactId = POM_ARTIFACT_ID
+                version = VERSION_NAME
+            }
+        }
+    }
 }
