@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 LiveKit, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package io.livekit.android.sample.livestream.room.ui
@@ -103,18 +119,21 @@ private fun ParticipantCountButton(
     showIndicator: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    ControlButton(onClick = onClick, modifier = modifier
-        .drawWithContent {
-            drawContent()
+    ControlButton(
+        onClick = onClick,
+        modifier = modifier
+            .drawWithContent {
+                drawContent()
 
-            if (showIndicator) {
-                drawCircle(
-                    color = Indicator,
-                    radius = 16.dp.value,
-                    center = Offset(size.width - 6.dp.value, 30.dp.value)
-                )
+                if (showIndicator) {
+                    drawCircle(
+                        color = Indicator,
+                        radius = 16.dp.value,
+                        center = Offset(size.width - 6.dp.value, 30.dp.value)
+                    )
+                }
             }
-        }) {
+    ) {
         Image(
             painter = painterResource(id = R.drawable.eye),
             contentDescription = null,
@@ -136,7 +155,6 @@ fun ControlButton(
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit
 ) {
-
     Surface(
         shape = RoundedCornerShape(Dimens.smallButtonCornerRadius),
         onClick = onClick,
