@@ -5,6 +5,8 @@ buildscript {
 
     dependencies {
         classpath "com.android.tools.build:gradle:$android_build_tools_version"
+        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
+        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.21.0"
     }
 }
 
@@ -14,4 +16,70 @@ plugins {
     id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlin_version" apply false
     id 'com.google.devtools.ksp' version '1.8.20-1.0.10' apply false
+    id 'org.jetbrains.dokka' version "1.9.0" apply false
+}
+
+apply plugin: 'io.codearte.nexus-staging'
+
+subprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+
+    apply plugin: "com.diffplug.spotless"
+    spotless {
+        // optional: limit format enforcement to just the files changed by this feature branch
+        ratchetFrom 'origin/main'
+
+        format 'misc', {
+            // define the files to apply `misc` to
+            target '*.gradle', '*.md', '.gitignore'
+
+            // define the steps to apply to those files
+            trimTrailingWhitespace()
+            indentWithSpaces()
+            endWithNewline()
+        }
+        java {
+            // apply a specific flavor of google-java-format
+            googleJavaFormat('1.17.0').aosp().reflowLongStrings()
+            // fix formatting of type annotations
+            formatAnnotations()
+            // make sure every file has the following copyright header.
+            // optionally, Spotless can set copyright years by digging
+            // through git history (see "license" section below)
+            licenseHeaderFile rootProject.file("LicenseHeaderFile.txt")
+            removeUnusedImports()
+        }
+        kotlin {
+            target("src/*/java/**/*.kt")
+            ktlint("0.50.0")
+                    .setEditorConfigPath("$rootDir/.editorconfig")
+            licenseHeaderFile(rootProject.file("LicenseHeaderFile.txt"))
+                    .named('license')
+            endWithNewline()
+        }
+    }
+}
+
+nexusStaging {
+    serverUrl = "https://s01.oss.sonatype.org/service/local/"
+    packageGroup = GROUP
+    stagingProfileId = STAGING_PROFILE_ID
+}
+
+afterEvaluate {
+    // These aren't supported for snapshots. From nexus staging plugin.
+    if (VERSION_NAME.contains("SNAPSHOT")) {
+        ["closeAndReleaseRepository",
+                "closeRepository",
+                "createRepository",
+                "getStagingProfile",
+                "releaseRepository"]
+                .forEach { taskName ->
+                    getTasksByName(taskName, false).forEach { task -> task.enabled = false }
+                }
+    }
 }
