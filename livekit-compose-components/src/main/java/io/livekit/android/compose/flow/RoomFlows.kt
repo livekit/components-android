@@ -21,12 +21,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import io.livekit.android.compose.local.RoomScope
 import io.livekit.android.events.RoomEvent
 import io.livekit.android.events.collect
 import io.livekit.android.room.Room
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
+/**
+ * A utility method to obtain a flow for specific room events.
+ *
+ * Pass in `RoomEvent` as the type to receive all room events.
+ *
+ */
 @Composable
 inline fun <reified T : RoomEvent> rememberEventSelector(room: Room): State<Flow<T>> {
     val flow = remember(room) {

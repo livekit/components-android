@@ -39,6 +39,10 @@ fun ParticipantScope(
     )
 }
 
+/**
+ * Returns the [passedParticipant] or the currently provided [ParticipantLocal].
+ * @throws IllegalStateException if passedParticipant is null and no ParticipantLocal is available (e.g. not inside a [RoomScope]).
+ */
 @Composable
 @Throws(IllegalStateException::class)
 fun requireParticipant(passedParticipant: Participant? = null): Participant {

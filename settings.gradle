@@ -15,4 +15,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "components-android"
 include ':livekit-compose-components'
-include ':sample-livestream'

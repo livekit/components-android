@@ -83,6 +83,22 @@ fun HandleRoomState(
     )
 }
 
+/**
+ * Remembers a new [Room] object.
+ *
+ * @param url the url of the livekit server to connect to.
+ * @param token the token to connect to livekit with.
+ * @param audio enable or disable audio. Defaults to false.
+ * @param video enable or disable video. Defaults to false.
+ * @param connect whether the room should automatically connect to the server. Defaults to true.
+ * @param roomOptions options to pass to the [Room].
+ * @param liveKitOverrides overrides to pass to the [Room].
+ * @param connectOptions options to use when connecting. Will not reflect changes if already connected.
+ * @param onConnected a listener to be called upon room connection.
+ * @param onDisconnected a listener to be called upon room disconnection.
+ * @param onError a listener to be called upon room error.
+ * @param passedRoom if a [Room] is provided, it will be used. If null, a new Room will be created instead.
+ */
 @Composable
 fun rememberLiveKitRoom(
     url: String? = null,
@@ -159,6 +175,23 @@ fun rememberLiveKitRoom(
     return room
 }
 
+/**
+ * Establishes a room scope which remembers a [Room] object which can be accessed
+ * through the [RoomLocal] composition local.
+ *
+ * @param url the url of the livekit server to connect to.
+ * @param token the token to connect to livekit with.
+ * @param audio enable or disable audio. Defaults to false.
+ * @param video enable or disable video. Defaults to false.
+ * @param connect whether the room should automatically connect to the server. Defaults to true.
+ * @param roomOptions options to pass to the [Room].
+ * @param liveKitOverrides overrides to pass to the [Room].
+ * @param connectOptions options to use when connecting. Will not reflect changes if already connected.
+ * @param onConnected a listener to be called upon room connection.
+ * @param onDisconnected a listener to be called upon room disconnection.
+ * @param onError a listener to be called upon room error.
+ * @param passedRoom if a [Room] is provided, it will be used. If null, a new Room will be created instead.
+ */
 @Composable
 fun RoomScope(
     url: String? = null,
@@ -196,6 +229,10 @@ fun RoomScope(
     )
 }
 
+/**
+ * Returns the [passedRoom] or the currently provided [RoomLocal].
+ * @throws IllegalStateException if passedRoom is null and no RoomLocal is available (e.g. not inside a [RoomScope]).
+ */
 @Composable
 @Throws(IllegalStateException::class)
 fun requireRoom(passedRoom: Room? = null): Room {

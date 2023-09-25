@@ -29,9 +29,6 @@ import io.livekit.android.room.track.VideoTrack
 import io.livekit.android.util.flow
 import kotlinx.coroutines.flow.collectLatest
 
-/**
- *
- */
 val TrackLocal =
     compositionLocalOf<Track> { throw IllegalStateException("No Track object available. This should only be used within a TrackScope.") }
 
@@ -47,11 +44,12 @@ fun TrackScope(
 }
 
 /**
- * This widget primarily serves as a way to observe changes in [Participant.videoTracks].
+ * Finds the appropriate video track for a participant.
  *
  * @param participant The participant to grab video publications from
- * @param sources The priority order of [Track.Source] to search for. Pass an empty list to bypass this.
- * @param predicate The
+ * @param sources The priority order of [Track.Source] to search for. Defaults to screen share and then camera.
+ * Pass an empty list to have no priority.
+ * @param predicate A custom predicate to test which publication to grab.
  */
 @Composable
 fun rememberVideoTrackPublication(
@@ -91,6 +89,13 @@ fun rememberVideoTrackPublication(
     return trackPubState.value
 }
 
+/**
+ * Observes the [videoPub] object for the track.
+ *
+ * A track publication will only have the track when it is subscribed,
+ * so this ensures the composition is updated with the correct track value
+ * as needed.
+ */
 @Composable
 fun rememberVideoTrack(videoPub: TrackPublication?): VideoTrack? {
     val trackState = remember { mutableStateOf<VideoTrack?>(null) }
