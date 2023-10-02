@@ -88,27 +88,3 @@ fun rememberVideoTrackPublication(
 
     return trackPubState.value
 }
-
-/**
- * Observes the [videoPub] object for the track.
- *
- * A track publication will only have the track when it is subscribed,
- * so this ensures the composition is updated with the correct track value
- * as needed.
- */
-@Composable
-fun rememberVideoTrack(videoPub: TrackPublication?): VideoTrack? {
-    val trackState = remember { mutableStateOf<VideoTrack?>(null) }
-
-    LaunchedEffect(videoPub) {
-        if (videoPub == null) {
-            trackState.value = null
-        } else {
-            videoPub::track.flow.collectLatest { track ->
-                trackState.value = track as? VideoTrack
-            }
-        }
-    }
-
-    return trackState.value
-}

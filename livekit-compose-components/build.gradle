@@ -78,7 +78,7 @@ dokkaHtml {
 }
 
 dependencies {
-    api "io.livekit:livekit-android:1.4.1"
+    api "io.livekit:livekit-android:1.4.3-SNAPSHOT"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${versions.serialization}"
 
