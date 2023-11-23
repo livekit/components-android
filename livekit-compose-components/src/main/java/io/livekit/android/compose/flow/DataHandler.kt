@@ -17,8 +17,6 @@
 package io.livekit.android.compose.flow
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -73,16 +71,16 @@ data class DataMessage(val topic: String?, val payload: ByteArray, val participa
 }
 
 @Composable
-fun rememberDataMessageHandler(room: Room, topic: DataTopic): State<DataHandler> {
+fun rememberDataMessageHandler(room: Room, topic: DataTopic): DataHandler {
     return rememberDataMessageHandler(room, topic.value)
 }
 
 @Composable
-fun rememberDataMessageHandler(room: Room, topic: String? = null): State<DataHandler> {
-    val eventFlow by rememberEventSelector<RoomEvent.DataReceived>(room = room)
+fun rememberDataMessageHandler(room: Room, topic: String? = null): DataHandler {
+    val eventFlow = rememberEventSelector<RoomEvent.DataReceived>(room = room)
     val coroutineScope = rememberCoroutineScope()
     val dataHandler = remember(room, coroutineScope) {
-        mutableStateOf(DataHandler(
+        DataHandler(
             messageFlow = eventFlow
                 .filter { event -> topic == null || event.topic == topic }
                 .map { event ->
@@ -99,7 +97,7 @@ fun rememberDataMessageHandler(room: Room, topic: String? = null): State<DataHan
                 destination = options.destination,
                 topic = topic
             )
-        })
+        }
     }
     return dataHandler
 }

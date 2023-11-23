@@ -19,6 +19,7 @@ package io.livekit.android.compose.flow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import io.livekit.android.compose.local.RoomScope
@@ -35,15 +36,15 @@ import kotlinx.coroutines.flow.MutableSharedFlow
  *
  */
 @Composable
-inline fun <reified T : RoomEvent> rememberEventSelector(room: Room): State<Flow<T>> {
+inline fun <reified T : RoomEvent> rememberEventSelector(room: Room): Flow<T> {
     val flow = remember(room) {
-        mutableStateOf(MutableSharedFlow<T>(extraBufferCapacity = 100))
+        MutableSharedFlow<T>(extraBufferCapacity = 100)
     }
 
     LaunchedEffect(room) {
         room.events.collect {
             if (it is T) {
-                flow.value.emit(it)
+                flow.emit(it)
             }
         }
     }

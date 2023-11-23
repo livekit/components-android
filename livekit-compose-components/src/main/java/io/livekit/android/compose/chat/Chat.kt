@@ -20,7 +20,6 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import io.livekit.android.compose.flow.DataHandler
@@ -83,14 +82,12 @@ data class ChatMessage(
 )
 
 @Composable
-fun rememberChat(room: Room = RoomLocal.current): State<Chat> {
-    val dataHandler by rememberDataMessageHandler(room = room, topic = DataTopic.CHAT)
+fun rememberChat(room: Room = RoomLocal.current): Chat {
+    val dataHandler = rememberDataMessageHandler(room = room, topic = DataTopic.CHAT)
     val chatState = remember(dataHandler) {
-        mutableStateOf(
-            Chat(
-                localParticipant = room.localParticipant,
-                dataHandler = dataHandler,
-            )
+        Chat(
+            localParticipant = room.localParticipant,
+            dataHandler = dataHandler,
         )
     }
 
@@ -102,7 +99,7 @@ fun rememberChat(room: Room = RoomLocal.current): State<Chat> {
                     val chatMessage = Json.decodeFromString<ChatMessage>(payloadString)
                         .copy(participant = dataMessage.participant)
 
-                    chatState.value.addMessage(chatMessage)
+                    chatState.addMessage(chatMessage)
                 } catch (e: Exception) {
                     Log.w("Chat", "malformed chat message: $payloadString")
                 }
