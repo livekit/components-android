@@ -46,7 +46,7 @@ enum class ScaleType {
  * [TextureViewRenderer].
  */
 @Composable
-fun VideoRenderer(
+fun VideoTrackView(
     room: Room,
     videoTrack: VideoTrack?,
     modifier: Modifier = Modifier,

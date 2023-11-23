@@ -34,13 +34,13 @@ import androidx.compose.ui.platform.LocalContext
 import org.webrtc.Camera1Enumerator
 import org.webrtc.Camera2Enumerator
 
-data class CameraState(val selectedDeviceId: String, val deviceIds: List<String>)
+data class DeviceState(val selectedDeviceId: String, val deviceIds: List<String>)
 
 @Composable
-fun rememberCameraState(): MutableState<CameraState> {
+fun rememberCameraState(): MutableState<DeviceState> {
     val cameraState = remember {
         mutableStateOf(
-            CameraState(
+            DeviceState(
                 "",
                 emptyList()
             )
@@ -55,7 +55,7 @@ fun rememberCameraState(): MutableState<CameraState> {
             Camera1Enumerator(true)
         }
         val deviceIds = enumerator.deviceNames
-        cameraState.value = CameraState(
+        cameraState.value = DeviceState(
             deviceIds.first(),
             deviceIds.toList(),
         )
@@ -66,8 +66,8 @@ fun rememberCameraState(): MutableState<CameraState> {
 
 @ExperimentalMaterial3Api
 @Composable
-fun CameraDropdownMenuBox(
-    cameraState: MutableState<CameraState>,
+fun MediaDeviceMenu(
+    cameraState: MutableState<DeviceState>,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }

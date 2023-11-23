@@ -16,6 +16,7 @@
 
 package io.livekit.android.compose.local
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -25,6 +26,7 @@ import io.livekit.android.room.participant.Participant
 /**
  * Not to be confused with [LocalParticipant].
  */
+@SuppressLint("CompositionLocalNaming")
 val ParticipantLocal =
     compositionLocalOf<Participant> { throw IllegalStateException("No Participant object available. This should only be used within a ParticipantScope.") }
 
@@ -47,4 +49,20 @@ fun ParticipantScope(
 @Throws(IllegalStateException::class)
 fun requireParticipant(passedParticipant: Participant? = null): Participant {
     return passedParticipant ?: ParticipantLocal.current
+}
+
+
+/**
+ * A simple way to loop over participants that creates a [ParticipantScope] for each participant and calls [content].
+ */
+@Composable
+fun ForEachParticipant(
+    participants: List<Participant>,
+    content: @Composable (Participant) -> Unit
+) {
+    participants.forEach { participant ->
+        ParticipantScope(participant = participant) {
+            content(participant)
+        }
+    }
 }

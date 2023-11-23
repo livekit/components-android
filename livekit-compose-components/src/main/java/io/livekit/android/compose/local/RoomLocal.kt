@@ -16,6 +16,7 @@
 
 package io.livekit.android.compose.local
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -239,5 +240,6 @@ fun requireRoom(passedRoom: Room? = null): Room {
     return passedRoom ?: RoomLocal.current
 }
 
+@SuppressLint("CompositionLocalNaming")
 val RoomLocal =
     compositionLocalOf<Room> { throw IllegalStateException("No Room object available. This should only be used within a RoomScope.") }

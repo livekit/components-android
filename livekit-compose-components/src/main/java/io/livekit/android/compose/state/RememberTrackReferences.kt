@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.map
  * @param onlySubscribed If true, only return tracks that have been subscribed. Defaults to true.
  */
 @Composable
-fun rememberTrackReferences(
+fun rememberTracks(
     sources: List<Track.Source> = listOf(
         Track.Source.CAMERA,
         Track.Source.MICROPHONE,

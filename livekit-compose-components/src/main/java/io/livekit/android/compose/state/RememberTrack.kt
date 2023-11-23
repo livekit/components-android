@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.collectLatest
  * as needed.
  */
 @Composable
-fun <T : Track> rememberTrack(trackPublication: TrackPublication?): T? {
+internal fun <T : Track> rememberTrack(trackPublication: TrackPublication?): T? {
     val trackState = remember { mutableStateOf<T?>(null) }
 
     LaunchedEffect(trackPublication) {
