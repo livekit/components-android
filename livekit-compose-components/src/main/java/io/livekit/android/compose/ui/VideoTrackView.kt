@@ -30,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
+import io.livekit.android.compose.state.rememberTrack
+import io.livekit.android.compose.types.TrackReference
 import io.livekit.android.renderer.TextureViewRenderer
 import io.livekit.android.room.Room
 import io.livekit.android.room.track.RemoteVideoTrack
@@ -39,6 +41,25 @@ import org.webrtc.RendererCommon
 enum class ScaleType {
     FitInside,
     Fill,
+}
+
+@Composable
+fun VideoTrackView(
+    room: Room,
+    trackReference: TrackReference,
+    modifier: Modifier = Modifier,
+    mirror: Boolean = false,
+    scaleType: ScaleType = ScaleType.Fill,
+) {
+    val track = rememberTrack<VideoTrack>(trackIdentifier = trackReference)
+
+    VideoTrackView(
+        room = room,
+        videoTrack = track,
+        modifier = modifier,
+        mirror = mirror,
+        scaleType = scaleType,
+    )
 }
 
 /**

@@ -48,4 +48,8 @@ class TrackReference(
     fun isPlaceholder(): Boolean {
         return publication == null
     }
+
+    fun isSubscribed(): Boolean {
+        return !isPlaceholder() && (publication?.subscribed ?: false)
+    }
 }
