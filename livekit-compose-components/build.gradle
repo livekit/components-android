@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlinx-serialization'
     id 'org.jetbrains.dokka'
+    id 'app.cash.molecule'
 }
 
 android {
@@ -44,6 +45,10 @@ android {
     kotlinOptions {
         jvmTarget = java_version
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 dokkaHtml {
@@ -78,7 +83,7 @@ dokkaHtml {
 }
 
 dependencies {
-    api "io.livekit:livekit-android:1.4.2"
+    api "io.livekit:livekit-android:1.5.2"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:${versions.serialization}"
 
@@ -90,6 +95,12 @@ dependencies {
 
     implementation "androidx.core:core:${versions.androidx_core}"
     testImplementation deps.junit
+    testImplementation deps.robolectric
+    testImplementation deps.mockito.core
+    testImplementation deps.mockito.kotlin
+    testImplementation deps.androidx_test.core
+    testImplementation deps.coroutines.test
+    testImplementation 'app.cash.turbine:turbine:1.0.0'
     androidTestImplementation deps.androidx_test.junit
     androidTestImplementation deps.espresso
 }
