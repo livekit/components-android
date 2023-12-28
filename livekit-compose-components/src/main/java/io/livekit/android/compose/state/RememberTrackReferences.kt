@@ -69,7 +69,7 @@ fun Room.getTrackReferences(
     val allParticipants = listOf(localParticipant).plus(remoteParticipants.values)
     return allParticipants.flatMap { participant ->
         sources.map { source ->
-            var tracks = participant.tracks.values.mapNotNull { trackPub ->
+            var tracks = participant.trackPublications.values.mapNotNull { trackPub ->
                 if (trackPub.source == source &&
                     (!onlySubscribed || trackPub.subscribed)
                 ) {

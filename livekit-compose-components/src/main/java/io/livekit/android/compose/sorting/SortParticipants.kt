@@ -45,8 +45,8 @@ fun sortParticipants(participants: List<Participant>): List<Participant> {
             return@sortedWith compareLastSpokenAt(a, b)
         }
 
-        val aHasVideo = a.videoTracks.any { it.first.subscribed }
-        val bHasVideo = b.videoTracks.any { it.first.subscribed }
+        val aHasVideo = a.videoTrackPublications.any { it.first.subscribed }
+        val bHasVideo = b.videoTrackPublications.any { it.first.subscribed }
         if (aHasVideo != bHasVideo) {
             return@sortedWith compareValues(bHasVideo, aHasVideo)
         }

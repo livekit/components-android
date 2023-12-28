@@ -25,7 +25,7 @@ import io.livekit.android.util.flow
 
 data class ParticipantInfo(
     val name: String?,
-    val identity: String?,
+    val identity: Participant.Identity?,
     val metadata: String?,
 )
 

@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 
-data class DataSendOptions(val reliability: DataPublishReliability, val destination: List<String>? = null)
+data class DataSendOptions(val reliability: DataPublishReliability, val identities: List<Participant.Identity>? = null)
 
 class DataHandler(
     val messageFlow: Flow<DataMessage>,
@@ -94,8 +94,8 @@ fun rememberDataMessageHandler(room: Room, topic: String? = null): DataHandler {
             room.localParticipant.publishData(
                 data = payload,
                 reliability = options.reliability,
-                destination = options.destination,
-                topic = topic
+                topic = topic,
+                identities = options.identities,
             )
         }
     }

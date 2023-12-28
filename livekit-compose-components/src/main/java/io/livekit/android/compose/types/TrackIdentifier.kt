@@ -24,7 +24,7 @@ data class TrackSource(
 
     override fun getTrackPublication(): TrackPublication? {
         return if (source != null && name != null) {
-            participant.tracks.values
+            participant.trackPublications.values
                 .firstOrNull { p -> p.source == source && p.name == name }
         } else if (source != null) {
             participant.getTrackPublication(source)
