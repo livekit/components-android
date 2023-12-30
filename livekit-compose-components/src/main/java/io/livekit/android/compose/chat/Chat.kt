@@ -31,6 +31,8 @@ import io.livekit.android.room.Room
 import io.livekit.android.room.participant.LocalParticipant
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.room.track.DataPublishReliability
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -64,12 +66,27 @@ class Chat(private val localParticipant: LocalParticipant, private val dataHandl
     internal suspend fun addMessage(chatMessage: ChatMessage) {
         stateLock.lock()
         messages.value = messages.value.plus(chatMessage)
+        mutableMessagesFlow.tryEmit(chatMessage)
         stateLock.unlock()
     }
 
+    /**
+     * Indicates if currently sending a chat message.
+     */
     val isSending: State<Boolean>
         get() = dataHandler.isSending
+
+    /**
+     * The log of all messages sent and received.
+     */
     val messages = mutableStateOf(emptyList<ChatMessage>())
+
+    private val mutableMessagesFlow = MutableSharedFlow<ChatMessage>(extraBufferCapacity = 1000)
+
+    /**
+     * A hot flow emitting a [ChatMessage] for each individual message sent and received.
+     */
+    val messagesFlow = mutableMessagesFlow as Flow<ChatMessage>
 }
 
 @Serializable
