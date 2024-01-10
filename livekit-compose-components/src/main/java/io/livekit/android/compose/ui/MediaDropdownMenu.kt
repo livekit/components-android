@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 LiveKit, Inc.
+ * Copyright 2023-2024 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import org.webrtc.Camera1Enumerator
-import org.webrtc.Camera2Enumerator
+import livekit.org.webrtc.Camera1Enumerator
+import livekit.org.webrtc.Camera2Enumerator
 
 data class DeviceState(val selectedDeviceId: String, val deviceIds: List<String>)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 LiveKit, Inc.
+ * Copyright 2023-2024 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import io.livekit.android.renderer.TextureViewRenderer
 import io.livekit.android.room.track.CameraPosition
-import org.webrtc.Camera1Enumerator
-import org.webrtc.Camera2Enumerator
-import org.webrtc.CameraVideoCapturer
-import org.webrtc.CapturerObserver
-import org.webrtc.EglBase
-import org.webrtc.RendererCommon
-import org.webrtc.SurfaceTextureHelper
-import org.webrtc.VideoFrame
+import livekit.org.webrtc.Camera1Enumerator
+import livekit.org.webrtc.Camera2Enumerator
+import livekit.org.webrtc.CameraVideoCapturer
+import livekit.org.webrtc.CapturerObserver
+import livekit.org.webrtc.EglBase
+import livekit.org.webrtc.RendererCommon
+import livekit.org.webrtc.SurfaceTextureHelper
+import livekit.org.webrtc.VideoFrame
 
 /**
  * A standalone camera preview composable that can be used without a Room object.

@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./client-sdk-android
+        working-directory: ./components-android
     steps:
-    - name: checkout client-sdk-android
+    - name: checkout components-android
       uses: actions/checkout@v4.0.0
       with:
-        path: ./client-sdk-android
+        path: ./components-android
         submodules: recursive
 
     - name: set up JDK 17
@@ -62,6 +62,6 @@ jobs:
 
     - name: Publish to sonatype
       run: ./gradlew publish
-      
+
     - name: Close and release to maven
       run: ./gradlew closeAndReleaseRepository
