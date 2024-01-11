@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
+import io.livekit.android.compose.local.requireRoom
 import io.livekit.android.compose.state.rememberTrack
 import io.livekit.android.compose.types.TrackReference
 import io.livekit.android.renderer.TextureViewRenderer
@@ -38,25 +39,32 @@ import io.livekit.android.room.track.RemoteVideoTrack
 import io.livekit.android.room.track.VideoTrack
 import livekit.org.webrtc.RendererCommon
 
+/**
+ * The type of scaling to use with [VideoTrackView]
+ */
 enum class ScaleType {
     FitInside,
     Fill,
 }
 
+/**
+ * Widget for displaying a VideoTrack. Handles the Compose <-> AndroidView interop needed to use
+ * [TextureViewRenderer].
+ */
 @Composable
 fun VideoTrackView(
-    room: Room,
     trackReference: TrackReference,
     modifier: Modifier = Modifier,
+    room: Room? = null,
     mirror: Boolean = false,
     scaleType: ScaleType = ScaleType.Fill,
 ) {
     val track = rememberTrack<VideoTrack>(trackIdentifier = trackReference)
 
     VideoTrackView(
-        room = room,
         videoTrack = track,
         modifier = modifier,
+        passedRoom = room,
         mirror = mirror,
         scaleType = scaleType,
     )
@@ -68,9 +76,9 @@ fun VideoTrackView(
  */
 @Composable
 fun VideoTrackView(
-    room: Room,
     videoTrack: VideoTrack?,
     modifier: Modifier = Modifier,
+    passedRoom: Room? = null,
     mirror: Boolean = false,
     scaleType: ScaleType = ScaleType.Fill,
 ) {
@@ -83,6 +91,8 @@ fun VideoTrackView(
         )
         return
     }
+
+    val room = requireRoom(passedRoom)
 
     val videoSinkVisibility = remember(room, videoTrack) { ComposeVisibility() }
     var boundVideoTrack by remember { mutableStateOf<VideoTrack?>(null) }

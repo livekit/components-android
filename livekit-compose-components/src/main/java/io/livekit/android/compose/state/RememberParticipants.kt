@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 LiveKit, Inc.
+ * Copyright 2023-2024 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,12 @@ import io.livekit.android.room.Room
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.util.flow
 
+/**
+ * Remembers the full list of participants, with the local participant included
+ * as the first item in the list.
+ *
+ * Updates automatically whenever the participant list changes.
+ */
 @Composable
 fun rememberParticipants(passedRoom: Room? = null): List<Participant> {
     val room = requireRoom(passedRoom = passedRoom)

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 LiveKit, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.livekit.android.compose.sorting
 
 import io.livekit.android.compose.types.TrackReference
@@ -16,7 +32,6 @@ import io.livekit.android.room.track.Track
  * 7. remote tracks sorted by joinedAt
  */
 fun sortTrackReferences(trackRefs: List<TrackReference>): List<TrackReference> {
-
     val localTracks = mutableListOf<TrackReference>()
     val screenShareTracks = mutableListOf<TrackReference>()
     val cameraTracks = mutableListOf<TrackReference>()
@@ -62,44 +77,49 @@ private fun sortScreenShareTracks(screenShareTracks: List<TrackReference>): List
  * Sort an array of camera [TrackReference].
  */
 private fun sortCameraTracks(cameraTracks: List<TrackReference>): List<TrackReference> {
-
     return cameraTracks.sortedWith { a, b ->
         // Participant with higher audio level goes first.
         if (a.participant.isSpeaking && b.participant.isSpeaking) {
-            return@sortedWith compareAudioLevel(a.participant, b.participant);
+            return@sortedWith compareAudioLevel(a.participant, b.participant)
         }
 
         // A speaking participant goes before one that is not speaking.
         if (a.participant.isSpeaking != b.participant.isSpeaking) {
-            return@sortedWith compareIsSpeaking(a.participant, b.participant);
+            return@sortedWith compareIsSpeaking(a.participant, b.participant)
         }
 
         // A participant that spoke recently goes before a participant that spoke a while back.
         if (a.participant.lastSpokeAt != b.participant.lastSpokeAt) {
-            return@sortedWith compareLastSpokenAt(a.participant, b.participant);
+            return@sortedWith compareLastSpokenAt(a.participant, b.participant)
         }
 
         // TrackReference before TrackReferencePlaceholder
         if (a.isPlaceholder() != b.isPlaceholder()) {
-            return@sortedWith compareTrackReferencesByPlaceHolder(a, b);
+            return@sortedWith compareTrackReferencesByPlaceHolder(a, b)
         }
 
         // Tiles with video on before tiles with muted video track.
         if (a.isEnabled() != b.isEnabled()) {
-            return@sortedWith compareTrackReferencesByIsEnabled(a, b);
+            return@sortedWith compareTrackReferencesByIsEnabled(a, b)
         }
 
         // A participant that joined a long time ago goes before one that joined recently.
-        return@sortedWith compareJoinedAt(a.participant, b.participant);
+        return@sortedWith compareJoinedAt(a.participant, b.participant)
     }
 }
 
 private fun TrackReference.isEnabled() = (publication?.subscribed ?: false) && !(publication?.muted ?: true)
 
+/**
+ * Prefers non-placeholders over placeholders
+ */
 fun compareTrackReferencesByPlaceHolder(a: TrackReference, b: TrackReference): Int {
     return compareValues(a.isPlaceholder(), b.isPlaceholder())
 }
 
+/**
+ * Prefers enabled over disabled.
+ */
 fun compareTrackReferencesByIsEnabled(a: TrackReference, b: TrackReference): Int {
     return compareValues(b.isEnabled(), a.isEnabled())
 }

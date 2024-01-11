@@ -20,6 +20,9 @@ import io.livekit.android.room.participant.Participant
 import io.livekit.android.room.track.Track
 import io.livekit.android.room.track.TrackPublication
 
+/**
+ * Identifying information for a track.
+ */
 interface TrackIdentifier {
     val participant: Participant
 
@@ -52,6 +55,9 @@ data class TrackSource(
     }
 }
 
+/**
+ * A reference to a [Track], or a placeholder.
+ */
 class TrackReference(
     override val participant: Participant,
     val publication: TrackPublication?,

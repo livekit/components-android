@@ -65,6 +65,11 @@ fun rememberTracks(
         .value
 }
 
+/**
+ * A flow of the TrackReferences/placeholders in the room.
+ *
+ * @see rememberTracks
+ */
 fun trackReferencesFlow(
     room: Room,
     sources: List<Track.Source>,
@@ -77,6 +82,9 @@ fun trackReferencesFlow(
         .map { room.getTrackReferences(sources, usePlaceholders, onlySubscribed) }
 }
 
+/**
+ * @see rememberTracks
+ */
 fun Room.getTrackReferences(
     sources: List<Track.Source>,
     usePlaceholders: Set<Track.Source> = emptySet(),

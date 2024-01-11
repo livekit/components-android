@@ -36,6 +36,9 @@ import livekit.org.webrtc.Camera2Enumerator
 
 data class DeviceState(val selectedDeviceId: String, val deviceIds: List<String>)
 
+/**
+ * Creates a [DeviceState] that is remembered across recompositions.
+ */
 @Composable
 fun rememberCameraState(): MutableState<DeviceState> {
     val cameraState = remember {
@@ -64,7 +67,19 @@ fun rememberCameraState(): MutableState<DeviceState> {
     return cameraState
 }
 
-@ExperimentalMaterial3Api
+/**
+ * A dropdown menu that enables selection of the available cameras.
+ *
+ * When a camera is selected, [cameraState]'s value will be updated
+ * with the selected device.
+ *
+ * Example:
+ * ```
+ * val deviceState = rememberCameraState()
+ * MediaDeviceMenu(cameraState = deviceState)
+ * ```
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaDeviceMenu(
     cameraState: MutableState<DeviceState>,

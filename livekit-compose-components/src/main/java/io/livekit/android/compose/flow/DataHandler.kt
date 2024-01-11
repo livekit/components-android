@@ -31,8 +31,15 @@ import kotlinx.coroutines.sync.Mutex
 
 data class DataSendOptions(val reliability: DataPublishReliability, val identities: List<Participant.Identity>? = null)
 
+/**
+ * A state holder for handling data messages.
+ *
+ * @see rememberDataMessageHandler
+ */
 class DataHandler(
+    /** A flow for all the [DataMessage] received. */
     val messageFlow: Flow<DataMessage>,
+    /** The function to call when sending a payload */
     private val send: suspend (payload: ByteArray, options: DataSendOptions) -> Unit
 ) {
     val isSending = mutableStateOf(false)
@@ -48,7 +55,23 @@ class DataHandler(
     }
 }
 
-data class DataMessage(val topic: String?, val payload: ByteArray, val participant: Participant?) {
+/**
+ * A representation of a message sent/received through LiveKit.
+ */
+data class DataMessage(
+    /**
+     * The topic channel this message is sent through.
+     */
+    val topic: String?,
+    /**
+     * The payload of the data message.
+     */
+    val payload: ByteArray,
+    /**
+     * The participant associated with this message.
+     */
+    val participant: Participant?
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -70,11 +93,23 @@ data class DataMessage(val topic: String?, val payload: ByteArray, val participa
     }
 }
 
+/**
+ * Creates a [DataHandler] that is remembered across recompositions.
+ * It listens to the specified topic and emits all the messages through
+ * [DataHandler.messageFlow]. Any messages sent through [DataHandler.sendMessage]
+ * will be sent on the specified topic.
+ */
 @Composable
 fun rememberDataMessageHandler(room: Room, topic: DataTopic): DataHandler {
     return rememberDataMessageHandler(room, topic.value)
 }
 
+/**
+ * Creates a [DataHandler] that is remembered across recompositions.
+ * It listens to the specified topic and emits all the messages through
+ * [DataHandler.messageFlow]. Any messages sent through [DataHandler.sendMessage]
+ * will be sent on the specified topic.
+ */
 @Composable
 fun rememberDataMessageHandler(room: Room, topic: String? = null): DataHandler {
     val eventFlow = rememberEventSelector<RoomEvent.DataReceived>(room = room)

@@ -27,9 +27,9 @@ LiveKit Components for Android is available as a Maven package.
 ```groovy title="build.gradle"
 ...
 dependencies {
-  implementation "io.livekit:livekit-android-compose-components:1.0.0"
-  // Snapshots of the latest development version are available at:
-  // implementation "io.livekit:livekit-android-compose-components:0.0.1-SNAPSHOT"
+    implementation "io.livekit:livekit-android-compose-components:1.0.0"
+    // Snapshots of the latest development version are available at:
+    // implementation "io.livekit:livekit-android-compose-components:0.0.1-SNAPSHOT"
 }
 ```
 
@@ -49,8 +49,43 @@ subprojects {
 }
 ```
 
-## Usage
+## Basic Usage
 
+```kotlin
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.runtime.Composable
+import io.livekit.android.compose.local.RoomScope
+import io.livekit.android.compose.state.rememberTracks
+import io.livekit.android.compose.ui.VideoTrackView
+
+@Composable
+fun exampleComposable() {
+    // Create and connect to a room.
+    RoomScope(
+        url = "wss://my-livekit-server",
+        token = "generated-jwt",
+        audio = true,
+        video = true,
+        connect = true,
+    ) {
+        // Get all the tracks in the room
+        val trackRefs = rememberTracks()
+
+        // Display the tracks
+        LazyVerticalGrid(columns = GridCells.Fixed(2)) {
+            items(trackRefs.size) { index ->
+                VideoTrackView(trackReference = trackRefs[index])
+            }
+        }
+    }
+}
+```
+
+## Example App
+
+See our [Livestream Example app](https://github.com/livekit-examples/android-livestream) for a fully-functional livestreaming app, with more
+fleshed out usage of the components.
 
 <!--BEGIN_REPO_NAV-->
 <br/><table>
