@@ -16,6 +16,10 @@
 
 package io.livekit.android.compose.flow
 
+/**
+ * Standard topics for use with [rememberDataMessageHandler]
+ */
 enum class DataTopic(val value: String) {
+    /** Chat topic */
     CHAT("lk-chat-topic"),
 }

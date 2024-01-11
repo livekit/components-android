@@ -25,6 +25,12 @@ import io.livekit.android.room.Room
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.util.flow
 
+/**
+ * Remembers the full list of participants, with the local participant included
+ * as the first item in the list.
+ *
+ * Updates automatically whenever the participant list changes.
+ */
 @Composable
 fun rememberParticipants(passedRoom: Room? = null): List<Participant> {
     val room = requireRoom(passedRoom = passedRoom)

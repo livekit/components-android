@@ -23,12 +23,18 @@ import io.livekit.android.compose.local.requireParticipant
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.util.flow
 
+/**
+ * Holder for basic [Participant] information.
+ */
 data class ParticipantInfo(
     val name: String?,
     val identity: Participant.Identity?,
     val metadata: String?,
 )
 
+/**
+ * Remembers the participant info and updates whenever it is changed.
+ */
 @Composable
 fun rememberParticipantInfo(passedParticipant: Participant? = null): ParticipantInfo {
     val participant = requireParticipant(passedParticipant)

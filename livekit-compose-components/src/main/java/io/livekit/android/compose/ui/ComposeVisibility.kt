@@ -21,7 +21,22 @@ import io.livekit.android.room.track.Track
 import io.livekit.android.room.track.video.VideoSinkVisibility
 
 /**
+ *  A [VideoSinkVisibility] for compose views.
  *
+ *  To use, pass an `onGloballyPositioned` modifier your composable like so:
+ *  ```
+ *  modifier = Modifier.onGloballyPositioned { videoSinkVisibility.onGloballyPositioned(it) }
+ *  ```
+ *
+ *  [onDispose] must be called when the associated composable is no longer used (i.e. with a DisposableEffect).
+ *
+ *  ```
+ *  DisposableEffect(room) {
+ *      onDispose {
+ *          videoSinkVisibility.onDispose()
+ *      }
+ *  }
+ *  ```
  */
 class ComposeVisibility : VideoSinkVisibility() {
     private var coordinates: LayoutCoordinates? = null
@@ -40,8 +55,16 @@ class ComposeVisibility : VideoSinkVisibility() {
         return Track.Dimensions(width, height)
     }
 
-    // Note, LayoutCoordinates are mutable and may be reused.
+    /**
+     * To be called from a compose view, using `Modifier.onGloballyPositioned`.
+     *
+     * Example:
+     * ```
+     * modifier = Modifier.onGloballyPositioned { videoSinkVisibility.onGloballyPositioned(it) }
+     * ```
+     */
     fun onGloballyPositioned(layoutCoordinates: LayoutCoordinates) {
+        // Note, LayoutCoordinates are mutable and may be reused.
         coordinates = layoutCoordinates
         val visible = isVisible()
         val size = size()
@@ -54,6 +77,11 @@ class ComposeVisibility : VideoSinkVisibility() {
         lastSize = size
     }
 
+    /**
+     * Cleans up any resources held by this object.
+     *
+     * Must be called upon leaving the composition (i.e. with a DisposableEffect).
+     */
     fun onDispose() {
         if (coordinates == null) {
             return

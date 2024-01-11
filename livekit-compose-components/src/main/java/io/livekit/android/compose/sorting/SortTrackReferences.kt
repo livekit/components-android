@@ -96,10 +96,16 @@ private fun sortCameraTracks(cameraTracks: List<TrackReference>): List<TrackRefe
 
 private fun TrackReference.isEnabled() = (publication?.subscribed ?: false) && !(publication?.muted ?: true)
 
+/**
+ * Prefers non-placeholders over placeholders
+ */
 fun compareTrackReferencesByPlaceHolder(a: TrackReference, b: TrackReference): Int {
     return compareValues(a.isPlaceholder(), b.isPlaceholder())
 }
 
+/**
+ * Prefers enabled over disabled.
+ */
 fun compareTrackReferencesByIsEnabled(a: TrackReference, b: TrackReference): Int {
     return compareValues(b.isEnabled(), a.isEnabled())
 }

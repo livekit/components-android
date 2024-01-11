@@ -18,20 +18,22 @@ package io.livekit.android.compose.flow
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import io.livekit.android.events.RoomEvent
 import io.livekit.android.events.collect
 import io.livekit.android.room.Room
-import io.livekit.android.util.flow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 /**
  * A utility method to obtain a flow for specific room events.
  *
- * Pass in `RoomEvent` as the type to receive all room events.
+ * Pass in [RoomEvent] as the type to receive all room events.
  *
+ * ```
+ * // Receive only participant connected events.
+ * val eventFlow = rememberEventSelector<RoomEvent.ParticipantConnected>(room = room)
+ * ```
  */
 @Composable
 inline fun <reified T : RoomEvent> rememberEventSelector(room: Room): Flow<T> {

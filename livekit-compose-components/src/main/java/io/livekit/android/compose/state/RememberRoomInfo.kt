@@ -24,12 +24,17 @@ import io.livekit.android.compose.local.requireRoom
 import io.livekit.android.room.Room
 import io.livekit.android.util.flow
 
+/**
+ * Holder for basic [Room] information.
+ */
 data class RoomInfo(
     val name: State<String?>,
     val metadata: State<String?>,
-    // TODO num participants and num publishers
 )
 
+/**
+ * Remembers the room info and updates whenever it is changed.
+ */
 @Composable
 fun rememberRoomInfo(passedRoom: Room? = null): RoomInfo {
     val room = requireRoom(passedRoom = passedRoom)

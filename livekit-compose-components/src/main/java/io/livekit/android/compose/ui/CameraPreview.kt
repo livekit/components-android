@@ -140,6 +140,9 @@ fun CameraPreview(cameraPosition: CameraPosition, modifier: Modifier = Modifier,
     )
 }
 
+/**
+ * Invert the CameraPosition from front to back and vice-versa.
+ */
 fun CameraPosition.flipped() = when (this) {
     CameraPosition.FRONT -> CameraPosition.BACK
     CameraPosition.BACK -> CameraPosition.FRONT

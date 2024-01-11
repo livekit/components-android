@@ -17,6 +17,7 @@
 package io.livekit.android.compose.chat
 
 import android.util.Log
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -41,9 +42,17 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.Date
 
+/**
+ * Chat state for sending messages through LiveKit.
+ */
 class Chat(private val localParticipant: LocalParticipant, private val dataHandler: DataHandler) {
     private val stateLock = Mutex()
 
+    /**
+     * Send a message through LiveKit.
+     *
+     * @param message
+     */
     suspend fun send(message: String) {
         val timestamp = Date().time
 
@@ -63,6 +72,9 @@ class Chat(private val localParticipant: LocalParticipant, private val dataHandl
         addMessage(chatMessage.copy(participant = localParticipant))
     }
 
+    /**
+     * Add a message directly to the messages log.
+     */
     internal suspend fun addMessage(chatMessage: ChatMessage) {
         stateLock.lock()
         messages.value = messages.value.plus(chatMessage)
@@ -89,17 +101,32 @@ class Chat(private val localParticipant: LocalParticipant, private val dataHandl
     val messagesFlow = mutableMessagesFlow as Flow<ChatMessage>
 }
 
+/**
+ * A chat message.
+ */
 @Serializable
 data class ChatMessage(
-    /** millis since UNIX epoch */
+    /** Millis since UNIX epoch */
     val timestamp: Long,
+    /** The message */
     val message: String,
+    /**
+     * The participant who sent to message, if available.
+     *
+     * Messages sent by the server will have a null participant.
+     */
     @Transient
     val participant: Participant? = null
 )
 
+/**
+ * Creates a [Chat] that is remembered across compositions.
+ *
+ * Changing the [room] value will result in a new [Chat] object being created.
+ */
 @Composable
 fun rememberChat(room: Room = RoomLocal.current): Chat {
+    rememberLazyListState()
     val dataHandler = rememberDataMessageHandler(room = room, topic = DataTopic.CHAT)
     val chatState = remember(dataHandler) {
         Chat(

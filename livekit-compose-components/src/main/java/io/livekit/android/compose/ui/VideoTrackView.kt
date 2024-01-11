@@ -38,11 +38,18 @@ import io.livekit.android.room.track.RemoteVideoTrack
 import io.livekit.android.room.track.VideoTrack
 import livekit.org.webrtc.RendererCommon
 
+/**
+ * The type of scaling to use with [VideoTrackView]
+ */
 enum class ScaleType {
     FitInside,
     Fill,
 }
 
+/**
+ * Widget for displaying a VideoTrack. Handles the Compose <-> AndroidView interop needed to use
+ * [TextureViewRenderer].
+ */
 @Composable
 fun VideoTrackView(
     room: Room,
