@@ -58,7 +58,7 @@ data class TrackSource(
 /**
  * A reference to a [Track], or a placeholder.
  */
-class TrackReference(
+data class TrackReference(
     override val participant: Participant,
     val publication: TrackPublication?,
     val source: Track.Source,
