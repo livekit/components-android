@@ -140,7 +140,7 @@ fun rememberChat(room: Room = RoomLocal.current): Chat {
             .collect { dataMessage ->
                 val payloadString = dataMessage.payload.decodeToString()
                 try {
-                    val chatMessage = Json.decodeFromString<ChatMessage>(payloadString)
+                    val chatMessage = json.decodeFromString<ChatMessage>(payloadString)
                         .copy(participant = dataMessage.participant)
 
                     chatState.addMessage(chatMessage)
@@ -151,4 +151,8 @@ fun rememberChat(room: Room = RoomLocal.current): Chat {
     }
 
     return chatState
+}
+
+private val json = Json {
+    ignoreUnknownKeys = true
 }
