@@ -33,7 +33,7 @@ LiveKit Components for Android is available as a Maven package.
 dependencies {
     implementation "io.livekit:livekit-android-compose-components:1.0.0"
     // Snapshots of the latest development version are available at:
-    // implementation "io.livekit:livekit-android-compose-components:0.0.1-SNAPSHOT"
+    // implementation "io.livekit:livekit-android-compose-components:1.0.1-SNAPSHOT"
 }
 ```
 
