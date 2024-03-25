@@ -106,9 +106,16 @@ internal fun participantTrackReferencesFlow(
     onlySubscribed: Boolean = true,
 ): Flow<List<TrackReference>> {
     return participant::trackPublications.flow
-        .mapLatest { participant.getTrackReferencesBySource(sources, usePlaceholders, onlySubscribed) }
+        .mapLatest { trackPubs ->
+            calculateTrackReferences(
+                participant = participant,
+                trackPublications = trackPubs.values,
+                sources = sources,
+                usePlaceholders = usePlaceholders,
+                onlySubscribed = onlySubscribed,
+            )
+        }
 }
-
 
 /**
  * @see rememberParticipantTrackReferences
