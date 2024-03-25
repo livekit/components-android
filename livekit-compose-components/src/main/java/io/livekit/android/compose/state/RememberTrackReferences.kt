@@ -21,35 +21,35 @@ import androidx.compose.runtime.collectAsState
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.requireRoom
 import io.livekit.android.compose.types.TrackReference
-import io.livekit.android.events.RoomEvent
 import io.livekit.android.room.Room
+import io.livekit.android.room.participant.Participant
 import io.livekit.android.room.track.Track
+import io.livekit.android.room.track.TrackPublication
+import io.livekit.android.util.flow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapLatest
 
 /**
  * Returns an array of TrackReferences depending the sources provided.
  *
- * @param sources The sources of the tracks to provide. Defaults to all tracks.
+ * @param sources The sources of the tracks to provide. Defaults to camera and screen share tracks.
  * @param usePlaceholders A set of sources to provide placeholders for.
  *     A placeholder will provide a TrackReference for participants that don't
  *     yet have a track published for that source. Defaults to no placeholders.
- * @param passedRoom The room to use on, or [RoomLocal] if null.
- * @param updateOn Room events to listen to. Defaults to all events.
+ * @param passedRoom The room to use on, or [RoomLocal] if null/not passed.
  * @param onlySubscribed If true, only return tracks that have been subscribed. Defaults to true.
  */
 @Composable
 fun rememberTracks(
     sources: List<Track.Source> = listOf(
         Track.Source.CAMERA,
-        Track.Source.MICROPHONE,
-        Track.Source.SCREEN_SHARE,
-        Track.Source.UNKNOWN
+        Track.Source.SCREEN_SHARE
     ),
     usePlaceholders: Set<Track.Source> = emptySet(),
     passedRoom: Room? = null,
-    updateOn: Set<Class<RoomEvent>>? = null,
     onlySubscribed: Boolean = true,
 ): List<TrackReference> {
     val room = requireRoom(passedRoom)
@@ -58,7 +58,6 @@ fun rememberTracks(
         room = room,
         sources = sources,
         usePlaceholders = usePlaceholders,
-        updateOn = updateOn,
         onlySubscribed = onlySubscribed
     )
         .collectAsState(initial = room.getTrackReferences(sources, usePlaceholders, onlySubscribed))
@@ -70,16 +69,41 @@ fun rememberTracks(
  *
  * @see rememberTracks
  */
-fun trackReferencesFlow(
+@OptIn(ExperimentalCoroutinesApi::class)
+internal fun trackReferencesFlow(
     room: Room,
     sources: List<Track.Source>,
     usePlaceholders: Set<Track.Source> = emptySet(),
-    updateOn: Set<Class<RoomEvent>>? = null,
     onlySubscribed: Boolean = true,
 ): Flow<List<TrackReference>> {
-    return room.events.events
-        .filter { updateOn == null || updateOn.contains(it::class.java) }
-        .map { room.getTrackReferences(sources, usePlaceholders, onlySubscribed) }
+    return room::remoteParticipants.flow
+        .flatMapLatest { remoteParticipants ->
+            val allParticipants = listOf(room.localParticipant).plus(remoteParticipants.values)
+
+            // Get flows of all the participant's trackPublications.
+            // Although we don't use the trackPublications directly here,
+            // We tie into the flow so we can be sensitive to its changes,
+            // due to participants being mutable.
+            val participantToTrackPubFlows = allParticipants.map { participant ->
+                participant::trackPublications.flow
+                    .mapLatest { trackPublications ->
+                        participant to trackPublications
+                    }
+            }
+
+            // Flat map each participant into to track references.
+            return@flatMapLatest combine(participantToTrackPubFlows) { participantToTrackPubList ->
+                participantToTrackPubList.flatMap { (participant, trackPubs) ->
+                    calculateTrackReferences(
+                        participant = participant,
+                        trackPublications = trackPubs.values,
+                        sources = sources,
+                        usePlaceholders = usePlaceholders,
+                        onlySubscribed = onlySubscribed
+                    )
+                }
+            }
+        }
 }
 
 /**
@@ -92,31 +116,44 @@ fun Room.getTrackReferences(
 ): List<TrackReference> {
     val allParticipants = listOf(localParticipant).plus(remoteParticipants.values)
     return allParticipants.flatMap { participant ->
-        sources.map { source ->
-            var tracks = participant.trackPublications.values.mapNotNull { trackPub ->
-                if (trackPub.source == source &&
-                    (!onlySubscribed || trackPub.subscribed)
-                ) {
-                    TrackReference(
-                        participant = participant,
-                        publication = trackPub,
-                        source = trackPub.source
-                    )
-                } else {
-                    null
-                }
-            }
-            if (tracks.isEmpty() && usePlaceholders.contains(source)) {
-                // Add placeholder
-                tracks = listOf(
-                    TrackReference(
-                        participant = participant,
-                        publication = null,
-                        source = source,
-                    )
+        participant.getTrackReferencesBySource(sources, usePlaceholders, onlySubscribed)
+    }
+}
+
+internal fun calculateTrackReferences(
+    participant: Participant,
+    trackPublications: Collection<TrackPublication>,
+    sources: List<Track.Source>,
+    usePlaceholders: Set<Track.Source> = emptySet(),
+    onlySubscribed: Boolean = true
+): List<TrackReference> {
+    return sources.flatMap { source ->
+        // Get all tracks for source
+        var tracks = trackPublications.mapNotNull { trackPub ->
+            if (trackPub.source == source &&
+                (!onlySubscribed || trackPub.subscribed)
+            ) {
+                TrackReference(
+                    participant = participant,
+                    publication = trackPub,
+                    source = trackPub.source
                 )
+            } else {
+                null
             }
-            return@flatMap tracks
         }
+
+        // If no tracks exist for source, create a placeholder.
+        if (tracks.isEmpty() && usePlaceholders.contains(source)) {
+            // Add placeholder
+            tracks = listOf(
+                TrackReference(
+                    participant = participant,
+                    publication = null,
+                    source = source,
+                )
+            )
+        }
+        tracks
     }
 }
