@@ -18,6 +18,8 @@ package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import io.livekit.android.compose.local.ParticipantLocal
+import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.requireParticipant
 import io.livekit.android.compose.local.requireRoom
 import io.livekit.android.compose.types.TrackReference
@@ -29,6 +31,17 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 
+/**
+ * Returns an array of TrackReferences for a participant depending the sources provided.
+ *
+ * @param sources The sources of the tracks to provide. Defaults to camera and screen share tracks.
+ * @param participantIdentity The identity of the participant.
+ * @param usePlaceholders A set of sources to provide placeholders for.
+ *     A placeholder will provide a TrackReference for participants that don't
+ *     yet have a track published for that source. Defaults to no placeholders.
+ * @param passedRoom The room to use on, or [RoomLocal] if null.
+ * @param onlySubscribed If true, only return tracks that have been subscribed. Defaults to true.
+ */
 @Composable
 fun rememberParticipantTrackReferences(
     sources: List<Track.Source>,
@@ -48,14 +61,24 @@ fun rememberParticipantTrackReferences(
     )
 }
 
+/**
+ * Returns an array of TrackReferences for a participant depending the sources provided.
+ *
+ * @param sources The sources of the tracks to provide. Defaults to camera and screen share tracks.
+ * @param usePlaceholders A set of sources to provide placeholders for.
+ *     A placeholder will provide a TrackReference for participants that don't
+ *     yet have a track published for that source. Defaults to no placeholders.
+ * @param passedParticipant The participant to use on, or [ParticipantLocal] if null/not passed.
+ * @param onlySubscribed If true, only return tracks that have been subscribed. Defaults to true.
+ */
 @Composable
 fun rememberParticipantTrackReferences(
     sources: List<Track.Source> = listOf(
         Track.Source.CAMERA,
         Track.Source.SCREEN_SHARE
     ),
-    passedParticipant: Participant? = null,
     usePlaceholders: Set<Track.Source> = emptySet(),
+    passedParticipant: Participant? = null,
     onlySubscribed: Boolean = true,
 ): List<TrackReference> {
     val participant = requireParticipant(passedParticipant)
@@ -71,12 +94,12 @@ fun rememberParticipantTrackReferences(
 }
 
 /**
- * A flow of the TrackReferences/placeholders in the room.
+ * A flow of the TrackReferences/placeholders for a participant.
  *
  * @see rememberTracks
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-fun participantTrackReferencesFlow(
+internal fun participantTrackReferencesFlow(
     participant: Participant,
     sources: List<Track.Source>,
     usePlaceholders: Set<Track.Source> = emptySet(),
@@ -86,38 +109,20 @@ fun participantTrackReferencesFlow(
         .mapLatest { participant.getTrackReferencesBySource(sources, usePlaceholders, onlySubscribed) }
 }
 
+
+/**
+ * @see rememberParticipantTrackReferences
+ */
 fun Participant.getTrackReferencesBySource(
     sources: List<Track.Source>,
     usePlaceholders: Set<Track.Source> = emptySet(),
     onlySubscribed: Boolean = true
 ): List<TrackReference> {
-    return sources.flatMap { source ->
-        // Get all tracks for source
-        var tracks = trackPublications.values.mapNotNull { trackPub ->
-            if (trackPub.source == source &&
-                (!onlySubscribed || trackPub.subscribed)
-            ) {
-                TrackReference(
-                    participant = this,
-                    publication = trackPub,
-                    source = trackPub.source
-                )
-            } else {
-                null
-            }
-        }
-
-        // If no tracks exist for source, create a placeholder.
-        if (tracks.isEmpty() && usePlaceholders.contains(source)) {
-            // Add placeholder
-            tracks = listOf(
-                TrackReference(
-                    participant = this,
-                    publication = null,
-                    source = source,
-                )
-            )
-        }
-        tracks
-    }
+    return calculateTrackReferences(
+        participant = this,
+        trackPublications = this.trackPublications.values,
+        sources = sources,
+        usePlaceholders = usePlaceholders,
+        onlySubscribed = onlySubscribed,
+    )
 }
