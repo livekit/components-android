@@ -49,5 +49,5 @@ internal fun <T : Track> rememberTrack(trackPublication: TrackPublication?): T? 
  */
 @Composable
 fun <T : Track> rememberTrack(trackIdentifier: TrackIdentifier): T? {
-    return rememberTrack(trackIdentifier.getTrackPublication())
+    return rememberTrack(trackIdentifier.publication)
 }
