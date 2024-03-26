@@ -8,6 +8,9 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // For local debug, do not commit uncommented.
+        // mavenLocal()
+
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
