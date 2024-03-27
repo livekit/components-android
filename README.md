@@ -88,8 +88,8 @@ fun exampleComposable() {
 
 ## Example App
 
-See our [Livestream Example app](https://github.com/livekit-examples/android-livestream) for a fully-functional livestreaming app, with more
-fleshed out usage of the components.
+See our [Meet Example app](https://github.com/livekit-examples/android-components-meet) for a simple teleconferencing app, and [Livestream Example app](https://github.com/livekit-examples/android-livestream) for a 
+fully-functional livestreaming app, with more fleshed out usage of the Components SDK.
 
 <!--BEGIN_REPO_NAV-->
 <br/><table>
