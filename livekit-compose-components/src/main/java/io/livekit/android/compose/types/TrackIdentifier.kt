@@ -53,7 +53,7 @@ data class TrackSource(
             } else {
                 throw IllegalStateException("At least one of source or name must be provided!")
             }
-    }
+        }
 }
 
 /**
