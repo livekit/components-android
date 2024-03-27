@@ -17,7 +17,6 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import io.livekit.android.compose.local.requireRoom
@@ -28,8 +27,8 @@ import io.livekit.android.util.flow
  * Holder for basic [Room] information.
  */
 data class RoomInfo(
-    val name: State<String?>,
-    val metadata: State<String?>,
+    val name: String?,
+    val metadata: String?,
 )
 
 /**
@@ -39,10 +38,10 @@ data class RoomInfo(
 fun rememberRoomInfo(passedRoom: Room? = null): RoomInfo {
     val room = requireRoom(passedRoom = passedRoom)
 
-    val name = room::name.flow.collectAsState()
-    val metadata = room::metadata.flow.collectAsState()
+    val name = room::name.flow.collectAsState().value
+    val metadata = room::metadata.flow.collectAsState().value
 
-    val roomInfo = remember(room) {
+    val roomInfo = remember(name, metadata) {
         RoomInfo(
             name = name,
             metadata = metadata,

@@ -82,8 +82,9 @@ dokkaHtml {
     }
 }
 
+var livekitVersion = "2.2.0"
 dependencies {
-    api "io.livekit:livekit-android:2.1.1"
+    api "io.livekit:livekit-android:${livekitVersion}"
 
     implementation libs.kotlinx.serialization.json
 
@@ -101,6 +102,8 @@ dependencies {
     testImplementation libs.androidx.test.core
     testImplementation libs.coroutines.test
     testImplementation 'app.cash.turbine:turbine:1.0.0'
+    //noinspection GradleDynamicVersion
+    testImplementation "io.livekit:livekit-android-test:${livekitVersion}"
     androidTestImplementation libs.androidx.test.junit
     androidTestImplementation libs.espresso
 }

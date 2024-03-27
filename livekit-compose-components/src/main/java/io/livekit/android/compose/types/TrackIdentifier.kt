@@ -26,7 +26,7 @@ import io.livekit.android.room.track.TrackPublication
 interface TrackIdentifier {
     val participant: Participant
 
-    fun getTrackPublication(): TrackPublication?
+    val publication: TrackPublication?
 }
 
 /**
@@ -41,18 +41,19 @@ data class TrackSource(
         require(source != null || name != null) { "At least one of source or name must be provided!" }
     }
 
-    override fun getTrackPublication(): TrackPublication? {
-        return if (source != null && name != null) {
-            participant.trackPublications.values
-                .firstOrNull { p -> p.source == source && p.name == name }
-        } else if (source != null) {
-            participant.getTrackPublication(source)
-        } else if (name != null) {
-            participant.getTrackPublicationByName(name)
-        } else {
-            throw IllegalStateException("At least one of source or name must be provided!")
+    override val publication: TrackPublication?
+        get() {
+            return if (source != null && name != null) {
+                participant.trackPublications.values
+                    .firstOrNull { p -> p.source == source && p.name == name }
+            } else if (source != null) {
+                participant.getTrackPublication(source)
+            } else if (name != null) {
+                participant.getTrackPublicationByName(name)
+            } else {
+                throw IllegalStateException("At least one of source or name must be provided!")
+            }
         }
-    }
 }
 
 /**
@@ -60,12 +61,9 @@ data class TrackSource(
  */
 data class TrackReference(
     override val participant: Participant,
-    val publication: TrackPublication?,
+    override val publication: TrackPublication?,
     val source: Track.Source,
 ) : TrackIdentifier {
-    override fun getTrackPublication(): TrackPublication? {
-        return publication
-    }
 
     fun isPlaceholder(): Boolean {
         return publication == null
