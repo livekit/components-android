@@ -17,6 +17,7 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import io.livekit.android.compose.local.requireRoom
@@ -26,6 +27,7 @@ import io.livekit.android.util.flow
 /**
  * Holder for basic [Room] information.
  */
+@Immutable
 data class RoomInfo(
     val name: String?,
     val metadata: String?,

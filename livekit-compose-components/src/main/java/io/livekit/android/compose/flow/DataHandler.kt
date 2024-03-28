@@ -17,6 +17,7 @@
 package io.livekit.android.compose.flow
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,6 +37,7 @@ data class DataSendOptions(val reliability: DataPublishReliability, val identiti
  *
  * @see rememberDataMessageHandler
  */
+@Stable
 class DataHandler(
     /** A flow for all the [DataMessage] received. */
     val messageFlow: Flow<DataMessage>,
