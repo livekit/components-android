@@ -141,6 +141,9 @@ fun rememberLiveKitRoom(
         roomOptions?.adaptiveStream?.let {
             room.adaptiveStream = it
         }
+        roomOptions?.e2eeOptions?.let {
+            room.e2eeOptions = it
+        }
         onDispose { }
     }
     HandleRoomState(Room.State.CONNECTED, room) { _, _ -> onConnected?.invoke(this, room) }
