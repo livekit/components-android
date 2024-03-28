@@ -23,6 +23,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import livekit.org.webrtc.Camera1Enumerator
 import livekit.org.webrtc.Camera2Enumerator
 
+@Immutable
 data class DeviceState(val selectedDeviceId: String, val deviceIds: List<String>)
 
 /**
