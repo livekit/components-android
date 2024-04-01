@@ -33,7 +33,7 @@ jobs:
       run: ./gradlew dokkaHtml
 
     - name: Upload to S3
-      run: aws s3 cp ./components-android/build/dokka/html/ s3://livekit-docs/components-android/ --recursive
+      run: aws s3 cp ./livekit-compose-components/build/dokka/html/ s3://livekit-docs/components-android/ --recursive
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.DOCS_DEPLOY_AWS_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.DOCS_DEPLOY_AWS_API_SECRET }}
