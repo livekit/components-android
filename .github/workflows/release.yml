@@ -29,15 +29,15 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-#    - name: Build docs
-#      run: ./gradlew dokkaHtml
-#
-#    - name: Upload to S3
-#      run: aws s3 cp ./livekit-android-sdk/build/dokka/html/ s3://livekit-docs/client-sdk-android/ --recursive
-#      env:
-#        AWS_ACCESS_KEY_ID: ${{ secrets.DOCS_DEPLOY_AWS_ACCESS_KEY }}
-#        AWS_SECRET_ACCESS_KEY: ${{ secrets.DOCS_DEPLOY_AWS_API_SECRET }}
-#        AWS_DEFAULT_REGION: "us-east-1"
+    - name: Build docs
+      run: ./gradlew dokkaHtml
+
+    - name: Upload to S3
+      run: aws s3 cp ./components-android/build/dokka/html/ s3://livekit-docs/components-android/ --recursive
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.DOCS_DEPLOY_AWS_ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.DOCS_DEPLOY_AWS_API_SECRET }}
+        AWS_DEFAULT_REGION: "us-east-1"
 
     - name: Build with Gradle
       run: ./gradlew livekit-compose-components:assembleRelease livekit-compose-components:testRelease
