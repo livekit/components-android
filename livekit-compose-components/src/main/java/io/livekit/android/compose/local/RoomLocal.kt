@@ -156,16 +156,19 @@ fun rememberLiveKitRoom(
     HandleRoomState(Room.State.DISCONNECTED, room) { _, _ -> onDisconnected?.invoke(this, room) }
 
     LaunchedEffect(room, connect, url, token, connectOptions) {
+        if (!connect) {
+            room.disconnect()
+            return@LaunchedEffect
+        }
+
         if (url.isNullOrEmpty() || token.isNullOrEmpty()) {
             return@LaunchedEffect
         }
 
-        if (connect) {
-            try {
-                room.connect(url, token, connectOptions ?: ConnectOptions())
-            } catch (e: Exception) {
-                onError?.invoke(room, RoomException.ConnectException(e.message, e))
-            }
+        try {
+            room.connect(url, token, connectOptions ?: ConnectOptions())
+        } catch (e: Exception) {
+            onError?.invoke(room, RoomException.ConnectException(e.message, e))
         }
     }
 
@@ -187,9 +190,9 @@ fun rememberLiveKitRoom(
  * @param token the token to connect to livekit with.
  * @param audio enable or disable audio. Defaults to false.
  * @param video enable or disable video. Defaults to false.
- * @param connect whether the room should automatically connect to the server. Defaults to true.
+ * @param connect whether the room should connect to the server. Defaults to true.
  * @param roomOptions options to pass to the [Room].
- * @param liveKitOverrides overrides to pass to the [Room].
+ * @param liveKitOverrides overrides to pass to the [Room]. Will not reflect changes beyond the initial creation.
  * @param connectOptions options to use when connecting. Will not reflect changes if already connected.
  * @param onConnected a listener to be called upon room connection.
  * @param onDisconnected a listener to be called upon room disconnection.
