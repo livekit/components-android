@@ -56,19 +56,12 @@ subprojects {
 ## Basic Usage
 
 ```kotlin
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.runtime.Composable
-import io.livekit.android.compose.local.RoomScope
-import io.livekit.android.compose.state.rememberTracks
-import io.livekit.android.compose.ui.VideoTrackView
-
 @Composable
 fun exampleComposable() {
     // Create and connect to a room.
     RoomScope(
-        url = "wss://my-livekit-server",
-        token = "generated-jwt",
+        url = wsURL,
+        token = token,
         audio = true,
         video = true,
         connect = true,
@@ -76,10 +69,13 @@ fun exampleComposable() {
         // Get all the tracks in the room
         val trackRefs = rememberTracks()
 
-        // Display the tracks
-        LazyVerticalGrid(columns = GridCells.Fixed(2)) {
+        // Display the video tracks
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(trackRefs.size) { index ->
-                VideoTrackView(trackReference = trackRefs[index])
+                VideoTrackView(
+                    trackReference = trackRefs[index],
+                    modifier = Modifier.fillParentMaxHeight(0.5f)
+                )
             }
         }
     }
