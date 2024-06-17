@@ -18,7 +18,7 @@ Use this SDK to add real-time video, audio and data features to your Android app
 
 - [Docs](#docs)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Usage](#basic-usage)
 
 ## Docs
 
