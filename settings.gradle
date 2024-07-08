@@ -26,3 +26,6 @@ dependencyResolutionManagement {
 }
 rootProject.name = "components-android"
 include ':livekit-compose-components'
+
+// For local development with the LiveKit Android SDK only.
+// includeBuild("../client-sdk-android")
