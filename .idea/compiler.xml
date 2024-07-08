@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="17" />
+    <bytecodeTargetLevel target="17">
+      <module name="livekit-android.livekit-lint" target="1.8" />
+      <module name="livekit-android.livekit-lint.main" target="1.8" />
+      <module name="livekit-android.livekit-lint.test" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

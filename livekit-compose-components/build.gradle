@@ -86,6 +86,8 @@ var livekitVersion = "2.2.0"
 dependencies {
     api "io.livekit:livekit-android:${livekitVersion}"
 
+    // For local development with the LiveKit Android SDK only.
+    // api "io.livekit:livekit-android-sdk"
     implementation libs.kotlinx.serialization.json
 
     implementation platform(libs.compose.bom)
