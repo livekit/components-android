@@ -182,6 +182,7 @@ fun rememberLiveKitRoom(
     DisposableEffect(room, passedRoom) {
         onDispose {
             if (room != passedRoom) {
+                room.disconnect()
                 room.release()
             }
         }
