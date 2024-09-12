@@ -24,6 +24,7 @@ import io.livekit.android.compose.flow.rememberEventSelector
 import io.livekit.android.events.RoomEvent
 import io.livekit.android.test.MockE2ETest
 import io.livekit.android.test.assert.assertIsClass
+import io.livekit.android.test.mock.TestData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import org.junit.Test
@@ -45,6 +46,26 @@ class RememberEventSelectorTest : MockE2ETest() {
             }
         }
         connect()
+        job.join()
+    }
+
+    @Test
+    fun getsEventsFiltered() = runTest {
+        val job = coroutineRule.scope.launch {
+            moleculeFlow(RecompositionClock.Immediate) {
+                rememberEventSelector<RoomEvent.ParticipantConnected>(room = room).collectAsState(initial = null).value
+            }.test {
+                // discard initial state.
+                awaitItem()
+
+                // Connected event should be skipped and only the remote participant connection event should be emitted.
+                val event = awaitItem()
+                assertIsClass(RoomEvent.ParticipantConnected::class.java, event)
+                ensureAllEventsConsumed()
+            }
+        }
+        connect()
+        wsFactory.receiveMessage(TestData.PARTICIPANT_JOIN)
         job.join()
     }
 }
