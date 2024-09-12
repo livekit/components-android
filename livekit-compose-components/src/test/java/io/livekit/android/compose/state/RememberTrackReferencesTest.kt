@@ -19,15 +19,23 @@ package io.livekit.android.compose.state
 import app.cash.molecule.RecompositionClock
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
+import io.livekit.android.room.SignalClient
+import io.livekit.android.room.participant.RemoteParticipant
 import io.livekit.android.room.track.Track
 import io.livekit.android.test.MockE2ETest
+import io.livekit.android.test.mock.MockMediaStream
+import io.livekit.android.test.mock.MockRtpReceiver
+import io.livekit.android.test.mock.MockVideoStreamTrack
 import io.livekit.android.test.mock.TestData
+import io.livekit.android.test.mock.createMediaStreamId
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.mockito.Mockito
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RememberTrackReferencesTest : MockE2ETest() {
@@ -98,5 +106,55 @@ class RememberTrackReferencesTest : MockE2ETest() {
         simulateMessageFromServer(TestData.PARTICIPANT_JOIN)
         simulateMessageFromServer(TestData.PARTICIPANT_DISCONNECT)
         job.join()
+    }
+
+
+    @Test
+    fun whenRemoteParticipantTrackSubscribed() = runTest {
+        connect()
+        val job = coroutineRule.scope.launch {
+            moleculeFlow(RecompositionClock.Immediate) {
+                rememberTracks(passedRoom = room, onlySubscribed = true)
+            }.test {
+                // discard initial state.
+                assertTrue(awaitItem().isEmpty())
+
+                val trackRefs = awaitItem()
+                assertEquals(1, trackRefs.size)
+
+                val remoteParticipant = room.remoteParticipants.values.first()
+                val trackRef = trackRefs.first()
+                val (remoteTrackPublication) = remoteParticipant.videoTrackPublications.first()
+                assertFalse(trackRef.isPlaceholder())
+                assertEquals(Track.Source.CAMERA, trackRef.source)
+                assertEquals(remoteParticipant, trackRef.participant)
+                assertEquals(remoteTrackPublication, trackRef.publication)
+            }
+        }
+        simulateMessageFromServer(TestData.PARTICIPANT_JOIN)
+        room.onAddTrack(
+            MockRtpReceiver.create(),
+            MockVideoStreamTrack(),
+            arrayOf(
+                MockMediaStream(
+                    id = createMediaStreamId(
+                        TestData.REMOTE_PARTICIPANT.sid,
+                        TestData.REMOTE_VIDEO_TRACK.sid,
+                    ),
+                ),
+            ),
+        )
+        job.join()
+    }
+
+    private fun createFakeRemoteParticipant(): RemoteParticipant {
+        return RemoteParticipant(
+            TestData.REMOTE_PARTICIPANT,
+            Mockito.mock(SignalClient::class.java),
+            Dispatchers.IO,
+            Dispatchers.Default,
+        ).apply {
+            updateFromInfo(TestData.REMOTE_PARTICIPANT)
+        }
     }
 }

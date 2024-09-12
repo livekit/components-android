@@ -162,13 +162,13 @@ internal fun calculateTrackReferences(
     }
 }
 
-private fun Flow<Map<String, TrackPublication>>.trackUpdateFlow(): Flow<List<Pair<TrackPublication, Track?>>> {
-    return flatMapLatest { videoTracks ->
-        if (videoTracks.isEmpty()) {
+internal fun Flow<Map<String, TrackPublication>>.trackUpdateFlow(): Flow<List<Pair<TrackPublication, Track?>>> {
+    return flatMapLatest { publicationMap ->
+        if (publicationMap.isEmpty()) {
             flowOf(emptyList())
         } else {
             combine(
-                videoTracks.values
+                publicationMap.values
                     .map { trackPublication ->
                         // Re-emit when track changes
                         trackPublication::track.flow
