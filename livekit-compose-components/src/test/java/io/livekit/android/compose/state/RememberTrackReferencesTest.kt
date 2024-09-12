@@ -108,7 +108,6 @@ class RememberTrackReferencesTest : MockE2ETest() {
         job.join()
     }
 
-
     @Test
     fun whenRemoteParticipantTrackSubscribed() = runTest {
         connect()
