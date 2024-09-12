@@ -106,10 +106,12 @@ internal fun participantTrackReferencesFlow(
     onlySubscribed: Boolean = true,
 ): Flow<List<TrackReference>> {
     return participant::trackPublications.flow
+        .trackUpdateFlow()
+        .mapLatest { list -> list.map { (pub, _) -> pub } }
         .mapLatest { trackPubs ->
             calculateTrackReferences(
                 participant = participant,
-                trackPublications = trackPubs.values,
+                trackPublications = trackPubs,
                 sources = sources,
                 usePlaceholders = usePlaceholders,
                 onlySubscribed = onlySubscribed,
