@@ -94,8 +94,7 @@ inline fun <reified T : TrackEvent> rememberEventSelector(track: Track): Flow<T>
 
 @Composable
 inline fun <reified T, U> rememberEventSelector(eventListenable: EventListenable<U>): Flow<T>
-        where T : U {
-
+    where T : U {
     val flow = remember(eventListenable) {
         MutableSharedFlow<T>(extraBufferCapacity = 100)
     }
