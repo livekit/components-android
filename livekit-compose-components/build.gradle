@@ -82,7 +82,7 @@ dokkaHtml {
     }
 }
 
-var livekitVersion = "2.2.0"
+var livekitVersion = "2.8.1"
 dependencies {
     api "io.livekit:livekit-android:${livekitVersion}"
 
