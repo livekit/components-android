@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import io.livekit.android.LiveKit
 import io.livekit.android.renderer.TextureViewRenderer
 import io.livekit.android.room.track.CameraPosition
 import livekit.org.webrtc.Camera1Enumerator
@@ -41,6 +42,9 @@ import livekit.org.webrtc.VideoFrame
  * A standalone camera preview composable that can be used without a Room object.
  *
  * Due to hardware limitations, this should not be used while any camera is in use, or it may fail.
+ *
+ * If using this outside of a RoomScope, ensure that [LiveKit.init] is called prior to use
+ * (e.g. in your Application's onCreate method).
  */
 @Composable
 fun CameraPreview(cameraPosition: CameraPosition, modifier: Modifier = Modifier, mirror: Boolean = false) {
