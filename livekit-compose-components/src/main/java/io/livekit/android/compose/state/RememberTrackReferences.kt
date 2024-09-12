@@ -30,6 +30,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 
 /**
@@ -86,6 +88,8 @@ internal fun trackReferencesFlow(
             // due to participants being mutable.
             val participantToTrackPubFlows = allParticipants.map { participant ->
                 participant::trackPublications.flow
+                    .trackUpdateFlow()
+                    .mapLatest { list -> list.map { (pub, _) -> pub } }
                     .mapLatest { trackPublications ->
                         participant to trackPublications
                     }
@@ -96,7 +100,7 @@ internal fun trackReferencesFlow(
                 participantToTrackPubList.flatMap { (participant, trackPubs) ->
                     calculateTrackReferences(
                         participant = participant,
-                        trackPublications = trackPubs.values,
+                        trackPublications = trackPubs,
                         sources = sources,
                         usePlaceholders = usePlaceholders,
                         onlySubscribed = onlySubscribed
@@ -155,5 +159,24 @@ internal fun calculateTrackReferences(
             )
         }
         tracks
+    }
+}
+
+private fun Flow<Map<String, TrackPublication>>.trackUpdateFlow(): Flow<List<Pair<TrackPublication, Track?>>> {
+    return flatMapLatest { videoTracks ->
+        if (videoTracks.isEmpty()) {
+            flowOf(emptyList())
+        } else {
+            combine(
+                videoTracks.values
+                    .map { trackPublication ->
+                        // Re-emit when track changes
+                        trackPublication::track.flow
+                            .map { trackPublication to trackPublication.track }
+                    },
+            ) { trackPubs ->
+                trackPubs.toList()
+            }
+        }
     }
 }
