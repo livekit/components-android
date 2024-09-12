@@ -23,13 +23,15 @@ import kotlinx.coroutines.flow.map
 
 /**
  * Collect all the transcriptions for the room.
+ *
+ * @return Returns the collected transcriptions, ordered by [TranscriptionSegment.firstReceivedTime].
  */
 @Beta
 @Composable
 fun rememberTranscriptions(passedRoom: Room? = null): List<TranscriptionSegment> {
     val room = requireRoom(passedRoom)
     val events = rememberEventSelector<RoomEvent.TranscriptionReceived>(room)
-    val flow by remember {
+    val flow by remember(events) {
         derivedStateOf {
             events.map { it.transcriptionSegments }
         }
@@ -40,13 +42,15 @@ fun rememberTranscriptions(passedRoom: Room? = null): List<TranscriptionSegment>
 
 /**
  * Collect all the transcriptions for a track reference.
+ *
+ * @return Returns the collected transcriptions, ordered by [TranscriptionSegment.firstReceivedTime].
  */
 @Beta
 @Composable
 fun rememberTrackTranscriptions(trackReference: TrackReference): List<TranscriptionSegment> {
     val publication = trackReference.publication ?: return emptyList()
     val events = rememberEventSelector<TrackPublicationEvent.TranscriptionReceived>(publication)
-    val flow by remember {
+    val flow by remember(events) {
         derivedStateOf {
             events.map { it.transcriptions }
         }
@@ -57,13 +61,15 @@ fun rememberTrackTranscriptions(trackReference: TrackReference): List<Transcript
 
 /**
  * Collect all the transcriptions for a participant.
+ *
+ * @return Returns the collected transcriptions, ordered by [TranscriptionSegment.firstReceivedTime].
  */
 @Beta
 @Composable
 fun rememberParticipantTranscriptions(passedParticipant: Participant? = null): List<TranscriptionSegment> {
     val participant = requireParticipant(passedParticipant)
     val events = rememberEventSelector<ParticipantEvent.TranscriptionReceived>(participant)
-    val flow by remember {
+    val flow by remember(events) {
         derivedStateOf {
             events.map { it.transcriptions }
         }
@@ -76,7 +82,7 @@ fun rememberParticipantTranscriptions(passedParticipant: Participant? = null): L
 @Composable
 internal fun rememberTranscriptionsImpl(transcriptionsFlow: Flow<List<TranscriptionSegment>>): List<TranscriptionSegment> {
     val segments = remember(transcriptionsFlow) { mutableStateMapOf<String, TranscriptionSegment>() }
-    val orderedSegments = remember {
+    val orderedSegments = remember(segments) {
         derivedStateOf {
             segments.values.sortedBy { segment -> segment.firstReceivedTime }
         }
