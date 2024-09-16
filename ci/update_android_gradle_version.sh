@@ -17,5 +17,5 @@ else
 fi
 
 sed -i "${ARGS[@]}" -e "/VERSION_NAME=/ s/=.*/=$PACKAGE_VERSION/" ./gradle.properties
-sed -i "${ARGS[@]}" -e '/def livekit_version =/ s/".*"/"'"$PACKAGE_VERSION"'"/' ./README.md
-sed -i "${ARGS[@]}" -e '/SNAPSHOT/ s/".*"/"'"io.livekit:livekit-android:$SNAPSHOT_VERSION"'"/' ./README.md
+sed -i "${ARGS[@]}" -e '/livekit-android-compose-components:.*[0-9]"$/ s/livekit-android-compose-components:.*/livekit-android-compose-components:'"$PACKAGE_VERSION'/" ./README.md
+sed -i "${ARGS[@]}" -e '/SNAPSHOT/ s/".*"/"'"io.livekit:livekit-android-compose-components:$SNAPSHOT_VERSION"'"/' ./README.md
