@@ -16,3 +16,9 @@
 local.properties
 /.idea/migrations.xml
 /.idea/gradle.xml
+
+### Changesets
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
