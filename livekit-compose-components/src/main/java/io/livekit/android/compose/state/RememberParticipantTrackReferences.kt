@@ -45,13 +45,17 @@ import kotlinx.coroutines.flow.mapLatest
 @Composable
 fun rememberParticipantTrackReferences(
     sources: List<Track.Source>,
-    participantIdentity: Participant.Identity,
+    participantIdentity: Participant.Identity? = null,
     passedRoom: Room? = null,
     usePlaceholders: Set<Track.Source> = emptySet(),
     onlySubscribed: Boolean = true,
 ): List<TrackReference> {
     val room = requireRoom(passedRoom)
-    val participant = room.getParticipantByIdentity(participantIdentity)
+    val participant = if (participantIdentity != null) {
+        room.getParticipantByIdentity(participantIdentity)
+    } else {
+        null
+    }
 
     return rememberParticipantTrackReferences(
         sources = sources,

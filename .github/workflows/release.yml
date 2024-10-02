@@ -2,10 +2,6 @@ name: Publish
 
 on:
   workflow_dispatch:
-  push:
-    # only publish on version tags
-    tags:
-      - v*
 
 jobs:
   publish:
