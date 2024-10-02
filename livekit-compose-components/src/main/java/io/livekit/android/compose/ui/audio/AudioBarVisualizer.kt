@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.types.TrackReference
 import io.livekit.android.compose.ui.BarVisualizer
+import io.livekit.android.room.track.AudioTrack
 import io.livekit.android.room.track.RemoteAudioTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,7 +48,7 @@ fun AudioBarVisualizer(
 
     // Attach the sink to the track.
     DisposableEffect(key1 = audioTrackRef) {
-        val track = audioTrackRef?.publication?.track as? RemoteAudioTrack
+        val track = audioTrackRef?.publication?.track as? AudioTrack
         track?.addSink(audioSink)
 
         onDispose {
