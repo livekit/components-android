@@ -1,4 +1,18 @@
-/**
+/*
+ * Copyright 2024 LiveKit, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  * Originally adapted from: https://github.com/dzolnai/ExoVisualizer
  *
  * MIT License
@@ -51,7 +65,6 @@ class FFTAudioAnalyzer {
         private const val SHORT_SIZE = 2
     }
 
-
     val isActive: Boolean
         get() = noise != null
 
@@ -77,7 +90,6 @@ class FFTAudioAnalyzer {
         audioTrackBufferSize = getDefaultBufferSizeInBytes(inputAudioFormat)
 
         srcBuffer = ByteBuffer.allocate(audioTrackBufferSize + BUFFER_EXTRA_SIZE)
-
     }
 
     fun release() {
@@ -118,7 +130,6 @@ class FFTAudioAnalyzer {
         inputBuffer.position(position)
 
         processFFT(this.fftBuffer)
-
     }
 
     private fun processFFT(buffer: ByteBuffer) {
@@ -131,7 +142,6 @@ class FFTAudioAnalyzer {
         // So to get the sample size in the end, we need to take twice as many bytes off the buffer
         val bytesToProcess = SAMPLE_SIZE * 2
         while (srcBufferPosition > bytesToProcess) {
-
             // Move to start of
             srcBuffer.position(0)
 
@@ -149,7 +159,6 @@ class FFTAudioAnalyzer {
             val fft = noise?.fft(src, dst)!!
 
             mutableFftFlow.tryEmit(fft)
-
         }
     }
 

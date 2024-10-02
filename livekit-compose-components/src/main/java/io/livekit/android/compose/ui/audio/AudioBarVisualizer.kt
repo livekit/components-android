@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 LiveKit, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.livekit.android.compose.ui.audio
 
 import androidx.compose.runtime.Composable
@@ -17,13 +33,11 @@ import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.types.TrackReference
 import io.livekit.android.compose.ui.BarVisualizer
 import io.livekit.android.room.track.AudioTrack
-import io.livekit.android.room.track.RemoteAudioTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sqrt
-
 
 /**
  * @param loPass the start index of the FFT samples to use (inclusive). 0 <= loPass < [hiPass].
@@ -75,7 +89,6 @@ fun AudioBarVisualizer(
 
     // Process audio bytes into desired bars
     LaunchedEffect(audioTrackRef, barCount) {
-
         val averages = FloatArray(barCount)
         launch(Dispatchers.IO) {
             fftFlow.collect { fft ->
@@ -103,7 +116,6 @@ private fun calculateAmplitudeBarsFromFFT(
     averages: FloatArray,
     barCount: Int,
 ): FloatArray {
-
     val amplitudes = FloatArray(barCount)
     if (fft.isEmpty()) {
         return amplitudes
@@ -112,7 +124,6 @@ private fun calculateAmplitudeBarsFromFFT(
     // We average out the values over 3 occurences (plus the current one), so big jumps are smoothed out
     // Iterate over the entire FFT result array.
     for (barIndex in 0 until barCount) {
-
         // Note: each FFT is a real and imaginary pair.
         // Scale down by 2 and scale back up to ensure we get an even number.
         val prevLimit = (round(fft.size.toFloat() / 2 * barIndex / barCount).toInt() * 2)
