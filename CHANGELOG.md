@@ -1,5 +1,17 @@
 # components-android
 
+## 1.3.0
+
+### Minor Changes
+
+- Add AudioBarVisualizer for audio waveform visualizations - [#32](https://github.com/livekit/components-android/pull/32) ([@davidliu](https://github.com/davidliu))
+
+- Add rememberConnectionState and rememberVoiceAssistant - [#30](https://github.com/livekit/components-android/pull/30) ([@davidliu](https://github.com/davidliu))
+
+### Patch Changes
+
+- Fix local participant sometimes publishing multiple of local tracks when using RoomScope with audio/video = true - [#33](https://github.com/livekit/components-android/pull/33) ([@davidliu](https://github.com/davidliu))
+
 ## 1.2.0
 
 ### Minor Changes
