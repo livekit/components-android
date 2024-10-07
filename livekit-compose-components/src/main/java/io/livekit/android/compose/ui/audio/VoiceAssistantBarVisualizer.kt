@@ -28,6 +28,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Fill
 import io.livekit.android.annotations.Beta
+import io.livekit.android.compose.state.AgentState
+import io.livekit.android.compose.state.VoiceAssistant
+import io.livekit.android.compose.state.rememberVoiceAssistant
 import io.livekit.android.compose.types.TrackReference
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -35,10 +38,41 @@ import kotlinx.coroutines.isActive
 private const val ON = 1.0f
 private const val OFF = 0.3f
 
+/**
+ * An audio visualizer for a [VoiceAssistant].
+ *
+ * @see [rememberVoiceAssistant]
+ */
 @Beta
 @Composable
 fun VoiceAssistantBarVisualizer(
-    agentState: String?,
+    voiceAssistant: VoiceAssistant,
+    modifier: Modifier = Modifier,
+    barCount: Int = 15,
+    loPass: Int = 50,
+    hiPass: Int = 150,
+    brush: Brush = SolidColor(Color.Black),
+) {
+    VoiceAssistantBarVisualizer(
+        agentState = voiceAssistant.state,
+        audioTrackRef = voiceAssistant.audioTrack,
+        modifier = modifier,
+        barCount = barCount,
+        loPass = loPass,
+        hiPass = hiPass,
+        brush = brush,
+    )
+}
+
+/**
+ * An audio visualizer for a [VoiceAssistant].
+ *
+ * @see [rememberVoiceAssistant]
+ */
+@Beta
+@Composable
+fun VoiceAssistantBarVisualizer(
+    agentState: AgentState?,
     audioTrackRef: TrackReference?,
     modifier: Modifier = Modifier,
     barCount: Int = 15,
@@ -61,7 +95,7 @@ fun VoiceAssistantBarVisualizer(
 
 @Composable
 private fun rememberVoiceAssistantAlphas(
-    agentState: String?,
+    agentState: AgentState?,
     barCount: Int,
 ): FloatArray {
     var sequenceIndex by remember(agentState, barCount) {
@@ -69,25 +103,23 @@ private fun rememberVoiceAssistantAlphas(
     }
     val sequences = remember(agentState, barCount) {
         when (agentState) {
-            "connecting",
-            "initializing" -> generateConnectingSequenceBar(barCount)
+            AgentState.CONNECTING,
+            AgentState.INITIALIZING -> generateConnectingSequenceBar(barCount)
 
-            "listening",
-            "thinking" -> generateListeningSequenceBar(barCount)
+            AgentState.LISTENING,
+            AgentState.THINKING -> generateListeningSequenceBar(barCount)
 
-            "speaking" -> generateSpeakingSequenceBar(barCount)
+            AgentState.SPEAKING -> generateSpeakingSequenceBar(barCount)
             else -> listOf(FloatArray(0))
         }
     }
     val intervalMs = remember(agentState) {
         when (agentState) {
-            "connecting" -> 600L / barCount
-            "initializing" -> 1200L / barCount
-
-            "listening" -> 500L
-            "thinking" -> 150L
-
-            "speaking" -> -1L
+            AgentState.CONNECTING -> 600L / barCount
+            AgentState.INITIALIZING -> 1200L / barCount
+            AgentState.LISTENING -> 500L
+            AgentState.THINKING -> 150L
+            AgentState.SPEAKING -> -1L
             else -> -1L
         }
     }

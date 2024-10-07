@@ -135,6 +135,7 @@ fun rememberAgentState(participant: Participant?): AgentState {
 }
 
 const val PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_KEY = "lk.agent.state"
+const val PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_INITIALIZING = "initializing"
 const val PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_LISTENING = "listening"
 const val PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_THINKING = "thinking"
 const val PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_SPEAKING = "speaking"
@@ -151,9 +152,10 @@ enum class AgentState {
     companion object {
         fun fromAttribute(attribute: String?): AgentState {
             return when (attribute) {
-                "listening" -> LISTENING
-                "thinking" -> THINKING
-                "speaking" -> SPEAKING
+                PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_INITIALIZING -> INITIALIZING
+                PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_LISTENING -> LISTENING
+                PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_THINKING -> THINKING
+                PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_SPEAKING -> SPEAKING
                 else -> UNKNOWN
             }
         }

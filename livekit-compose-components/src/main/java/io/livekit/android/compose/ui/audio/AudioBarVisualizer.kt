@@ -40,6 +40,8 @@ import kotlin.math.round
 import kotlin.math.sqrt
 
 /**
+ * An audio visualizer for an audio [TrackReference].
+ *
  * @param loPass the start index of the FFT samples to use (inclusive). 0 <= loPass < [hiPass].
  * @param hiPass the end index of the FFT samples to use (exclusive). [loPass] < hiPass <= [FFTAudioAnalyzer.SAMPLE_SIZE].
  */
