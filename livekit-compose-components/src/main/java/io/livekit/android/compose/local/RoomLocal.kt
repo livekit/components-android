@@ -147,12 +147,43 @@ fun rememberLiveKitRoom(
         onDispose { }
     }
     HandleRoomState(Room.State.CONNECTED, room) { _, _ -> onConnected?.invoke(this, room) }
-    HandleRoomState(Room.State.CONNECTED, room, audio) { _, _ ->
-        room.localParticipant.setMicrophoneEnabled(audio)
+
+    // Only activate once per connect
+    val audioOnce = remember(connect, audio) {
+        var once = true
+        val ret: suspend CoroutineScope.(Room, Room.State) -> Unit = { r: Room, _: Room.State ->
+            if (once) {
+                once = false
+                r.localParticipant.setMicrophoneEnabled(video)
+            }
+        }
+        return@remember ret
     }
-    HandleRoomState(Room.State.CONNECTED, room, video) { _, _ ->
-        room.localParticipant.setCameraEnabled(video)
+    HandleRoomState(
+        state = Room.State.CONNECTED,
+        passedRoom = room,
+        keys = arrayOf(room, audioOnce),
+        onState = audioOnce
+    )
+
+    // Only activate once per connect
+    val videoOnce = remember(connect, video) {
+        var once = true
+        val ret: suspend CoroutineScope.(Room, Room.State) -> Unit = { r: Room, _: Room.State ->
+            if (once) {
+                once = false
+                r.localParticipant.setCameraEnabled(video)
+            }
+        }
+        return@remember ret
     }
+    HandleRoomState(
+        state = Room.State.CONNECTED,
+        passedRoom = room,
+        keys = arrayOf(room, videoOnce),
+        onState = videoOnce
+    )
+
     HandleRoomState(Room.State.DISCONNECTED, room) { _, _ -> onDisconnected?.invoke(this, room) }
 
     LaunchedEffect(room, connect, url, token, connectOptions) {
