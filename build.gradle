@@ -49,6 +49,9 @@ subprojects {
         }
         kotlin {
             target("src/*/java/**/*.kt")
+            targetExclude(
+                    "src/*/java/**/FFTAudioAnalyzer.kt", // Different license
+            )
             ktlint("0.50.0")
                     .setEditorConfigPath("$rootDir/.editorconfig")
             licenseHeaderFile(rootProject.file("LicenseHeaderFile.txt"))
