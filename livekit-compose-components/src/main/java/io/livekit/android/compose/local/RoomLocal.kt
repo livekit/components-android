@@ -30,6 +30,7 @@ import io.livekit.android.LiveKitOverrides
 import io.livekit.android.RoomOptions
 import io.livekit.android.room.Room
 import io.livekit.android.room.RoomException
+import io.livekit.android.util.LKLog
 import io.livekit.android.util.flow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
@@ -84,6 +85,10 @@ fun HandleRoomState(
     )
 }
 
+private val DEFAULT_ERROR_HANDLER: ((Room, Exception?) -> Unit) = { _, e ->
+    LKLog.e(e) { "Error connecting to the server:" }
+}
+
 /**
  * Remembers a new [Room] object.
  *
@@ -112,7 +117,7 @@ fun rememberLiveKitRoom(
     connectOptions: ConnectOptions? = null,
     onConnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
     onDisconnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
-    onError: ((Room, Exception?) -> Unit)? = null,
+    onError: ((Room, Exception?) -> Unit)? = DEFAULT_ERROR_HANDLER,
     passedRoom: Room? = null,
 ): Room {
     val context = LocalContext.current
@@ -154,7 +159,7 @@ fun rememberLiveKitRoom(
         val ret: suspend CoroutineScope.(Room, Room.State) -> Unit = { r: Room, _: Room.State ->
             if (once) {
                 once = false
-                r.localParticipant.setMicrophoneEnabled(video)
+                r.localParticipant.setMicrophoneEnabled(audio)
             }
         }
         return@remember ret
