@@ -52,6 +52,12 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 @Beta
+/**
+ * A Fast Fourier Transform analyzer for audio bytes.
+ *
+ * Use [queueInput] to add audio bytes, and collect on [fftFlow]
+ * to receive the analyzed frequencies.
+ */
 class FFTAudioAnalyzer {
 
     companion object {
@@ -80,6 +86,10 @@ class FFTAudioAnalyzer {
     private val src = FloatArray(SAMPLE_SIZE)
 
     private val mutableFftFlow = MutableSharedFlow<FloatArray>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    /**
+     * A flow of frequencies for the audio bytes given through [queueInput].
+     */
     val fftFlow: Flow<FloatArray> = mutableFftFlow
 
     fun configure(inputAudioFormat: AudioFormat) {
@@ -97,6 +107,9 @@ class FFTAudioAnalyzer {
         noise = null
     }
 
+    /**
+     * Add audio bytes to be processed.
+     */
     fun queueInput(inputBuffer: ByteBuffer) {
         if (!isActive) {
             return
