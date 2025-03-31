@@ -16,7 +16,7 @@
 
 package io.livekit.android.compose.state
 
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import io.livekit.android.room.participant.Participant
@@ -39,7 +39,7 @@ class RememberParticipantInfoTest : BaseTest() {
 
     @Test
     fun getsParticipantInfo() = runTest {
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberParticipantInfo(participant)
         }.test {
             val info = awaitItem()
@@ -52,7 +52,7 @@ class RememberParticipantInfoTest : BaseTest() {
     @Test
     fun getsParticipantInfoChanges() = runTest {
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberParticipantInfo(participant)
             }.test {
                 delay(10)

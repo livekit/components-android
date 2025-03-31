@@ -16,7 +16,7 @@
 
 package io.livekit.android.compose.state
 
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import io.livekit.android.compose.types.TrackReference
@@ -45,7 +45,7 @@ class RememberTrackMutedTest : MockE2ETest() {
             source = Track.Source.fromProto(TestData.REMOTE_VIDEO_TRACK.source),
             publication = publication,
         )
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberTrackMuted(trackRef = trackReference)
         }.test {
             assertFalse(awaitItem())
@@ -64,7 +64,7 @@ class RememberTrackMutedTest : MockE2ETest() {
             publication = null,
         )
 
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberTrackMuted(trackReference)
         }.test {
             delay(10)
@@ -87,7 +87,7 @@ class RememberTrackMutedTest : MockE2ETest() {
         )
 
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberTrackMuted(trackReference)
             }.test {
                 assertFalse(awaitItem())

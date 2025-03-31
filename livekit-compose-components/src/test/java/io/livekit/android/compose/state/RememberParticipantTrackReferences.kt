@@ -16,7 +16,7 @@
 
 package io.livekit.android.compose.state
 
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import io.livekit.android.room.SignalClient
@@ -43,7 +43,7 @@ class RememberParticipantTrackReferences : MockE2ETest() {
     @Test
     fun getEmptyTrackReferences() = runTest {
         connect()
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberParticipantTrackReferences(passedParticipant = room.localParticipant)
         }.test {
             Assert.assertTrue(awaitItem().isEmpty())
@@ -53,7 +53,7 @@ class RememberParticipantTrackReferences : MockE2ETest() {
     @Test
     fun getPlaceholderTrackReferences() = runTest {
         connect()
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberParticipantTrackReferences(
                 usePlaceholders = setOf(Track.Source.CAMERA),
                 passedParticipant = room.localParticipant
@@ -72,7 +72,7 @@ class RememberParticipantTrackReferences : MockE2ETest() {
     fun whenPublishingTrack() = runTest {
         connect()
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberParticipantTrackReferences(
                     passedParticipant = room.localParticipant,
                     onlySubscribed = false
@@ -103,7 +103,7 @@ class RememberParticipantTrackReferences : MockE2ETest() {
     fun whenParticipantDisconnects() = runTest {
         connect()
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberParticipantTrackReferences(passedParticipant = room.localParticipant)
             }.test {
                 Assert.assertTrue(awaitItem().isEmpty()) // initial
@@ -123,7 +123,7 @@ class RememberParticipantTrackReferences : MockE2ETest() {
     fun whenRemoteParticipantTrackSubscribed() = runTest {
         val remoteParticipant = createFakeRemoteParticipant()
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberParticipantTrackReferences(
                     passedParticipant = remoteParticipant,
                     onlySubscribed = true

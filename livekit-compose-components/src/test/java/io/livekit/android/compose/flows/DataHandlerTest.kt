@@ -17,7 +17,7 @@
 package io.livekit.android.compose.flows
 
 import androidx.compose.runtime.collectAsState
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import com.google.protobuf.ByteString
@@ -42,7 +42,7 @@ class DataHandlerTest : MockE2ETest() {
         connect()
 
         val messageString = "message"
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberDataMessageHandler(room)
         }.test {
             val dataHandler = awaitItem()
@@ -75,7 +75,7 @@ class DataHandlerTest : MockE2ETest() {
 
         val messageString = "message"
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberDataMessageHandler(room).messageFlow.collectAsState(initial = null).value
             }.test {
                 // discard initial state.

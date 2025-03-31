@@ -16,7 +16,7 @@
 
 package io.livekit.android.compose.state
 
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import io.livekit.android.room.SignalClient
@@ -43,7 +43,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
     @Test
     fun getEmptyTrackReferences() = runTest {
         connect()
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberTracks(passedRoom = room)
         }.test {
             assertTrue(awaitItem().isEmpty())
@@ -53,7 +53,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
     @Test
     fun getPlaceholderTrackReferences() = runTest {
         connect()
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberTracks(usePlaceholders = setOf(Track.Source.CAMERA), passedRoom = room)
         }.test {
             val trackRefs = awaitItem()
@@ -69,7 +69,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
     fun whenParticipantJoinsWithTracks() = runTest {
         connect()
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberTracks(passedRoom = room, onlySubscribed = false)
             }.test {
                 // discard initial state.
@@ -95,7 +95,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
     fun whenParticipantDisconnects() = runTest {
         connect()
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberTracks(passedRoom = room, onlySubscribed = false)
             }.test {
                 assertTrue(awaitItem().isEmpty()) // initial
@@ -112,7 +112,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
     fun whenRemoteParticipantTrackSubscribed() = runTest {
         connect()
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberTracks(passedRoom = room, onlySubscribed = true)
             }.test {
                 // discard initial state.
