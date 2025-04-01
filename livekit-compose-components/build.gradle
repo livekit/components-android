@@ -86,10 +86,10 @@ dokkaHtml {
     }
 }
 
-var livekitVersion = "2.13.0"
+var livekitVersion = "2.14.0"
 dependencies {
     // For local development with the LiveKit Android SDK only.
-//    api "io.livekit:livekit-android-sdk"
+    // api "io.livekit:livekit-android-sdk"
 
     api "io.livekit:livekit-android:${livekitVersion}"
 
@@ -107,7 +107,7 @@ dependencies {
     testImplementation libs.robolectric
     testImplementation libs.mockito.core
     testImplementation libs.mockito.kotlin
-    testImplementation libs.mockito.bytebuddy
+    testImplementation 'net.bytebuddy:byte-buddy:1.17.4'
     testImplementation libs.androidx.test.core
     testImplementation libs.coroutines.test
     testImplementation 'app.cash.turbine:turbine:1.0.0'
