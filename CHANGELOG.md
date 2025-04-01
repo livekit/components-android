@@ -1,5 +1,11 @@
 # components-android
 
+## 1.3.1
+
+### Patch Changes
+
+- Update for use with LiveKit Android SDK 2.14.0 - [#38](https://github.com/livekit/components-android/pull/38) ([@davidliu](https://github.com/davidliu))
+
 ## 1.3.0
 
 ### Minor Changes
