@@ -1,6 +1,6 @@
 {
   "name": "components-android",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "repository": "https://github.com/livekit/components-android.git",
   "license": "Apache License 2.0",
   "private": true,
