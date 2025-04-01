@@ -24,7 +24,7 @@ jobs:
         working-directory: ./components-android
     steps:
     - name: checkout components-android
-      uses: actions/checkout@v4.0.0
+      uses: actions/checkout@v4
       with:
         path: ./components-android
         submodules: recursive
@@ -35,7 +35,7 @@ jobs:
         java-version: '17'
         distribution: 'adopt'
 
-    - uses: actions/cache@v3.3.2
+    - uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches

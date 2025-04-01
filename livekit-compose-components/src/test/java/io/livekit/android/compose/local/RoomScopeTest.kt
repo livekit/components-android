@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package io.livekit.android.compose.local
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import io.livekit.android.room.Room
@@ -33,7 +33,7 @@ class RoomScopeTest : MockE2ETest() {
 
     @Test
     fun passesBackRoom() = runTest {
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             var testRoom: Room? = null
             RoomScopeSetup {
                 RoomScope(connect = false, passedRoom = room) {
@@ -49,7 +49,7 @@ class RoomScopeTest : MockE2ETest() {
 
     @Test
     fun roomCreateIfNotPassed() = runTest {
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             var testRoom: Room? = null
             RoomScopeSetup {
                 RoomScope(connect = false) {

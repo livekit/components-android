@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package io.livekit.android.compose.chat
 
 import androidx.compose.runtime.collectAsState
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import com.google.protobuf.ByteString
@@ -45,7 +45,7 @@ class ChatTest : MockE2ETest() {
         connect()
 
         val messageString = "message"
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberChat(room)
         }.test {
             val chat = awaitItem()
@@ -82,7 +82,7 @@ class ChatTest : MockE2ETest() {
 
         val chatMessage = ChatMessage(timestamp = 0L, message = "message")
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberChat(room).messages.value
             }.test {
                 // Discard initial state
@@ -122,7 +122,7 @@ class ChatTest : MockE2ETest() {
 
         val chatMessage = ChatMessage(timestamp = 0L, message = "message")
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberChat(room).messagesFlow.collectAsState(initial = null).value
             }.test {
                 // Discard initial state

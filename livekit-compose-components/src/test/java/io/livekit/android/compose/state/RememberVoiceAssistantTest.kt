@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package io.livekit.android.compose.state
 
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import io.livekit.android.annotations.Beta
@@ -37,7 +37,7 @@ class RememberVoiceAssistantTest : MockE2ETest() {
 
     @Test
     fun initialState() = runTest {
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberVoiceAssistant(room)
         }.test {
             assertEquals(
@@ -56,7 +56,7 @@ class RememberVoiceAssistantTest : MockE2ETest() {
     @Test
     fun agentJoin() = runTest {
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberVoiceAssistant(room)
             }.test {
                 awaitItem() // intermediate flow emissions, not under test.

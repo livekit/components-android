@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package io.livekit.android.compose.state
 
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import io.livekit.android.room.participant.Participant
@@ -39,7 +39,7 @@ class RememberParticipantInfoTest : BaseTest() {
 
     @Test
     fun getsParticipantInfo() = runTest {
-        moleculeFlow(RecompositionClock.Immediate) {
+        moleculeFlow(RecompositionMode.Immediate) {
             rememberParticipantInfo(participant)
         }.test {
             val info = awaitItem()
@@ -52,7 +52,7 @@ class RememberParticipantInfoTest : BaseTest() {
     @Test
     fun getsParticipantInfoChanges() = runTest {
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberParticipantInfo(participant)
             }.test {
                 delay(10)

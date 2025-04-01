@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package io.livekit.android.compose.flows
 
 import androidx.compose.runtime.collectAsState
-import app.cash.molecule.RecompositionClock
+import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
 import io.livekit.android.compose.flow.rememberEventSelector
@@ -35,7 +35,7 @@ class RememberEventSelectorTest : MockE2ETest() {
     @Test
     fun getsEvents() = runTest {
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberEventSelector<RoomEvent>(room = room).collectAsState(initial = null).value
             }.test {
                 // discard initial state.
@@ -52,7 +52,7 @@ class RememberEventSelectorTest : MockE2ETest() {
     @Test
     fun getsEventsFiltered() = runTest {
         val job = coroutineRule.scope.launch {
-            moleculeFlow(RecompositionClock.Immediate) {
+            moleculeFlow(RecompositionMode.Immediate) {
                 rememberEventSelector<RoomEvent.ParticipantConnected>(room = room).collectAsState(initial = null).value
             }.test {
                 // discard initial state.
