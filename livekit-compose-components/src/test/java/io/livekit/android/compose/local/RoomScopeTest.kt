@@ -69,7 +69,6 @@ class RoomScopeTest : MockE2ETest() {
         }
     }
 
-
     @Test
     fun disconnectOnDispose() = runTest {
         // mock room needs connecting manually
@@ -98,7 +97,6 @@ class RoomScopeTest : MockE2ETest() {
             assertEquals(Room.State.DISCONNECTED, room.state)
         }
     }
-
 
     @Test
     fun noDisconnectOnDispose() = runTest {
