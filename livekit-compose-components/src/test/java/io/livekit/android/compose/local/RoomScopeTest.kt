@@ -18,6 +18,11 @@ package io.livekit.android.compose.local
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
@@ -25,6 +30,8 @@ import app.cash.turbine.test
 import io.livekit.android.room.Room
 import io.livekit.android.test.MockE2ETest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
@@ -59,6 +66,65 @@ class RoomScopeTest : MockE2ETest() {
             testRoom
         }.test {
             awaitError() // real rooms can't be created in test env.
+        }
+    }
+
+    @Test
+    fun disconnectOnDispose() = runTest {
+        // mock room needs connecting manually
+        connect()
+        moleculeFlow(RecompositionMode.Immediate) {
+            var useScope by remember { mutableStateOf(true) }
+            LaunchedEffect(Unit) {
+                delay(1)
+                useScope = false
+            }
+            if (useScope) {
+                RoomScopeSetup {
+                    RoomScope(
+                        connect = true,
+                        disconnectOnDispose = true,
+                        passedRoom = room
+                    ) {}
+                }
+            }
+            1
+        }.test {
+            awaitItem()
+            assertEquals(Room.State.CONNECTED, room.state)
+            delay(1000)
+            awaitItem()
+            assertEquals(Room.State.DISCONNECTED, room.state)
+        }
+    }
+
+    @Test
+    fun noDisconnectOnDispose() = runTest {
+        // mock room needs connecting manually
+        connect()
+        moleculeFlow(RecompositionMode.Immediate) {
+            var useScope by remember { mutableStateOf(true) }
+            LaunchedEffect(Unit) {
+                delay(1)
+                useScope = false
+            }
+            if (useScope) {
+                RoomScopeSetup {
+                    RoomScope(
+                        connect = true,
+                        disconnectOnDispose = false,
+                        passedRoom = room
+                    ) {
+                    }
+                }
+            }
+            1
+        }.test {
+            awaitItem()
+            assertEquals(Room.State.CONNECTED, room.state)
+            delay(1000)
+            awaitItem()
+            assertEquals(Room.State.CONNECTED, room.state)
         }
     }
 
