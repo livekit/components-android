@@ -1,5 +1,15 @@
 # components-android
 
+## 1.4.0
+
+### Minor Changes
+
+- Add disconnectOnDispose argument to RoomScope and rememberLiveKitRoom - [#40](https://github.com/livekit/components-android/pull/40) ([@davidliu](https://github.com/davidliu))
+
+### Patch Changes
+
+- Update livekit sdk to 2.16.0 - [#40](https://github.com/livekit/components-android/pull/40) ([@davidliu](https://github.com/davidliu))
+
 ## 1.3.1
 
 ### Patch Changes
