@@ -104,6 +104,10 @@ private val DEFAULT_ERROR_HANDLER: ((Room, Exception?) -> Unit) = { _, e ->
  * @param onDisconnected a listener to be called upon room disconnection.
  * @param onError a listener to be called upon room error.
  * @param passedRoom if a [Room] is provided, it will be used. If null, a new Room will be created instead.
+ * @param disconnectOnDispose by default, this composable handles the connection management and will disconnect the room
+ * when the composable goes out of scope. Setting this to false will disable this behavior. This is effective in combination
+ * with [passedRoom], when you need to keep the [Room] object alive and connected separately from the UI
+ * (for example, with a background service).
  */
 @Composable
 fun rememberLiveKitRoom(
@@ -119,6 +123,7 @@ fun rememberLiveKitRoom(
     onDisconnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
     onError: ((Room, Exception?) -> Unit)? = DEFAULT_ERROR_HANDLER,
     passedRoom: Room? = null,
+    disconnectOnDispose: Boolean = true,
 ): Room {
     val context = LocalContext.current
     val room = remember(passedRoom) {
@@ -210,7 +215,7 @@ fun rememberLiveKitRoom(
 
     DisposableEffect(room, connect) {
         onDispose {
-            if (connect) {
+            if (connect && disconnectOnDispose) {
                 room.disconnect()
             }
         }
@@ -242,6 +247,10 @@ fun rememberLiveKitRoom(
  * @param onDisconnected a listener to be called upon room disconnection.
  * @param onError a listener to be called upon room error.
  * @param passedRoom if a [Room] is provided, it will be used. If null, a new Room will be created instead.
+ * @param disconnectOnDispose by default, this composable handles the connection management and will disconnect the room
+ * when the composable goes out of scope. Setting this to false will disable this behavior. This is effective in combination
+ * with [passedRoom], when you need to keep the [Room] object alive and connected separately from the UI
+ * (for example, with a background service).
  */
 @Composable
 fun RoomScope(
@@ -257,6 +266,7 @@ fun RoomScope(
     onDisconnected: (suspend CoroutineScope.(Room) -> Unit)? = null,
     onError: ((Room, Exception?) -> Unit)? = null,
     passedRoom: Room? = null,
+    disconnectOnDispose: Boolean = true,
     content: @Composable (room: Room) -> Unit
 ) {
     val room = rememberLiveKitRoom(
@@ -271,7 +281,8 @@ fun RoomScope(
         onConnected = onConnected,
         onDisconnected = onDisconnected,
         onError = onError,
-        passedRoom = passedRoom
+        passedRoom = passedRoom,
+        disconnectOnDispose = disconnectOnDispose,
     )
 
     CompositionLocalProvider(
