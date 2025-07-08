@@ -5,7 +5,6 @@ buildscript {
 
     dependencies {
         classpath "com.android.tools.build:gradle:$android_build_tools_version"
-        classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.30.0"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:6.21.0"
         classpath 'app.cash.molecule:molecule-gradle-plugin:1.4.3'
     }
@@ -15,9 +14,8 @@ plugins {
     id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
     id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlin_version" apply false
     id 'org.jetbrains.dokka' version "1.9.0" apply false
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
-
-apply plugin: 'io.codearte.nexus-staging'
 
 subprojects {
     apply plugin: "com.diffplug.spotless"
@@ -59,22 +57,26 @@ subprojects {
     }
 }
 
-nexusStaging {
-    serverUrl = "https://s01.oss.sonatype.org/service/local/"
-    packageGroup = GROUP
-    stagingProfileId = STAGING_PROFILE_ID
+group = GROUP
+version = VERSION_NAME
+
+def getRepositoryUsername() {
+    return hasProperty('nexusUsername') ? nexusUsername : ""
 }
 
-afterEvaluate {
-    // These aren't supported for snapshots. From nexus staging plugin.
-    if (VERSION_NAME.contains("SNAPSHOT")) {
-        ["closeAndReleaseRepository",
-                "closeRepository",
-                "createRepository",
-                "getStagingProfile",
-                "releaseRepository"]
-                .forEach { taskName ->
-                    getTasksByName(taskName, false).forEach { task -> task.enabled = false }
-                }
+def getRepositoryPassword() {
+    return hasProperty('nexusPassword') ? nexusPassword : ""
+}
+
+nexusPublishing {
+    packageGroup = GROUP
+    repositories {
+        maven {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            username = getRepositoryUsername()
+            password = getRepositoryPassword()
+            stagingProfileId = STAGING_PROFILE_ID
+        }
     }
 }
