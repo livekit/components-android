@@ -16,6 +16,7 @@
 
 package io.livekit.android.compose.ui
 
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -36,7 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.livekit.android.annotations.Beta
 
-private val springAnimation = spring<Float>(
+internal val defaultBarVisualizerAnimationSpec = spring<Float>(
     stiffness = Spring.StiffnessHigh
 )
 
@@ -57,8 +58,9 @@ fun BarVisualizer(
     maxHeight: Float = 1.0f,
     amplitudes: FloatArray,
     alphas: FloatArray? = null,
+    animationSpec: AnimationSpec<Float> = defaultBarVisualizerAnimationSpec
 ) {
-    val amplitudeStates = amplitudes.map { animateFloatAsState(targetValue = it, animationSpec = springAnimation) }
+    val amplitudeStates = amplitudes.map { animateFloatAsState(targetValue = it, animationSpec = animationSpec) }
     val alphaStates = alphas?.map { animateFloatAsState(targetValue = it) }
     Box(
         modifier = modifier

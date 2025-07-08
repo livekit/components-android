@@ -16,6 +16,7 @@
 
 package io.livekit.android.compose.ui.audio
 
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -29,9 +30,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.types.TrackReference
 import io.livekit.android.compose.ui.BarVisualizer
+import io.livekit.android.compose.ui.defaultBarVisualizerAnimationSpec
 import io.livekit.android.room.track.AudioTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,27 +44,29 @@ import kotlin.math.round
 import kotlin.math.sqrt
 
 /**
- * An audio visualizer for an audio [TrackReference].
+ * An audio visualizer for an audio [TrackReference]. The audio is broken down into amplitudes for each of the frequency bands
+ * and passed as an argument into [content].
  *
+ * @param bandCount the number of frequency bands to separate the frequencies into.
  * @param loPass the start index of the FFT samples to use (inclusive). 0 <= loPass < [hiPass].
  * @param hiPass the end index of the FFT samples to use (exclusive). [loPass] < hiPass <= [FFTAudioAnalyzer.SAMPLE_SIZE].
+ *
+ * @see AudioBarVisualizer
  */
 @Beta
 @Composable
-fun AudioBarVisualizer(
+fun AudioVisualizer(
     audioTrackRef: TrackReference?,
-    modifier: Modifier = Modifier,
-    barCount: Int = 15,
+    bandCount: Int = 15,
     loPass: Int = 50,
     hiPass: Int = 150,
-    style: DrawStyle = Fill,
-    brush: Brush = SolidColor(Color.Black),
-    alphas: FloatArray? = null,
+    content: @Composable (amplitudes: FloatArray) -> Unit,
 ) {
+
     val audioSink = remember(audioTrackRef) { AudioTrackSinkFlow() }
     val audioProcessor = remember(audioTrackRef) { FFTAudioAnalyzer() }
     val fftFlow = audioProcessor.fftFlow
-    var amplitudes by remember(audioTrackRef, barCount) { mutableStateOf(FloatArray(barCount)) }
+    var amplitudes by remember(audioTrackRef, bandCount) { mutableStateOf(FloatArray(bandCount)) }
 
     // Attach the sink to the track.
     DisposableEffect(key1 = audioTrackRef) {
@@ -90,24 +96,60 @@ fun AudioBarVisualizer(
     }
 
     // Process audio bytes into desired bars
-    LaunchedEffect(audioTrackRef, barCount) {
-        val averages = FloatArray(barCount)
+    LaunchedEffect(audioTrackRef, bandCount) {
+        val averages = FloatArray(bandCount)
         launch(Dispatchers.IO) {
             fftFlow.collect { fft ->
                 val sliced = fft.slice(loPass until hiPass)
-                amplitudes = calculateAmplitudeBarsFromFFT(sliced, averages, barCount)
+                amplitudes = calculateAmplitudeBarsFromFFT(sliced, averages, bandCount)
             }
         }
     }
 
-    BarVisualizer(
-        amplitudes = amplitudes,
-        modifier = modifier,
-        style = style,
-        brush = brush,
-        minHeight = 0.3f,
-        alphas = alphas,
-    )
+    content(amplitudes)
+}
+
+/**
+ * An audio bar visualizer for an audio [TrackReference].
+ *
+ * @param loPass the start index of the FFT samples to use (inclusive). 0 <= loPass < [hiPass].
+ * @param hiPass the end index of the FFT samples to use (exclusive). [loPass] < hiPass <= [FFTAudioAnalyzer.SAMPLE_SIZE].
+ * @param alphas Alphas of the bars, between 0.0f and 1.0f. Defaults to 1.0f if null or not enough values are passed.
+ */
+@Beta
+@Composable
+fun AudioBarVisualizer(
+    audioTrackRef: TrackReference?,
+    modifier: Modifier = Modifier,
+    barCount: Int = 15,
+    loPass: Int = 50,
+    hiPass: Int = 150,
+    style: DrawStyle = Fill,
+    brush: Brush = SolidColor(Color.Black),
+    barWidth: Dp = 8.dp,
+    minHeight: Float = 0.2f,
+    maxHeight: Float = 1f,
+    alphas: FloatArray? = null,
+    animationSpec: AnimationSpec<Float> = defaultBarVisualizerAnimationSpec
+) {
+    AudioVisualizer(
+        audioTrackRef = audioTrackRef,
+        bandCount = barCount,
+        loPass = loPass,
+        hiPass = hiPass
+    ) { amplitudes ->
+        BarVisualizer(
+            amplitudes = amplitudes,
+            modifier = modifier,
+            style = style,
+            brush = brush,
+            alphas = alphas,
+            barWidth = barWidth,
+            minHeight = minHeight,
+            maxHeight = maxHeight,
+            animationSpec = animationSpec
+        )
+    }
 }
 
 private const val MIN_CONST = 2f
