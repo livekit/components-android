@@ -53,7 +53,7 @@ subprojects {
         maven { url 'https://jitpack.io' }
 
         // For SNAPSHOT access
-        // maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+        // maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
     }
 }
 ```
