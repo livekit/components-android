@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.livekit.android.compose.ui.audio
 
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,11 +28,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.state.AgentState
 import io.livekit.android.compose.state.VoiceAssistant
 import io.livekit.android.compose.state.rememberVoiceAssistant
 import io.livekit.android.compose.types.TrackReference
+import io.livekit.android.compose.ui.defaultBarVisualizerAnimationSpec
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
@@ -52,6 +56,10 @@ fun VoiceAssistantBarVisualizer(
     loPass: Int = 50,
     hiPass: Int = 150,
     brush: Brush = SolidColor(Color.Black),
+    barWidth: Dp = 8.dp,
+    minHeight: Float = 0.2f,
+    maxHeight: Float = 1f,
+    animationSpec: AnimationSpec<Float> = defaultBarVisualizerAnimationSpec
 ) {
     VoiceAssistantBarVisualizer(
         agentState = voiceAssistant.state,
@@ -61,6 +69,10 @@ fun VoiceAssistantBarVisualizer(
         loPass = loPass,
         hiPass = hiPass,
         brush = brush,
+        barWidth = barWidth,
+        minHeight = minHeight,
+        maxHeight = maxHeight,
+        animationSpec = animationSpec,
     )
 }
 
@@ -79,6 +91,10 @@ fun VoiceAssistantBarVisualizer(
     loPass: Int = 50,
     hiPass: Int = 150,
     brush: Brush = SolidColor(Color.Black),
+    barWidth: Dp = 8.dp,
+    minHeight: Float = 0.2f,
+    maxHeight: Float = 1f,
+    animationSpec: AnimationSpec<Float> = defaultBarVisualizerAnimationSpec,
 ) {
     val alphas = rememberVoiceAssistantAlphas(agentState = agentState, barCount = barCount)
     AudioBarVisualizer(
@@ -89,7 +105,11 @@ fun VoiceAssistantBarVisualizer(
         hiPass = hiPass,
         style = Fill,
         brush = brush,
-        alphas = alphas
+        alphas = alphas,
+        barWidth = barWidth,
+        minHeight = minHeight,
+        maxHeight = maxHeight,
+        animationSpec = animationSpec,
     )
 }
 

@@ -86,7 +86,7 @@ dokkaHtml {
     }
 }
 
-var livekitVersion = "2.16.0"
+var livekitVersion = "2.18.3"
 dependencies {
     // For local development with the LiveKit Android SDK only.
     // api "io.livekit:livekit-android-sdk"
@@ -94,7 +94,7 @@ dependencies {
     api "io.livekit:livekit-android:${livekitVersion}"
 
     implementation libs.kotlinx.serialization.json
-    implementation libs.noise
+    implementation 'io.livekit:noise:2.0.0'
 
     implementation platform(libs.compose.bom)
     implementation 'androidx.compose.ui:ui'
