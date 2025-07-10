@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 LiveKit, Inc.
+ * Copyright 2023-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,11 @@
 
 package io.livekit.android.compose.ui
 
+import android.view.Gravity
+import android.view.SurfaceView
+import android.view.TextureView
+import android.view.View
+import android.widget.FrameLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -33,11 +38,14 @@ import androidx.compose.ui.viewinterop.AndroidView
 import io.livekit.android.compose.local.requireRoom
 import io.livekit.android.compose.state.rememberTrack
 import io.livekit.android.compose.types.TrackReference
+import io.livekit.android.renderer.SurfaceViewRenderer
 import io.livekit.android.renderer.TextureViewRenderer
 import io.livekit.android.room.Room
 import io.livekit.android.room.track.RemoteVideoTrack
 import io.livekit.android.room.track.VideoTrack
 import livekit.org.webrtc.RendererCommon
+import livekit.org.webrtc.RendererCommon.RendererEvents
+import livekit.org.webrtc.VideoSink
 
 /**
  * The type of scaling to use with [VideoTrackView]
@@ -53,13 +61,19 @@ enum class ScaleType {
  */
 @Composable
 fun VideoTrackView(
-    trackReference: TrackReference,
+    trackReference: TrackReference?,
     modifier: Modifier = Modifier,
     room: Room? = null,
     mirror: Boolean = false,
     scaleType: ScaleType = ScaleType.Fill,
+    rendererType: RendererType = RendererType.Texture,
+    onFirstFrameRendered: () -> Unit = {}
 ) {
-    val track = rememberTrack<VideoTrack>(trackIdentifier = trackReference)
+    val track = if (trackReference != null) {
+        rememberTrack<VideoTrack>(trackIdentifier = trackReference)
+    } else {
+        null
+    }
 
     VideoTrackView(
         videoTrack = track,
@@ -67,6 +81,8 @@ fun VideoTrackView(
         passedRoom = room,
         mirror = mirror,
         scaleType = scaleType,
+        rendererType = rendererType,
+        onFirstFrameRendered = onFirstFrameRendered,
     )
 }
 
@@ -81,6 +97,8 @@ fun VideoTrackView(
     passedRoom: Room? = null,
     mirror: Boolean = false,
     scaleType: ScaleType = ScaleType.Fill,
+    rendererType: RendererType = RendererType.Texture,
+    onFirstFrameRendered: (() -> Unit)? = null
 ) {
     // Show a black box for preview.
     if (LocalView.current.isInEditMode) {
@@ -96,14 +114,27 @@ fun VideoTrackView(
 
     val videoSinkVisibility = remember(room, videoTrack) { ComposeVisibility() }
     var boundVideoTrack by remember { mutableStateOf<VideoTrack?>(null) }
-    var view: TextureViewRenderer? by remember { mutableStateOf(null) }
+    var rendererCompat: RendererCompat? by remember { mutableStateOf(null) }
+    val firstFrameRenderCallbackState = remember { mutableStateOf(onFirstFrameRendered) }.apply { value = onFirstFrameRendered }
+
+    var rendererEvents by remember {
+        mutableStateOf(object : RendererEvents {
+            override fun onFirstFrameRendered() {
+                firstFrameRenderCallbackState.value?.invoke()
+            }
+
+            override fun onFrameResolutionChanged(p0: Int, p1: Int, p2: Int) {
+                // Intentionally left blank.
+            }
+        })
+    }
 
     fun cleanupVideoTrack() {
-        view?.let { boundVideoTrack?.removeRenderer(it) }
+        rendererCompat?.let { boundVideoTrack?.removeRenderer(it.sink) }
         boundVideoTrack = null
     }
 
-    fun setupVideoIfNeeded(videoTrack: VideoTrack?, view: TextureViewRenderer) {
+    fun setupVideoIfNeeded(videoTrack: VideoTrack?, view: VideoSink) {
         if (boundVideoTrack == videoTrack) {
             return
         }
@@ -120,8 +151,8 @@ fun VideoTrackView(
         }
     }
 
-    DisposableEffect(view, mirror) {
-        view?.setMirror(mirror)
+    DisposableEffect(rendererCompat, mirror) {
+        rendererCompat?.setMirror(mirror)
         onDispose { }
     }
 
@@ -134,30 +165,140 @@ fun VideoTrackView(
 
     DisposableEffect(currentCompositeKeyHash.toString()) {
         onDispose {
-            view?.release()
+            rendererCompat?.release()
         }
     }
 
-    AndroidView(
-        factory = { context ->
-            TextureViewRenderer(context).apply {
-                room.initVideoRenderer(this)
-                setupVideoIfNeeded(videoTrack, this)
+    fun updateView(v: View) {
+        val compat = v.tag as RendererCompat
+        setupVideoIfNeeded(videoTrack, compat.sink)
 
-                when (scaleType) {
-                    ScaleType.FitInside -> {
-                        this.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
-                    }
-
-                    ScaleType.Fill -> {
-                        this.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FILL)
-                    }
-                }
-                view = this
+        when (scaleType) {
+            ScaleType.FitInside -> {
+                compat.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FIT)
             }
-        },
-        update = { v -> setupVideoIfNeeded(videoTrack, v) },
-        modifier = modifier
-            .onGloballyPositioned { videoSinkVisibility.onGloballyPositioned(it) },
-    )
+
+            ScaleType.Fill -> {
+                compat.setScalingType(RendererCommon.ScalingType.SCALE_ASPECT_FILL)
+            }
+        }
+    }
+
+    when (rendererType) {
+        RendererType.Surface -> {
+            AndroidView(
+                factory = { context ->
+                    FrameLayout(context).apply {
+                        val renderer = SurfaceViewRenderer(context).apply {
+                            init(room.lkObjects.eglBase.eglBaseContext, rendererEvents)
+                            setupVideoIfNeeded(videoTrack, this)
+                        }
+                        addView(
+                            renderer,
+                            FrameLayout.LayoutParams(
+                                FrameLayout.LayoutParams.WRAP_CONTENT,
+                                FrameLayout.LayoutParams.WRAP_CONTENT,
+                                Gravity.CENTER
+                            )
+                        )
+
+                        val compat = SurfaceRendererCompat(renderer)
+                        tag = compat
+                        rendererCompat = compat
+                    }
+                },
+                update = { v ->
+                    updateView(v)
+                },
+                modifier = modifier
+                    .onGloballyPositioned { videoSinkVisibility.onGloballyPositioned(it) },
+            )
+        }
+
+        RendererType.Texture -> {
+            AndroidView(
+                factory = { context ->
+                    FrameLayout(context).apply {
+                        val renderer = TextureViewRenderer(context).apply {
+                            init(room.lkObjects.eglBase.eglBaseContext, rendererEvents)
+                            setupVideoIfNeeded(videoTrack, this)
+                        }
+                        addView(
+                            renderer,
+                            FrameLayout.LayoutParams(
+                                FrameLayout.LayoutParams.WRAP_CONTENT,
+                                FrameLayout.LayoutParams.WRAP_CONTENT,
+                                Gravity.CENTER
+                            )
+                        )
+
+                        val compat = TextureRendererCompat(renderer)
+                        tag = compat
+                        rendererCompat = compat
+                    }
+                },
+                update = { v -> updateView(v) },
+                modifier = modifier
+                    .onGloballyPositioned { videoSinkVisibility.onGloballyPositioned(it) },
+            )
+        }
+    }
+}
+
+enum class RendererType {
+    /**
+     * Use a [SurfaceView] for rendering. This is more energy efficient and performant, but may have issues
+     * with view modifiers (i.e. clipping, rotating, scaling).
+     */
+    Surface,
+
+    /**
+     * Use a [TextureView] for rendering. This is more flexible with composing and various view modifiers
+     * (i.e. clipping, rotating, scaling), but is less efficient and may cause more battery drain.
+     */
+    Texture
+}
+
+private const val RENDERER_COMPAT_TAG = 54376
+
+private interface RendererCompat {
+    val view: View
+    val sink: VideoSink
+    fun setScalingType(type: RendererCommon.ScalingType)
+    fun setMirror(mirror: Boolean)
+    fun release()
+}
+
+private class SurfaceRendererCompat(override val view: SurfaceViewRenderer) : RendererCompat {
+    override val sink: VideoSink
+        get() = view
+
+    override fun setScalingType(type: RendererCommon.ScalingType) {
+        view.setScalingType(type)
+    }
+
+    override fun setMirror(mirror: Boolean) {
+        view.setMirror(mirror)
+    }
+
+    override fun release() {
+        view.release()
+    }
+}
+
+private class TextureRendererCompat(override val view: TextureViewRenderer) : RendererCompat {
+    override val sink: VideoSink
+        get() = view
+
+    override fun setScalingType(type: RendererCommon.ScalingType) {
+        view.setScalingType(type)
+    }
+
+    override fun setMirror(mirror: Boolean) {
+        view.setMirror(mirror)
+    }
+
+    override fun release() {
+        view.release()
+    }
 }
