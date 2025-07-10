@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 LiveKit, Inc.
+ * Copyright 2023-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,7 +186,6 @@ fun VideoTrackView(
 
     when (rendererType) {
         RendererType.Surface -> {
-
             AndroidView(
                 factory = { context ->
                     FrameLayout(context).apply {
@@ -246,7 +245,6 @@ fun VideoTrackView(
     }
 }
 
-
 enum class RendererType {
     /**
      * Use a [SurfaceView] for rendering. This is more energy efficient and performant, but may have issues
@@ -258,7 +256,7 @@ enum class RendererType {
      * Use a [TextureView] for rendering. This is more flexible with composing and various view modifiers
      * (i.e. clipping, rotating, scaling), but is less efficient and may cause more battery drain.
      */
-    Texture;
+    Texture
 }
 
 private const val RENDERER_COMPAT_TAG = 54376
