@@ -1,5 +1,23 @@
 # components-android
 
+## 1.4.0
+
+### Minor Changes
+
+- Add disconnectOnDispose argument to RoomScope and rememberLiveKitRoom - [#40](https://github.com/livekit/components-android/pull/40) ([@davidliu](https://github.com/davidliu))
+
+- Add rendererType parameter for VideoTrackView to allow choosing between Surface and Texture implementations - [#44](https://github.com/livekit/components-android/pull/44) ([@davidliu](https://github.com/davidliu))
+
+- Added AudioVisualizer to allow for visualizations other than BarVisualizer - [#45](https://github.com/livekit/components-android/pull/45) ([@davidliu](https://github.com/davidliu))
+
+### Patch Changes
+
+- Update livekit sdk to 2.16.0 - [#40](https://github.com/livekit/components-android/pull/40) ([@davidliu](https://github.com/davidliu))
+
+- Update noise lib to use a 16KB aligned version - [#45](https://github.com/livekit/components-android/pull/45) ([@davidliu](https://github.com/davidliu))
+
+- Update livekit android sdk to 2.18.3 - [#45](https://github.com/livekit/components-android/pull/45) ([@davidliu](https://github.com/davidliu))
+
 ## 1.3.1
 
 ### Patch Changes
