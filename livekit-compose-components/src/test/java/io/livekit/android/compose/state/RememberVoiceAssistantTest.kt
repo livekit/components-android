@@ -57,7 +57,6 @@ class RememberVoiceAssistantTest : MockE2ETest() {
     }
 
     suspend fun <T> agentJoinTest(body: @Composable () -> T, validate: suspend TurbineTestContext<T>.() -> Unit) {
-
         val testJob = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) { body() }
                 .distinctUntilChanged()

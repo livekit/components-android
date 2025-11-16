@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 LiveKit, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.livekit.android.compose.stream
 
 import app.cash.molecule.RecompositionMode
@@ -15,14 +31,12 @@ import org.junit.Test
 
 class RememberTextStreamTest : MockE2ETest() {
 
-
     @Test
     fun textStreamUpdates() = runTest {
         connect()
         val subPeerConnection = component.rtcEngine().getSubscriberPeerConnection() as MockPeerConnection
         val subDataChannel = MockDataChannel(RTCEngine.RELIABLE_DATA_CHANNEL_LABEL)
         subPeerConnection.observer?.onDataChannel(subDataChannel)
-
 
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
@@ -57,7 +71,6 @@ class RememberTextStreamTest : MockE2ETest() {
         subDataChannel.observer?.receiveTextStream(chunks = listOf("hello", " world", "!"))
 
         job.join()
-
     }
 
     @Test
@@ -66,7 +79,6 @@ class RememberTextStreamTest : MockE2ETest() {
         val subPeerConnection = component.rtcEngine().getSubscriberPeerConnection() as MockPeerConnection
         val subDataChannel = MockDataChannel(RTCEngine.RELIABLE_DATA_CHANNEL_LABEL)
         subPeerConnection.observer?.onDataChannel(subDataChannel)
-
 
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
@@ -89,7 +101,6 @@ class RememberTextStreamTest : MockE2ETest() {
                     assertEquals(2, second.size)
                     assertEquals("hello", second[0].text)
                     assertEquals("world", second[1].text)
-
                 }
             }
         }
@@ -98,7 +109,5 @@ class RememberTextStreamTest : MockE2ETest() {
         subDataChannel.observer?.receiveTextStream(streamId = "streamId2", chunk = "world")
 
         job.join()
-
     }
-
 }

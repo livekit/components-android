@@ -18,8 +18,8 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import io.livekit.android.compose.test.util.createFakeRemoteParticipant
 import io.livekit.android.compose.test.util.composeTest
+import io.livekit.android.compose.test.util.createFakeRemoteParticipant
 import io.livekit.android.room.participant.VideoTrackPublishOptions
 import io.livekit.android.room.track.LocalTrackPublication
 import io.livekit.android.room.track.LocalVideoTrack
@@ -154,5 +154,4 @@ class RememberParticipantTrackReferencesTest : MockE2ETest() {
 
         job.join()
     }
-
 }

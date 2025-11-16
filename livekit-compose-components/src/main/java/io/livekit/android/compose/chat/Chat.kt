@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 LiveKit, Inc.
+ * Copyright 2023-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ class Chat(
     private val stateLock = Mutex()
 
     private val sendLock = Mutex()
+
     /**
      * Send a message through LiveKit.
      *
@@ -80,7 +81,6 @@ class Chat(
         message: String,
         streamTextOptions: StreamTextOptions = StreamTextOptions(topic = DataTopic.CHAT.value)
     ): Result<ReceivedChatMessage> {
-
         val streamTextOptions = if (streamTextOptions.topic.isEmpty()) {
             streamTextOptions.copy(topic = DataTopic.CHAT.value)
         } else {
@@ -125,7 +125,6 @@ class Chat(
             addMessage(sentMessage)
             _isSending.value = false
         }
-
 
         return retMessage?.let {
             Result.success(it)
@@ -206,13 +205,12 @@ data class LegacyChatMessage(
  */
 @Composable
 fun rememberChat(room: Room = RoomLocal.current): Chat {
-
     val serverSupportsDataStreams = remember(room) {
         // lambda function
         canSupport@{
             val version = room.serverInfo?.version
             return@canSupport room.serverInfo?.edition == ServerInfo.Edition.CLOUD ||
-                    (version != null && version > Semver("1.8.2"))
+                (version != null && version > Semver("1.8.2"))
         }
     }
     val dataHandler = rememberDataMessageHandler(room = room, topic = LegacyDataTopic.CHAT) // Legacy data handler
@@ -270,7 +268,6 @@ private fun setupChatDataStream(
     coroutineScope: CoroutineScope,
     topic: String = DataTopic.CHAT.value
 ): SharedFlow<ReceivedChatMessage> {
-
     // The output flow
     val outputFlow = MutableSharedFlow<ReceivedChatMessage>()
 

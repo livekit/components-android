@@ -1,3 +1,19 @@
+/*
+ * Copyright 2025 LiveKit, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
@@ -24,7 +40,7 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlin.time.Duration.Companion.seconds
 
 // TODO: make this 10 seconds once room dispatch booting info is discoverable
-private val DEFAULT_AGENT_CONNECT_TIMEOUT_MILLISECONDS = 20.seconds;
+private val DEFAULT_AGENT_CONNECT_TIMEOUT_MILLISECONDS = 20.seconds
 
 interface Agent {
     val agentParticipant: RemoteParticipant?
@@ -97,7 +113,6 @@ internal class AgentImpl(
     override suspend fun waitUntilMicrophone() {
         waitUntilMicrophoneFn()
     }
-
 }
 
 /**
@@ -108,7 +123,6 @@ internal class AgentImpl(
 @Beta
 @Composable
 fun rememberAgent(session: Session? = null): Agent {
-
     val session = requireSession(session)
     val room = session.room
 
@@ -185,7 +199,6 @@ fun rememberAgent(session: Session? = null): Agent {
 
     val combinedAgentState = remember {
         derivedStateOf {
-
             var state = AgentState.DISCONNECTED
             if (connectionState != ConnectionState.DISCONNECTED) {
                 state = AgentState.CONNECTING
@@ -212,9 +225,9 @@ fun rememberAgent(session: Session? = null): Agent {
 
     val isBufferingSpeech = remember {
         derivedStateOf {
-            !(connectionState == ConnectionState.DISCONNECTED
-                    || isAvailable.value
-                    || localMicTrack.isNotEmpty())
+            !(connectionState == ConnectionState.DISCONNECTED ||
+                isAvailable.value ||
+                localMicTrack.isNotEmpty())
         }
     }
 
