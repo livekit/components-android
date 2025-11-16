@@ -150,6 +150,7 @@ enum class AgentState {
     LISTENING,
     THINKING,
     SPEAKING,
+    FAILED,
     UNKNOWN;
 
     companion object {

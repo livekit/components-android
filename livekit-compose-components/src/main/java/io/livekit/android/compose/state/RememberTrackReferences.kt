@@ -57,6 +57,7 @@ fun rememberTracks(
 ): State<List<TrackReference>> {
     val room = requireRoom(passedRoom)
 
+    // TODO: check for flow operator correctness
     return trackReferencesFlow(
         room = room,
         sources = sources,

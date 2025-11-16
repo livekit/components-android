@@ -22,6 +22,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -37,10 +38,6 @@ import io.livekit.android.room.types.AgentAttributes
 import io.livekit.android.util.flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
-import kotlin.time.Duration.Companion.seconds
-
-// TODO: make this 10 seconds once room dispatch booting info is discoverable
-private val DEFAULT_AGENT_CONNECT_TIMEOUT_MILLISECONDS = 20.seconds
 
 interface Agent {
     val agentParticipant: RemoteParticipant?
@@ -125,6 +122,7 @@ internal class AgentImpl(
 fun rememberAgent(session: Session? = null): Agent {
     val session = requireSession(session)
     val room = session.room
+    val connectionState by session::connectionState
 
     // Gather participant info
     val remoteParticipants by room::remoteParticipants.flow.collectAsState()
@@ -136,9 +134,9 @@ fun rememberAgent(session: Session? = null): Agent {
         }
     }
 
-    val curAgentParticipant = agentParticipantState.value // For nullability checks
     val workerParticipantState = remember {
         derivedStateOf {
+            val curAgentParticipant = agentParticipantState.value
             if (curAgentParticipant == null) {
                 return@derivedStateOf null
             }
@@ -147,10 +145,10 @@ fun rememberAgent(session: Session? = null): Agent {
                 .firstOrNull { p -> p.isAgent }
         }
     }
-    val curWorkerParticipant = workerParticipantState.value // For nullability checks
 
     // Track handling
     val agentTracks by rememberStateOrDefault(emptyList()) {
+        val curAgentParticipant = agentParticipantState.value
         if (curAgentParticipant != null) {
             rememberParticipantTrackReferences(
                 sources = listOf(Track.Source.MICROPHONE, Track.Source.CAMERA),
@@ -163,6 +161,7 @@ fun rememberAgent(session: Session? = null): Agent {
     }
 
     val workerTracks by rememberStateOrDefault(emptyList()) {
+        val curWorkerParticipant = workerParticipantState.value
         if (curWorkerParticipant != null) {
             rememberParticipantTrackReferences(
                 sources = listOf(Track.Source.MICROPHONE, Track.Source.CAMERA),
@@ -188,50 +187,63 @@ fun rememberAgent(session: Session? = null): Agent {
         }
     }
 
-    val localMicTrack by rememberParticipantTrackReferences(
+    val localMicTracks by rememberParticipantTrackReferences(
         sources = listOf(Track.Source.MICROPHONE),
         passedParticipant = room.localParticipant,
     )
 
     // Attributes and states
-    val agentState by rememberAgentState(participant = curAgentParticipant)
-    val connectionState = session.connectionState
+    val agentState by rememberAgentState(participant = agentParticipantState.value)
+    val isAvailableState = remember {
+        derivedStateOf {
+            calculateIsAvailable(agentState)
+        }
+    }
 
+    val hasAgentConnectedOnce by produceState(false, isAvailableState.value, connectionState) {
+        if (connectionState == ConnectionState.DISCONNECTED) {
+            value = false
+        } else {
+            value = value || isAvailableState.value
+        }
+    }
     val combinedAgentState = remember {
         derivedStateOf {
-            var state = AgentState.DISCONNECTED
-            if (connectionState != ConnectionState.DISCONNECTED) {
-                state = AgentState.CONNECTING
+            if (connectionState == ConnectionState.DISCONNECTED) {
+                return@derivedStateOf AgentState.DISCONNECTED
             }
 
-            if (localMicTrack.isNotEmpty()) {
+            if (session.agentFailure != null) {
+                return@derivedStateOf AgentState.FAILED
+            }
+            var state = AgentState.CONNECTING
+
+            if (localMicTracks.isNotEmpty()) {
                 state = AgentState.LISTENING
             }
 
             val agentParticipant = agentParticipantState.value
             if (agentParticipant != null) {
                 state = agentState
+            } else if (hasAgentConnectedOnce) {
+                // means agent disconnected mid session.
+                state = AgentState.DISCONNECTED
             }
 
             return@derivedStateOf state
         }
     }
 
-    val isAvailable = remember {
-        derivedStateOf {
-            calculateIsAvailable(agentState)
-        }
-    }
-
     val isBufferingSpeech = remember {
         derivedStateOf {
             !(connectionState == ConnectionState.DISCONNECTED ||
-                isAvailable.value ||
-                localMicTrack.isNotEmpty())
+                    isAvailableState.value ||
+                    localMicTracks.isNotEmpty())
         }
     }
 
     val attributesState = rememberStateOrDefault(null) {
+        val curAgentParticipant = agentParticipantState.value
         if (curAgentParticipant != null) {
             curAgentParticipant::agentAttributes.flow
                 .collectAsState()
@@ -277,7 +289,7 @@ fun rememberAgent(session: Session? = null): Agent {
                 audioTrackState = audioTrackState,
                 videoTrackState = videoTrackState,
                 agentStateState = combinedAgentState,
-                isAvailableState = isAvailable,
+                isAvailableState = isAvailableState,
                 isBufferingSpeechState = isBufferingSpeech,
                 failureReasons = failureReasons,
                 waitUntilAvailableFn = waitUntilAvailableFn,
@@ -291,7 +303,7 @@ fun rememberAgent(session: Session? = null): Agent {
     return agent.value
 }
 
-private fun calculateIsAvailable(agentState: AgentState): Boolean {
+internal fun calculateIsAvailable(agentState: AgentState): Boolean {
     return when (agentState) {
         AgentState.IDLE,
         AgentState.LISTENING,
@@ -301,6 +313,7 @@ private fun calculateIsAvailable(agentState: AgentState): Boolean {
         AgentState.CONNECTING,
         AgentState.INITIALIZING,
         AgentState.DISCONNECTED,
+        AgentState.FAILED,
         AgentState.UNKNOWN -> false
     }
 }

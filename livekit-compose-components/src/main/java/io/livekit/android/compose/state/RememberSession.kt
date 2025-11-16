@@ -21,26 +21,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import io.livekit.android.ConnectOptions
 import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.local.rememberLiveKitRoom
+import io.livekit.android.compose.types.AgentFailure
 import io.livekit.android.room.ConnectionState
 import io.livekit.android.room.Room
 import io.livekit.android.room.participant.AudioTrackPublishOptions
+import io.livekit.android.room.participant.isAgent
 import io.livekit.android.room.track.LocalAudioTrackOptions
 import io.livekit.android.token.ConfigurableTokenSource
 import io.livekit.android.token.FixedTokenSource
 import io.livekit.android.token.TokenRequestOptions
 import io.livekit.android.token.TokenSource
 import io.livekit.android.util.flow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 data class SessionOptions(
     /**
@@ -52,7 +63,8 @@ data class SessionOptions(
      * Amount of time to wait for an agent to join the room, before transitioning
      * to the failure state.
      */
-    val agentConnectTimeout: Duration? = null,
+    // TODO: make this 10 seconds once room dispatch booting info is discoverable
+    val agentConnectTimeout: Duration = 20.seconds,
 
     /**
      * The options to use when fetching the token, if it is fetching from
@@ -60,7 +72,7 @@ data class SessionOptions(
      *
      * These options will be ignored for a [FixedTokenSource].
      */
-    val tokenRequestOptions: TokenRequestOptions? = null
+    val tokenRequestOptions: TokenRequestOptions = TokenRequestOptions()
 )
 
 data class SessionConnectOptions(
@@ -82,59 +94,62 @@ data class SessionConnectTrackOptions(
     val microphonePublishOptions: AudioTrackPublishOptions = AudioTrackPublishOptions(),
 )
 
-interface Session {
+abstract class Session {
 
     /** The [Room] object used for this session. */
-    val room: Room
+    abstract val room: Room
 
     /** The [ConnectionState] of the session. */
-    val connectionState: ConnectionState
+    abstract val connectionState: ConnectionState
 
     /** Whether the session is connected or not. */
-    val isConnected: Boolean
+    abstract val isConnected: Boolean
 
     /** Whether the session is reconnecting or not. */
-    val isReconnecting: Boolean
+    abstract val isReconnecting: Boolean
 
     /**
      * A function that suspends until the session is connected.
      */
-    suspend fun waitUntilConnected()
+    abstract suspend fun waitUntilConnected()
 
     /**
      * A function that suspends until the session is disconnected.
      */
-    suspend fun waitUntilDisconnected()
+    abstract suspend fun waitUntilDisconnected()
 
     /**
      * Prepares the connection to speed up initial connection time.
      *
      * @see Room.prepareConnection
      */
-    suspend fun prepareConnection()
+    abstract suspend fun prepareConnection()
 
     /**
      * Connect to the session.
      */
     @CheckResult
-    suspend fun start(options: SessionConnectOptions = SessionConnectOptions()): Result<Unit>
+    abstract suspend fun start(options: SessionConnectOptions = SessionConnectOptions()): Result<Unit>
 
     /**
      * Disconnect from the session.
      */
-    fun end()
+    abstract fun end()
+
+    internal abstract val agentFailure: AgentFailure?
 }
 
 @Stable
 internal class SessionImpl(
     override val room: Room,
-    val connectionStateState: State<ConnectionState>,
-    val waitUntilConnectedFn: suspend () -> Unit,
-    val waitUntilDisconnectedFn: suspend () -> Unit,
-    val prepareConnectionFn: suspend () -> Unit,
-    val startFn: suspend (options: SessionConnectOptions) -> Result<Unit>,
-    val endFn: () -> Unit
-) : Session {
+    connectionStateState: State<ConnectionState>,
+    agentFailureState: State<AgentFailure?>,
+    private val waitUntilConnectedFn: suspend () -> Unit,
+    private val waitUntilDisconnectedFn: suspend () -> Unit,
+    private val prepareConnectionFn: suspend () -> Unit,
+    private val startFn: suspend (options: SessionConnectOptions) -> Result<Unit>,
+    private val endFn: () -> Unit,
+) : Session() {
     override val connectionState by connectionStateState
 
     override val isConnected by derivedStateOf {
@@ -178,22 +193,30 @@ internal class SessionImpl(
     override fun end() {
         endFn()
     }
+
+    override val agentFailure: AgentFailure? by agentFailureState
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Beta
 @Composable
 fun rememberSession(tokenSource: TokenSource, options: SessionOptions = SessionOptions()): Session {
     val room = rememberLiveKitRoom(passedRoom = options.room, connect = false)
-    val connectionState = room::state.flow
-        .map { state ->
-            when (state) {
-                Room.State.CONNECTING -> ConnectionState.CONNECTING
-                Room.State.CONNECTED -> ConnectionState.CONNECTED
-                Room.State.DISCONNECTED -> ConnectionState.DISCONNECTED
-                Room.State.RECONNECTING -> ConnectionState.RECONNECTING
+    val connectionState = produceState(ConnectionState.DISCONNECTED, room) {
+        room::state.flow
+            .map { state ->
+                when (state) {
+                    Room.State.CONNECTING -> ConnectionState.CONNECTING
+                    Room.State.CONNECTED -> ConnectionState.CONNECTED
+                    Room.State.DISCONNECTED -> ConnectionState.DISCONNECTED
+                    Room.State.RECONNECTING -> ConnectionState.RECONNECTING
+                }
             }
-        }
-        .collectAsState(ConnectionState.DISCONNECTED)
+            .collect {
+                println("emitting connstate: $it")
+                value = it
+            }
+    }
 
     val waitUntilConnected = remember(room) {
         suspend {
@@ -211,15 +234,18 @@ fun rememberSession(tokenSource: TokenSource, options: SessionOptions = SessionO
         }
     }
 
-    val tokenSourceFetch = remember(tokenSource, options.tokenRequestOptions) {
+    val tokenSource by rememberUpdatedState(tokenSource)
+    val tokenRequestOptions by rememberUpdatedState(options.tokenRequestOptions)
+    val tokenSourceFetch = remember {
         suspend fetch@{
-            return@fetch when (tokenSource) {
+            val source = tokenSource
+            return@fetch when (source) {
                 is FixedTokenSource -> {
-                    tokenSource.fetch()
+                    source.fetch()
                 }
 
                 is ConfigurableTokenSource -> {
-                    tokenSource.fetch(options.tokenRequestOptions ?: TokenRequestOptions())
+                    source.fetch(tokenRequestOptions)
                 }
 
                 else -> {
@@ -229,6 +255,36 @@ fun rememberSession(tokenSource: TokenSource, options: SessionOptions = SessionO
         }
     }
 
+    val agentTimeoutDuration by rememberUpdatedState(options.agentConnectTimeout)
+    val isSessionDisconnected by rememberUpdatedState(connectionState.value == ConnectionState.DISCONNECTED)
+    val agentFailureState = produceState<AgentFailure?>(null, isSessionDisconnected) {
+        value = null
+        if (isSessionDisconnected) {
+            return@produceState
+        }
+
+        val participant = withContext(Dispatchers.IO) {
+            withTimeoutOrNull(agentTimeoutDuration) {
+                // Take until we get an agent participant.
+                room::remoteParticipants.flow
+                    .map { it -> it.values }
+                    .map { remoteParticipants ->
+                        remoteParticipants
+                            .filter { p -> p.agentAttributes.lkPublishOnBehalf == null }
+                            .firstOrNull { p -> p.isAgent }
+                    }
+                    .mapNotNull { it }
+                    .first()
+            }
+        }
+
+        ensureActive()
+        value = if (participant != null) {
+            null
+        } else {
+            AgentFailure.TIMEOUT
+        }
+    }
     val start = remember(room, waitUntilDisconnected, waitUntilConnected, tokenSourceFetch) {
         val startImpl: suspend (SessionConnectOptions) -> Result<Unit> = { sessionConnectOptions ->
 
@@ -269,6 +325,7 @@ fun rememberSession(tokenSource: TokenSource, options: SessionOptions = SessionO
 
         startImpl
     }
+
     val end = remember(room) {
         {
             room.disconnect()
@@ -299,6 +356,7 @@ fun rememberSession(tokenSource: TokenSource, options: SessionOptions = SessionO
             prepareConnectionFn = prepareConnection,
             startFn = start,
             endFn = end,
+            agentFailureState = agentFailureState
         )
     }
 
