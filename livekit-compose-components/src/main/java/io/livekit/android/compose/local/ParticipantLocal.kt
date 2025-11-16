@@ -24,6 +24,8 @@ import io.livekit.android.room.participant.LocalParticipant
 import io.livekit.android.room.participant.Participant
 
 /**
+ * CompositionLocal for the [Participant] currently provided by [ParticipantScope]
+ *
  * Not to be confused with [LocalParticipant].
  */
 @SuppressLint("CompositionLocalNaming")
@@ -43,7 +45,7 @@ fun ParticipantScope(
 
 /**
  * Returns the [passedParticipant] or the currently provided [ParticipantLocal].
- * @throws IllegalStateException if passedParticipant is null and no ParticipantLocal is available (e.g. not inside a [RoomScope]).
+ * @throws IllegalStateException if passedParticipant is null and no ParticipantLocal is available (e.g. not inside a [ParticipantScope]).
  */
 @Composable
 @Throws(IllegalStateException::class)
