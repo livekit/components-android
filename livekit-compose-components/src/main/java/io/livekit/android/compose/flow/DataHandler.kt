@@ -103,7 +103,7 @@ data class DataMessage(
  * will be sent on the specified topic.
  */
 @Composable
-fun rememberDataMessageHandler(room: Room, topic: DataTopic): DataHandler {
+fun rememberDataMessageHandler(room: Room, topic: LegacyDataTopic): DataHandler {
     return rememberDataMessageHandler(room, topic.value)
 }
 
