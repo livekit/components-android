@@ -1,0 +1,293 @@
+package io.livekit.android.compose.state
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import io.livekit.android.annotations.Beta
+import io.livekit.android.compose.local.requireSession
+import io.livekit.android.compose.types.TrackReference
+import io.livekit.android.compose.util.rememberStateOrDefault
+import io.livekit.android.room.ConnectionState
+import io.livekit.android.room.participant.RemoteParticipant
+import io.livekit.android.room.participant.isAgent
+import io.livekit.android.room.track.Track
+import io.livekit.android.room.types.AgentAttributes
+import io.livekit.android.util.flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.takeWhile
+import kotlin.time.Duration.Companion.seconds
+
+// TODO: make this 10 seconds once room dispatch booting info is discoverable
+private val DEFAULT_AGENT_CONNECT_TIMEOUT_MILLISECONDS = 20.seconds;
+
+interface Agent {
+    val agentParticipant: RemoteParticipant?
+
+    /**
+     * @suppress
+     */
+    val workerParticipant: RemoteParticipant?
+
+    val attributes: AgentAttributes?
+
+    val failureReasons: List<String>
+
+    val agentState: AgentState
+
+    val audioTrack: TrackReference?
+
+    val videoTrack: TrackReference?
+
+    val isAvailable: Boolean
+
+    val isBufferingSpeech: Boolean
+
+    suspend fun waitUntilAvailable()
+    suspend fun waitUntilCamera()
+    suspend fun waitUntilMicrophone()
+}
+
+@Stable
+internal class AgentImpl(
+    agentParticipantState: State<RemoteParticipant?>,
+    workerParticipantState: State<RemoteParticipant?>,
+    failureReasons: SnapshotStateList<String>,
+    audioTrackState: State<TrackReference?>,
+    videoTrackState: State<TrackReference?>,
+    agentStateState: State<AgentState>,
+    isAvailableState: State<Boolean>,
+    isBufferingSpeechState: State<Boolean>,
+    attributesState: State<AgentAttributes?>,
+    private val waitUntilAvailableFn: suspend () -> Unit,
+    private val waitUntilCameraFn: suspend () -> Unit,
+    private val waitUntilMicrophoneFn: suspend () -> Unit,
+) : Agent {
+    override val agentParticipant by agentParticipantState
+
+    override val workerParticipant by workerParticipantState
+
+    override val attributes by attributesState
+
+    override val failureReasons: List<String> = failureReasons
+
+    override val agentState by agentStateState
+
+    override val audioTrack by audioTrackState
+
+    override val videoTrack by videoTrackState
+
+    override val isAvailable by isAvailableState
+
+    override val isBufferingSpeech by isBufferingSpeechState
+
+    override suspend fun waitUntilAvailable() {
+        waitUntilAvailableFn()
+    }
+
+    override suspend fun waitUntilCamera() {
+        waitUntilCameraFn()
+    }
+
+    override suspend fun waitUntilMicrophone() {
+        waitUntilMicrophoneFn()
+    }
+
+}
+
+/**
+ * This looks for the first agent-participant in the room.
+ *
+ * Requires an agent running with livekit-agents \>= 0.9.0.
+ */
+@Beta
+@Composable
+fun rememberAgent(session: Session? = null): Agent {
+
+    val session = requireSession(session)
+    val room = session.room
+
+    // Gather participant info
+    val remoteParticipants by room::remoteParticipants.flow.collectAsState()
+    val agentParticipantState = remember {
+        derivedStateOf {
+            remoteParticipants.values
+                .filter { p -> p.agentAttributes.lkPublishOnBehalf == null }
+                .firstOrNull { p -> p.isAgent }
+        }
+    }
+
+    val curAgentParticipant = agentParticipantState.value // For nullability checks
+    val workerParticipantState = remember {
+        derivedStateOf {
+            if (curAgentParticipant == null) {
+                return@derivedStateOf null
+            }
+            remoteParticipants.values
+                .filter { p -> p.agentAttributes.lkPublishOnBehalf != null && p.agentAttributes.lkPublishOnBehalf == curAgentParticipant.identity?.value }
+                .firstOrNull { p -> p.isAgent }
+        }
+    }
+    val curWorkerParticipant = workerParticipantState.value // For nullability checks
+
+    // Track handling
+    val agentTracks by rememberStateOrDefault(emptyList()) {
+        if (curAgentParticipant != null) {
+            rememberParticipantTrackReferences(
+                sources = listOf(Track.Source.MICROPHONE, Track.Source.CAMERA),
+                participantIdentity = curAgentParticipant.identity,
+                passedRoom = room,
+            )
+        } else {
+            null
+        }
+    }
+
+    val workerTracks by rememberStateOrDefault(emptyList()) {
+        if (curWorkerParticipant != null) {
+            rememberParticipantTrackReferences(
+                sources = listOf(Track.Source.MICROPHONE, Track.Source.CAMERA),
+                participantIdentity = curWorkerParticipant.identity,
+                passedRoom = room,
+            )
+        } else {
+            null
+        }
+    }
+
+    val videoTrackState = remember {
+        derivedStateOf {
+            agentTracks.firstOrNull { trackReference -> trackReference.source == Track.Source.CAMERA }
+                ?: workerTracks.firstOrNull { trackReference -> trackReference.source == Track.Source.CAMERA }
+        }
+    }
+
+    val audioTrackState = remember {
+        derivedStateOf {
+            agentTracks.firstOrNull { trackReference -> trackReference.source == Track.Source.MICROPHONE }
+                ?: workerTracks.firstOrNull { trackReference -> trackReference.source == Track.Source.MICROPHONE }
+        }
+    }
+
+    val localMicTrack by rememberParticipantTrackReferences(
+        sources = listOf(Track.Source.MICROPHONE),
+        passedParticipant = room.localParticipant,
+    )
+
+    // Attributes and states
+    val agentState by rememberAgentState(participant = curAgentParticipant)
+    val connectionState = session.connectionState
+
+    val combinedAgentState = remember {
+        derivedStateOf {
+
+            var state = AgentState.DISCONNECTED
+            if (connectionState != ConnectionState.DISCONNECTED) {
+                state = AgentState.CONNECTING
+            }
+
+            if (localMicTrack.isNotEmpty()) {
+                state = AgentState.LISTENING
+            }
+
+            val agentParticipant = agentParticipantState.value
+            if (agentParticipant != null) {
+                state = agentState
+            }
+
+            return@derivedStateOf state
+        }
+    }
+
+    val isAvailable = remember {
+        derivedStateOf {
+            calculateIsAvailable(agentState)
+        }
+    }
+
+    val isBufferingSpeech = remember {
+        derivedStateOf {
+            !(connectionState == ConnectionState.DISCONNECTED
+                    || isAvailable.value
+                    || localMicTrack.isNotEmpty())
+        }
+    }
+
+    val attributesState = rememberStateOrDefault(null) {
+        if (curAgentParticipant != null) {
+            curAgentParticipant::agentAttributes.flow
+                .collectAsState()
+        } else {
+            null
+        }
+    }
+
+    // Agent actions
+    val waitUntilAvailableFn = remember(room) {
+        suspend waitUntilAvailable@{
+            snapshotFlow { combinedAgentState.value }
+                .takeWhile { !calculateIsAvailable(it) }
+                .collect()
+        }
+    }
+
+    val waitUntilCameraFn = remember(room) {
+        suspend waitUntilCamera@{
+            snapshotFlow { videoTrackState.value }
+                .takeWhile { it == null }
+                .collect()
+        }
+    }
+
+    val waitUntilMicrophoneFn = remember(room) {
+        suspend waitUntilMicrophone@{
+            snapshotFlow { audioTrackState.value }
+                .takeWhile { it == null }
+                .collect()
+        }
+    }
+
+    val failureReasons = remember(room) {
+        SnapshotStateList<String>()
+    }
+    // Assemble the agent
+    val agent = remember {
+        derivedStateOf {
+            AgentImpl(
+                agentParticipantState = agentParticipantState,
+                workerParticipantState = workerParticipantState,
+                audioTrackState = audioTrackState,
+                videoTrackState = videoTrackState,
+                agentStateState = combinedAgentState,
+                isAvailableState = isAvailable,
+                isBufferingSpeechState = isBufferingSpeech,
+                failureReasons = failureReasons,
+                waitUntilAvailableFn = waitUntilAvailableFn,
+                waitUntilCameraFn = waitUntilCameraFn,
+                waitUntilMicrophoneFn = waitUntilMicrophoneFn,
+                attributesState = attributesState,
+            )
+        }
+    }
+
+    return agent.value
+}
+
+private fun calculateIsAvailable(agentState: AgentState): Boolean {
+    return when (agentState) {
+        AgentState.IDLE,
+        AgentState.LISTENING,
+        AgentState.THINKING,
+        AgentState.SPEAKING -> true
+
+        AgentState.CONNECTING,
+        AgentState.INITIALIZING,
+        AgentState.DISCONNECTED,
+        AgentState.UNKNOWN -> false
+    }
+}
