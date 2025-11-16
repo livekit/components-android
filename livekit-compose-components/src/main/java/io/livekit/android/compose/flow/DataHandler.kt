@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class DataSendOptions(val reliability: DataPublishReliability, val identities: List<Participant.Identity>? = null)
 
@@ -49,11 +50,11 @@ class DataHandler(
     private val mutex = Mutex()
 
     suspend fun sendMessage(payload: ByteArray, options: DataSendOptions) {
-        mutex.lock()
-        isSending.value = true
-        send(payload, options)
-        isSending.value = false
-        mutex.unlock()
+        mutex.withLock {
+            isSending.value = true
+            send(payload, options)
+            isSending.value = false
+        }
     }
 }
 
