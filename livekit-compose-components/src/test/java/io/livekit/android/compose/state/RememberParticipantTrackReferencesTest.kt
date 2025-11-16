@@ -19,8 +19,7 @@ package io.livekit.android.compose.state
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
-import io.livekit.android.room.SignalClient
-import io.livekit.android.room.participant.RemoteParticipant
+import io.livekit.android.compose.test.util.createFakeRemoteParticipant
 import io.livekit.android.room.participant.VideoTrackPublishOptions
 import io.livekit.android.room.track.LocalTrackPublication
 import io.livekit.android.room.track.LocalVideoTrack
@@ -30,23 +29,24 @@ import io.livekit.android.test.MockE2ETest
 import io.livekit.android.test.mock.MockRtpReceiver
 import io.livekit.android.test.mock.MockVideoStreamTrack
 import io.livekit.android.test.mock.TestData
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mockito.Mockito
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RememberParticipantTrackReferences : MockE2ETest() {
+class RememberParticipantTrackReferencesTest : MockE2ETest() {
 
     @Test
     fun getEmptyTrackReferences() = runTest {
         connect()
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberParticipantTrackReferences(passedParticipant = room.localParticipant)
+            rememberParticipantTrackReferences(passedParticipant = room.localParticipant).value
         }.test {
-            Assert.assertTrue(awaitItem().isEmpty())
+            assertTrue(awaitItem().isEmpty())
         }
     }
 
@@ -57,14 +57,14 @@ class RememberParticipantTrackReferences : MockE2ETest() {
             rememberParticipantTrackReferences(
                 usePlaceholders = setOf(Track.Source.CAMERA),
                 passedParticipant = room.localParticipant
-            )
+            ).value
         }.test {
             val trackRefs = awaitItem()
-            Assert.assertEquals(1, trackRefs.size)
+            assertEquals(1, trackRefs.size)
             val trackRef = trackRefs.first()
-            Assert.assertTrue(trackRef.isPlaceholder())
-            Assert.assertEquals(Track.Source.CAMERA, trackRef.source)
-            Assert.assertEquals(room.localParticipant, trackRef.participant)
+            assertTrue(trackRef.isPlaceholder())
+            assertEquals(Track.Source.CAMERA, trackRef.source)
+            assertEquals(room.localParticipant, trackRef.participant)
         }
     }
 
@@ -76,20 +76,20 @@ class RememberParticipantTrackReferences : MockE2ETest() {
                 rememberParticipantTrackReferences(
                     passedParticipant = room.localParticipant,
                     onlySubscribed = false
-                )
+                ).value
             }.test {
                 // discard initial state.
-                Assert.assertTrue(awaitItem().isEmpty())
+                assertTrue(awaitItem().isEmpty())
 
                 val trackRefs = awaitItem()
-                Assert.assertEquals(1, trackRefs.size)
+                assertEquals(1, trackRefs.size)
 
                 val trackRef = trackRefs.first()
                 val (trackPub) = room.localParticipant.videoTrackPublications.first()
-                Assert.assertFalse(trackRef.isPlaceholder())
-                Assert.assertEquals(Track.Source.CAMERA, trackRef.source)
-                Assert.assertEquals(room.localParticipant, trackRef.participant)
-                Assert.assertEquals(trackPub, trackRef.publication)
+                assertFalse(trackRef.isPlaceholder())
+                assertEquals(Track.Source.CAMERA, trackRef.source)
+                assertEquals(room.localParticipant, trackRef.participant)
+                assertEquals(trackPub, trackRef.publication)
             }
         }
 
@@ -104,11 +104,11 @@ class RememberParticipantTrackReferences : MockE2ETest() {
         connect()
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberParticipantTrackReferences(passedParticipant = room.localParticipant)
+                rememberParticipantTrackReferences(passedParticipant = room.localParticipant).value
             }.test {
-                Assert.assertTrue(awaitItem().isEmpty()) // initial
-                Assert.assertTrue(awaitItem().isNotEmpty()) // add
-                Assert.assertTrue(awaitItem().isEmpty()) // disconnect
+                assertTrue(awaitItem().isEmpty()) // initial
+                assertTrue(awaitItem().isNotEmpty()) // add
+                assertTrue(awaitItem().isEmpty()) // disconnect
             }
         }
         val mockVideoTrack = Mockito.mock(LocalVideoTrack::class.java)
@@ -121,25 +121,25 @@ class RememberParticipantTrackReferences : MockE2ETest() {
 
     @Test
     fun whenRemoteParticipantTrackSubscribed() = runTest {
-        val remoteParticipant = createFakeRemoteParticipant()
+        val remoteParticipant = createFakeRemoteParticipant(coroutineRule.dispatcher)
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 rememberParticipantTrackReferences(
                     passedParticipant = remoteParticipant,
                     onlySubscribed = true
-                )
+                ).value
             }.test {
                 // discard initial state.
-                Assert.assertTrue(awaitItem().isEmpty())
+                assertTrue(awaitItem().isEmpty())
 
                 val trackRefs = awaitItem()
-                Assert.assertEquals(1, trackRefs.size)
+                assertEquals(1, trackRefs.size)
                 val trackRef = trackRefs.first()
                 val (trackPub) = remoteParticipant.videoTrackPublications.first()
-                Assert.assertFalse(trackRef.isPlaceholder())
-                Assert.assertEquals(Track.Source.CAMERA, trackRef.source)
-                Assert.assertEquals(remoteParticipant, trackRef.participant)
-                Assert.assertEquals(trackPub, trackRef.publication)
+                assertFalse(trackRef.isPlaceholder())
+                assertEquals(Track.Source.CAMERA, trackRef.source)
+                assertEquals(remoteParticipant, trackRef.participant)
+                assertEquals(trackPub, trackRef.publication)
             }
         }
 
@@ -155,14 +155,4 @@ class RememberParticipantTrackReferences : MockE2ETest() {
         job.join()
     }
 
-    private fun createFakeRemoteParticipant(): RemoteParticipant {
-        return RemoteParticipant(
-            TestData.REMOTE_PARTICIPANT,
-            Mockito.mock(SignalClient::class.java),
-            Dispatchers.IO,
-            Dispatchers.Default,
-        ).apply {
-            updateFromInfo(TestData.REMOTE_PARTICIPANT)
-        }
-    }
 }
