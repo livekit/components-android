@@ -17,8 +17,10 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import io.livekit.android.compose.local.requireParticipant
 import io.livekit.android.room.participant.Participant
@@ -27,12 +29,16 @@ import io.livekit.android.util.flow
 /**
  * Holder for basic [Participant] information.
  */
-@Immutable
-data class ParticipantInfo(
-    val name: String?,
-    val identity: Participant.Identity?,
-    val metadata: String?,
-)
+@Stable
+class ParticipantInfo(
+    nameState: State<String?>,
+    identityState: State<Participant.Identity?>,
+    metadataState: State<String?>,
+) {
+    val name: String? by nameState
+    val identity: Participant.Identity? by identityState
+    val metadata: String? by metadataState
+}
 
 /**
  * Remembers the participant info and updates whenever it is changed.
@@ -41,15 +47,15 @@ data class ParticipantInfo(
 fun rememberParticipantInfo(passedParticipant: Participant? = null): ParticipantInfo {
     val participant = requireParticipant(passedParticipant)
 
-    val name = participant::name.flow.collectAsState().value
-    val identity = participant::identity.flow.collectAsState().value
-    val metadata = participant::metadata.flow.collectAsState().value
+    val nameState = participant::name.flow.collectAsState()
+    val identityState = participant::identity.flow.collectAsState()
+    val metadataState = participant::metadata.flow.collectAsState()
 
-    val participantInfo = remember(name, identity, metadata) {
+    val participantInfo = remember(nameState, identityState, metadataState) {
         ParticipantInfo(
-            name = name,
-            identity = identity,
-            metadata = metadata,
+            nameState = nameState,
+            identityState = identityState,
+            metadataState = metadataState,
         )
     }
 

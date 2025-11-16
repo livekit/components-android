@@ -46,7 +46,7 @@ class RememberTrackMutedTest : MockE2ETest() {
             publication = publication,
         )
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberTrackMuted(trackRef = trackReference)
+            rememberTrackMuted(trackRef = trackReference).value
         }.test {
             assertFalse(awaitItem())
         }
@@ -65,7 +65,7 @@ class RememberTrackMutedTest : MockE2ETest() {
         )
 
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberTrackMuted(trackReference)
+            rememberTrackMuted(trackReference).value
         }.test {
             delay(10)
             val isMuted = expectMostRecentItem()
@@ -88,7 +88,7 @@ class RememberTrackMutedTest : MockE2ETest() {
 
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberTrackMuted(trackReference)
+                rememberTrackMuted(trackReference).value
             }.test {
                 assertFalse(awaitItem())
                 assertTrue(awaitItem())

@@ -17,6 +17,7 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import io.livekit.android.compose.local.RoomScope
 import io.livekit.android.compose.local.requireRoom
@@ -27,7 +28,7 @@ import io.livekit.android.util.flow
  * Returns the [Room.State] from [passedRoom] or the local [RoomScope] if null.
  */
 @Composable
-fun rememberConnectionState(passedRoom: Room? = null): Room.State {
+fun rememberConnectionState(passedRoom: Room? = null): State<Room.State> {
     val room = requireRoom(passedRoom)
-    return room::state.flow.collectAsState().value
+    return room::state.flow.collectAsState()
 }

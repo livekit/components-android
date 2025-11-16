@@ -52,7 +52,7 @@ class RememberTrackTest : MockE2ETest() {
             publication = publication,
         )
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberTrack<VideoTrack>(trackReference)
+            rememberTrack<VideoTrack>(trackReference).value
         }.test {
             val track = awaitItem()
             assertNull(track)
@@ -76,7 +76,7 @@ class RememberTrackTest : MockE2ETest() {
 
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberTrack<VideoTrack>(trackReference)
+                rememberTrack<VideoTrack>(trackReference).value
             }.test {
                 delay(10)
                 val track = expectMostRecentItem()

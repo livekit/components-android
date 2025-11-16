@@ -19,7 +19,6 @@ package io.livekit.android.compose.state
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import app.cash.turbine.test
-import io.livekit.android.room.SignalClient
 import io.livekit.android.room.participant.RemoteParticipant
 import io.livekit.android.room.track.Track
 import io.livekit.android.test.MockE2ETest
@@ -28,14 +27,12 @@ import io.livekit.android.test.mock.MockRtpReceiver
 import io.livekit.android.test.mock.MockVideoStreamTrack
 import io.livekit.android.test.mock.TestData
 import io.livekit.android.test.mock.createMediaStreamId
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.Mockito
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RememberTrackReferencesTest : MockE2ETest() {
@@ -44,7 +41,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
     fun getEmptyTrackReferences() = runTest {
         connect()
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberTracks(passedRoom = room)
+            rememberTracks(passedRoom = room).value
         }.test {
             assertTrue(awaitItem().isEmpty())
         }
@@ -54,7 +51,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
     fun getPlaceholderTrackReferences() = runTest {
         connect()
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberTracks(usePlaceholders = setOf(Track.Source.CAMERA), passedRoom = room)
+            rememberTracks(usePlaceholders = setOf(Track.Source.CAMERA), passedRoom = room).value
         }.test {
             val trackRefs = awaitItem()
             assertEquals(1, trackRefs.size)
@@ -70,7 +67,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
         connect()
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberTracks(passedRoom = room, onlySubscribed = false)
+                rememberTracks(passedRoom = room, onlySubscribed = false).value
             }.test {
                 // discard initial state.
                 assertTrue(awaitItem().isEmpty())
@@ -96,7 +93,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
         connect()
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberTracks(passedRoom = room, onlySubscribed = false)
+                rememberTracks(passedRoom = room, onlySubscribed = false).value
             }.test {
                 assertTrue(awaitItem().isEmpty()) // initial
                 assertTrue(awaitItem().isNotEmpty()) // join
@@ -113,7 +110,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
         connect()
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberTracks(passedRoom = room, onlySubscribed = true)
+                rememberTracks(passedRoom = room, onlySubscribed = true).value
             }.test {
                 // discard initial state.
                 assertTrue(awaitItem().isEmpty())
@@ -147,13 +144,9 @@ class RememberTrackReferencesTest : MockE2ETest() {
     }
 
     private fun createFakeRemoteParticipant(): RemoteParticipant {
-        return RemoteParticipant(
-            TestData.REMOTE_PARTICIPANT,
-            Mockito.mock(SignalClient::class.java),
-            Dispatchers.IO,
-            Dispatchers.Default,
-        ).apply {
-            updateFromInfo(TestData.REMOTE_PARTICIPANT)
-        }
+        return io.livekit.android.compose.test.util.createFakeRemoteParticipant(coroutineRule.dispatcher)
+            .apply {
+                updateFromInfo(TestData.REMOTE_PARTICIPANT)
+            }
     }
 }

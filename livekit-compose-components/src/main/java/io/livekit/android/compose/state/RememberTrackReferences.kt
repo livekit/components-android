@@ -17,6 +17,7 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.requireRoom
@@ -53,7 +54,7 @@ fun rememberTracks(
     usePlaceholders: Set<Track.Source> = emptySet(),
     passedRoom: Room? = null,
     onlySubscribed: Boolean = true,
-): List<TrackReference> {
+): State<List<TrackReference>> {
     val room = requireRoom(passedRoom)
 
     return trackReferencesFlow(
@@ -63,7 +64,6 @@ fun rememberTracks(
         onlySubscribed = onlySubscribed
     )
         .collectAsState(initial = room.getTrackReferences(sources, usePlaceholders, onlySubscribed))
-        .value
 }
 
 /**

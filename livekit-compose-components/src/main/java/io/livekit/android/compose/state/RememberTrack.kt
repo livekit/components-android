@@ -18,6 +18,7 @@ package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import io.livekit.android.compose.types.TrackIdentifier
@@ -36,7 +37,7 @@ import kotlinx.coroutines.flow.collectLatest
  * as needed.
  */
 @Composable
-internal fun <T : Track> rememberTrack(trackPublication: TrackPublication?): T? {
+internal fun <T : Track> rememberTrack(trackPublication: TrackPublication?): State<T?> {
     val trackState = remember { mutableStateOf<T?>(null) }
 
     LaunchedEffect(trackPublication) {
@@ -50,7 +51,7 @@ internal fun <T : Track> rememberTrack(trackPublication: TrackPublication?): T? 
         }
     }
 
-    return trackState.value
+    return trackState
 }
 
 /**
@@ -64,6 +65,6 @@ internal fun <T : Track> rememberTrack(trackPublication: TrackPublication?): T? 
  * @see TrackReference
  */
 @Composable
-fun <T : Track> rememberTrack(trackIdentifier: TrackIdentifier): T? {
+fun <T : Track> rememberTrack(trackIdentifier: TrackIdentifier): State<T?> {
     return rememberTrack(trackIdentifier.publication)
 }

@@ -32,7 +32,7 @@ class RememberConnectionStateTest : MockE2ETest() {
     @Test
     fun initialState() = runTest {
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberConnectionState(room)
+            rememberConnectionState(room).value
         }.test {
             assertEquals(awaitItem(), Room.State.DISCONNECTED)
         }
@@ -42,7 +42,7 @@ class RememberConnectionStateTest : MockE2ETest() {
     fun connectAndDisconnectState() = runTest {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberConnectionState(room)
+                rememberConnectionState(room).value
             }.test {
                 assertEquals(awaitItem(), Room.State.DISCONNECTED)
                 assertEquals(awaitItem(), Room.State.CONNECTING)

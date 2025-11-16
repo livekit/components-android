@@ -17,23 +17,27 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import io.livekit.android.compose.types.TrackReference
+import io.livekit.android.compose.util.rememberStateOrDefault
 import io.livekit.android.util.flow
 
 /**
  * @return true if the referenced track is muted or is a placeholder
  */
 @Composable
-fun rememberTrackMuted(trackRef: TrackReference): Boolean {
-    return if (trackRef.isPlaceholder()) {
-        true
-    } else {
-        val publication = trackRef.publication
-        if (publication != null) {
-            publication::muted.flow.collectAsState().value
+fun rememberTrackMuted(trackRef: TrackReference): State<Boolean> {
+    return rememberStateOrDefault(true) {
+        if (trackRef.isPlaceholder()) {
+            null
         } else {
-            true
+            val publication = trackRef.publication
+            if (publication != null) {
+                publication::muted.flow.collectAsState()
+            } else {
+                null
+            }
         }
     }
 }

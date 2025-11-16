@@ -16,6 +16,7 @@
 
 package io.livekit.android.compose.types
 
+import androidx.compose.runtime.Immutable
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.room.track.Track
 import io.livekit.android.room.track.TrackPublication
@@ -59,6 +60,7 @@ data class TrackSource(
 /**
  * A reference to a [Track], or a placeholder.
  */
+@Immutable
 data class TrackReference(
     override val participant: Participant,
     override val publication: TrackPublication?,

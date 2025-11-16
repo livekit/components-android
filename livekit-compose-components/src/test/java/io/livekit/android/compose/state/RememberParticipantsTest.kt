@@ -36,7 +36,7 @@ class RememberParticipantsTest : MockE2ETest() {
     @Test
     fun initialState() = runTest {
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberParticipants(room)
+            rememberParticipants(room).value
         }.test {
             val participants = awaitItem()
             assertEquals(participants.size, 1)
@@ -48,7 +48,7 @@ class RememberParticipantsTest : MockE2ETest() {
     fun participantJoin() = runTest {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberParticipants(room)
+                rememberParticipants(room).value
             }.test {
                 delay(10)
                 val participants = expectMostRecentItem()
@@ -70,7 +70,7 @@ class RememberParticipantsTest : MockE2ETest() {
     fun participantLeave() = runTest {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberParticipants(room)
+                rememberParticipants(room).value
             }.test {
                 delay(10)
                 val participants = expectMostRecentItem()
