@@ -18,7 +18,7 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.room.Room
 import io.livekit.android.test.MockE2ETest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,7 +33,7 @@ class RememberConnectionStateTest : MockE2ETest() {
     fun initialState() = runTest {
         moleculeFlow(RecompositionMode.Immediate) {
             rememberConnectionState(room).value
-        }.test {
+        }.composeTest {
             assertEquals(awaitItem(), Room.State.DISCONNECTED)
         }
     }
@@ -43,7 +43,7 @@ class RememberConnectionStateTest : MockE2ETest() {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 rememberConnectionState(room).value
-            }.test {
+            }.composeTest {
                 assertEquals(awaitItem(), Room.State.DISCONNECTED)
                 assertEquals(awaitItem(), Room.State.CONNECTING)
                 assertEquals(awaitItem(), Room.State.CONNECTED)

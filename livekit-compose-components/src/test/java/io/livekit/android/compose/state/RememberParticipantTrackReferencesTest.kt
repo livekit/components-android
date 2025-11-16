@@ -18,8 +18,8 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
 import io.livekit.android.compose.test.util.createFakeRemoteParticipant
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.room.participant.VideoTrackPublishOptions
 import io.livekit.android.room.track.LocalTrackPublication
 import io.livekit.android.room.track.LocalVideoTrack
@@ -45,7 +45,7 @@ class RememberParticipantTrackReferencesTest : MockE2ETest() {
         connect()
         moleculeFlow(RecompositionMode.Immediate) {
             rememberParticipantTrackReferences(passedParticipant = room.localParticipant).value
-        }.test {
+        }.composeTest {
             assertTrue(awaitItem().isEmpty())
         }
     }
@@ -58,7 +58,7 @@ class RememberParticipantTrackReferencesTest : MockE2ETest() {
                 usePlaceholders = setOf(Track.Source.CAMERA),
                 passedParticipant = room.localParticipant
             ).value
-        }.test {
+        }.composeTest {
             val trackRefs = awaitItem()
             assertEquals(1, trackRefs.size)
             val trackRef = trackRefs.first()
@@ -77,7 +77,7 @@ class RememberParticipantTrackReferencesTest : MockE2ETest() {
                     passedParticipant = room.localParticipant,
                     onlySubscribed = false
                 ).value
-            }.test {
+            }.composeTest {
                 // discard initial state.
                 assertTrue(awaitItem().isEmpty())
 
@@ -105,7 +105,7 @@ class RememberParticipantTrackReferencesTest : MockE2ETest() {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 rememberParticipantTrackReferences(passedParticipant = room.localParticipant).value
-            }.test {
+            }.composeTest {
                 assertTrue(awaitItem().isEmpty()) // initial
                 assertTrue(awaitItem().isNotEmpty()) // add
                 assertTrue(awaitItem().isEmpty()) // disconnect
@@ -128,7 +128,7 @@ class RememberParticipantTrackReferencesTest : MockE2ETest() {
                     passedParticipant = remoteParticipant,
                     onlySubscribed = true
                 ).value
-            }.test {
+            }.composeTest {
                 // discard initial state.
                 assertTrue(awaitItem().isEmpty())
 

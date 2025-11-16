@@ -18,7 +18,7 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.test.BaseTest
 import io.livekit.android.test.mock.TestData
@@ -41,7 +41,7 @@ class RememberParticipantInfoTest : BaseTest() {
     fun getsParticipantInfo() = runTest {
         moleculeFlow(RecompositionMode.Immediate) {
             rememberParticipantInfo(participant)
-        }.test {
+        }.composeTest {
             val info = awaitItem()
             assertEquals(participant.identity, info.identity)
             assertEquals(participant.name, info.name)
@@ -54,7 +54,7 @@ class RememberParticipantInfoTest : BaseTest() {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 rememberParticipantInfo(participant)
-            }.test {
+            }.composeTest {
                 delay(10)
 
                 val info = expectMostRecentItem()

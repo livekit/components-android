@@ -18,7 +18,7 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.room.participant.RemoteParticipant
 import io.livekit.android.room.track.Track
 import io.livekit.android.test.MockE2ETest
@@ -42,7 +42,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
         connect()
         moleculeFlow(RecompositionMode.Immediate) {
             rememberTracks(passedRoom = room).value
-        }.test {
+        }.composeTest {
             assertTrue(awaitItem().isEmpty())
         }
     }
@@ -52,7 +52,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
         connect()
         moleculeFlow(RecompositionMode.Immediate) {
             rememberTracks(usePlaceholders = setOf(Track.Source.CAMERA), passedRoom = room).value
-        }.test {
+        }.composeTest {
             val trackRefs = awaitItem()
             assertEquals(1, trackRefs.size)
             val trackRef = trackRefs.first()
@@ -68,7 +68,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 rememberTracks(passedRoom = room, onlySubscribed = false).value
-            }.test {
+            }.composeTest {
                 // discard initial state.
                 assertTrue(awaitItem().isEmpty())
 
@@ -94,7 +94,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 rememberTracks(passedRoom = room, onlySubscribed = false).value
-            }.test {
+            }.composeTest {
                 assertTrue(awaitItem().isEmpty()) // initial
                 assertTrue(awaitItem().isNotEmpty()) // join
                 assertTrue(awaitItem().isEmpty()) // disconnect
@@ -111,7 +111,7 @@ class RememberTrackReferencesTest : MockE2ETest() {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 rememberTracks(passedRoom = room, onlySubscribed = true).value
-            }.test {
+            }.composeTest {
                 // discard initial state.
                 assertTrue(awaitItem().isEmpty())
 

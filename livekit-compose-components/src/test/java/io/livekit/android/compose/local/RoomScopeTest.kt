@@ -26,7 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.room.Room
 import io.livekit.android.test.MockE2ETest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,7 +48,7 @@ class RoomScopeTest : MockE2ETest() {
                 }
             }
             testRoom
-        }.test {
+        }.composeTest {
             val retRoom = awaitItem()
             assertNotNull(retRoom)
         }
@@ -64,7 +64,7 @@ class RoomScopeTest : MockE2ETest() {
                 }
             }
             testRoom
-        }.test {
+        }.composeTest {
             awaitError() // real rooms can't be created in test env.
         }
     }
@@ -88,8 +88,8 @@ class RoomScopeTest : MockE2ETest() {
                     ) {}
                 }
             }
-            1
-        }.test {
+            useScope
+        }.composeTest {
             awaitItem()
             assertEquals(Room.State.CONNECTED, room.state)
             delay(1000)
@@ -119,10 +119,7 @@ class RoomScopeTest : MockE2ETest() {
                 }
             }
             1
-        }.test {
-            awaitItem()
-            assertEquals(Room.State.CONNECTED, room.state)
-            delay(1000)
+        }.composeTest {
             awaitItem()
             assertEquals(Room.State.CONNECTED, room.state)
         }

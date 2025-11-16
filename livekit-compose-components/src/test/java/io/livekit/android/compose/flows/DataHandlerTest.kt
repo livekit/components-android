@@ -19,10 +19,10 @@ package io.livekit.android.compose.flows
 import androidx.compose.runtime.collectAsState
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
 import com.google.protobuf.ByteString
 import io.livekit.android.compose.flow.DataSendOptions
 import io.livekit.android.compose.flow.rememberDataMessageHandler
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.room.RTCEngine
 import io.livekit.android.room.track.DataPublishReliability
 import io.livekit.android.test.MockE2ETest
@@ -44,7 +44,7 @@ class DataHandlerTest : MockE2ETest() {
         val messageString = "message"
         moleculeFlow(RecompositionMode.Immediate) {
             rememberDataMessageHandler(room)
-        }.test {
+        }.composeTest {
             val dataHandler = awaitItem()
             Assert.assertNotNull(dataHandler)
 
@@ -77,7 +77,7 @@ class DataHandlerTest : MockE2ETest() {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 rememberDataMessageHandler(room).messageFlow.collectAsState(initial = null).value
-            }.test {
+            }.composeTest {
                 // discard initial state.
                 awaitItem()
 

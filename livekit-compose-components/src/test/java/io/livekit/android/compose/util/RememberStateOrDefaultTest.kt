@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.test.BaseTest
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.assertEquals
@@ -16,6 +16,27 @@ import org.junit.Test
 
 class RememberStateOrDefaultTest : BaseTest() {
 
+    @Test
+    fun emitsTheSameState() = runTest {
+
+        val emitNull = mutableStateOf(false)
+        val state = mutableStateOf(1)
+        moleculeFlow(RecompositionMode.Immediate) {
+            rememberStateOrDefault(-1) {
+                if (emitNull.value) {
+                    null
+                } else {
+                    state
+                }
+            }
+        }.composeTest(distinctUntilChanged = false) {
+            val first = awaitItem()
+            emitNull.value = true
+            val second = awaitItem()
+
+            assertTrue(first === second)
+        }
+    }
     @Test
     fun emitsDefaultWhenNull() = runTest {
 
@@ -28,17 +49,14 @@ class RememberStateOrDefaultTest : BaseTest() {
                 } else {
                     state
                 }
-            }
-        }.test {
+            }.value
+        }.composeTest(distinctUntilChanged = false) {
             val first = awaitItem()
-            assertEquals(1, first.value)
+            assertEquals(1, first)
 
             emitNull.value = true
             val second = awaitItem()
-            assertTrue(first === second)
-            assertEquals(-1, second.value)
-
-            expectNoEvents()
+            assertEquals(-1, second)
         }
     }
 
@@ -53,17 +71,14 @@ class RememberStateOrDefaultTest : BaseTest() {
                 } else {
                     state
                 }
-            }
-        }.test {
+            }.value
+        }.composeTest(distinctUntilChanged = false) {
             val first = awaitItem()
-            assertEquals(-1, first.value)
+            assertEquals(-1, first)
 
             emitNull.value = false
             val second = awaitItem()
-            assertTrue(first === second)
-            assertEquals(1, second.value)
-
-            expectNoEvents()
+            assertEquals(1, second)
         }
     }
 
@@ -80,16 +95,13 @@ class RememberStateOrDefaultTest : BaseTest() {
                     state
                 }
             }.value
-        }.test {
-
+        }.composeTest(distinctUntilChanged = false) {
             val first = awaitItem()
             assertEquals(-1, first)
 
             emitNull.value = false
             val second = awaitItem()
             assertEquals(1, second)
-
-            expectNoEvents()
         }
     }
 
@@ -106,17 +118,14 @@ class RememberStateOrDefaultTest : BaseTest() {
                 } else {
                     flow.collectAsState()
                 }
-            }
-        }.test {
+            }.value
+        }.composeTest(distinctUntilChanged = false) {
             val first = awaitItem()
-            assertEquals(-1, first.value)
+            assertEquals(-1, first)
 
             emitNull.value = false
             val second = awaitItem()
-            assertTrue(first === second)
-            assertEquals(1, second.value)
-
-            expectNoEvents()
+            assertEquals(1, second)
         }
     }
 
@@ -130,15 +139,13 @@ class RememberStateOrDefaultTest : BaseTest() {
                     state.value + 1
                 }
             }.value
-        }.test {
+        }.composeTest(distinctUntilChanged = false) {
             val first = awaitItem()
             assertEquals(2, first)
 
             state.value = 2
             val second = awaitItem()
             assertEquals(3, second)
-
-            expectNoEvents()
         }
     }
 
@@ -152,16 +159,13 @@ class RememberStateOrDefaultTest : BaseTest() {
                     currentState + 1
                 }
             }.value
-        }.test {
+        }.composeTest(distinctUntilChanged = false) {
             val first = awaitItem()
             assertEquals(2, first)
 
             state.value = 2
             val second = awaitItem()
             assertEquals(3, second)
-
-            expectNoEvents()
         }
     }
-
 }
