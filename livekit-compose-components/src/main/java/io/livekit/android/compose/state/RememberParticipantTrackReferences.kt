@@ -87,12 +87,15 @@ fun rememberParticipantTrackReferences(
 ): List<TrackReference> {
     val participant = requireParticipant(passedParticipant)
 
-    return participantTrackReferencesFlow(
-        participant = participant,
-        sources = sources,
-        usePlaceholders = usePlaceholders,
-        onlySubscribed = onlySubscribed
-    )
+    val flow = remember(participant, sources, usePlaceholders, onlySubscribed) {
+        participantTrackReferencesFlow(
+            participant = participant,
+            sources = sources,
+            usePlaceholders = usePlaceholders,
+            onlySubscribed = onlySubscribed
+        )
+    }
+    return flow
         .collectAsState(initial = participant.getTrackReferencesBySource(sources, usePlaceholders, onlySubscribed))
         .value
 }
