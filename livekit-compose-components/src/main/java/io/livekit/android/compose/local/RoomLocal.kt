@@ -204,7 +204,7 @@ fun rememberLiveKitRoom(
 
     HandleRoomState(Room.State.DISCONNECTED, room) { _, _ -> onDisconnected?.invoke(this, room) }
 
-    var hasConnected by remember {
+    var hasConnected by remember(room) {
         mutableStateOf(false)
     }
     LaunchedEffect(room, connect, url, token, connectOptions) {
