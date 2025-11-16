@@ -144,6 +144,7 @@ enum class AgentState {
     DISCONNECTED,
     CONNECTING,
     INITIALIZING,
+    IDLE,
     LISTENING,
     THINKING,
     SPEAKING,
@@ -157,6 +158,16 @@ enum class AgentState {
                 PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_THINKING -> THINKING
                 PARTICIPANT_ATTRIBUTE_LK_AGENT_STATE_SPEAKING -> SPEAKING
                 else -> UNKNOWN
+            }
+        }
+        fun fromAgentSdkState(agentSdkState: AgentSdkState?): AgentState {
+            return when (agentSdkState) {
+                AgentSdkState.Idle -> IDLE
+                AgentSdkState.Initializing -> INITIALIZING
+                AgentSdkState.Listening -> LISTENING
+                AgentSdkState.Speaking -> SPEAKING
+                AgentSdkState.Thinking -> THINKING
+                null -> UNKNOWN
             }
         }
     }
