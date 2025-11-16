@@ -29,15 +29,11 @@ import io.livekit.android.util.flow
 @Composable
 fun rememberTrackMuted(trackRef: TrackReference): State<Boolean> {
     return rememberStateOrDefault(true) {
-        if (trackRef.isPlaceholder()) {
-            null
+        val publication = trackRef.publication
+        if (publication != null) {
+            publication::muted.flow.collectAsState()
         } else {
-            val publication = trackRef.publication
-            if (publication != null) {
-                publication::muted.flow.collectAsState()
-            } else {
-                null
-            }
+            null
         }
     }
 }
