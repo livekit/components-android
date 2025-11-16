@@ -125,10 +125,14 @@ fun rememberLiveKitRoom(
     passedRoom: Room? = null,
     disconnectOnDispose: Boolean = true,
 ): Room {
-    val context = LocalContext.current
+    val context = if (passedRoom == null) {
+        LocalContext.current
+    } else {
+        null
+    }
     val room = remember(passedRoom) {
         passedRoom ?: LiveKit.create(
-            appContext = context.applicationContext,
+            appContext = context!!.applicationContext,
             options = roomOptions ?: RoomOptions(),
             overrides = liveKitOverrides ?: LiveKitOverrides(),
         )
