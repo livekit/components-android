@@ -113,6 +113,7 @@ class Chat(
                 id = UUID.randomUUID().toString(),
                 timestamp = timestamp,
                 message = message,
+                ignoreLegacy = serverSupportsDataStreams(),
             )
 
             val encodedMessage = Json.encodeToString(chatMessage).toByteArray(Charsets.UTF_8)
