@@ -56,7 +56,7 @@ internal class LocalMediaImpl(
     private val selectCameraFn: (String) -> Unit?,
     private val switchCameraFn: () -> Unit?,
     override val cameraEnumerator: CameraEnumerator,
-) : LocalMedia {
+) : LocalMedia() {
     override val microphoneTrack by microphoneTrackState
     override val cameraTrack by cameraTrackState
     override val screenShareTrack by screenShareTrackState
