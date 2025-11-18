@@ -19,6 +19,7 @@ package io.livekit.android.compose.state
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -39,6 +40,7 @@ import io.livekit.android.room.track.Track
 import io.livekit.android.room.track.screencapture.ScreenCaptureParams
 import io.livekit.android.room.track.video.CameraCapturerUtils
 import io.livekit.android.util.LKLog
+import io.livekit.android.util.flow
 import livekit.org.webrtc.CameraEnumerator
 
 @Beta
@@ -46,6 +48,9 @@ internal class LocalMediaImpl(
     microphoneTrackState: State<TrackReference?>,
     cameraTrackState: State<TrackReference?>,
     screenShareTrackState: State<TrackReference?>,
+    isMicrophoneEnabledState: State<Boolean>,
+    isCameraEnabledState: State<Boolean>,
+    isScreenShareEnabledState: State<Boolean>,
     audioDevicesState: SnapshotStateList<AudioDevice>,
     cameraDevicesState: SnapshotStateList<String>,
     selectedAudioDeviceState: State<AudioDevice?>,
@@ -63,12 +68,9 @@ internal class LocalMediaImpl(
     override val cameraTrack by cameraTrackState
     override val screenShareTrack by screenShareTrackState
 
-    override val isMicrophoneEnabled: Boolean
-        get() = microphoneTrack?.isSubscribed() == true && microphoneTrack?.publication?.muted == false
-    override val isCameraEnabled: Boolean
-        get() = cameraTrack?.isSubscribed() == true && cameraTrack?.publication?.muted == false
-    override val isScreenShareEnabled: Boolean
-        get() = screenShareTrack?.isSubscribed() == true && screenShareTrack?.publication?.muted == false
+    override val isMicrophoneEnabled by isMicrophoneEnabledState
+    override val isCameraEnabled by isCameraEnabledState
+    override val isScreenShareEnabled by isScreenShareEnabledState
 
     override val audioDevices = audioDevicesState
     override val cameraDevices = cameraDevicesState
@@ -77,28 +79,16 @@ internal class LocalMediaImpl(
     override val selectedCameraId by selectedCameraState
     override val cameraCanSwitchPosition by canSwitchPositionState
 
-    override suspend fun startMicrophone() {
-        setMicrophoneFn(true)
+    override suspend fun setMicrophoneEnabled(enabled: Boolean) {
+        setMicrophoneFn(enabled)
     }
 
-    override suspend fun stopMicrophone() {
-        setMicrophoneFn(false)
+    override suspend fun setCameraEnabled(enabled: Boolean) {
+        setCameraFn(enabled)
     }
 
-    override suspend fun startCamera() {
-        setCameraFn(true)
-    }
-
-    override suspend fun stopCamera() {
-        setCameraFn(false)
-    }
-
-    override suspend fun startScreenShare(params: ScreenCaptureParams) {
-        setScreenShareFn(true, params)
-    }
-
-    override suspend fun stopScreenShare() {
-        setScreenShareFn(false, null)
+    override suspend fun setScreenShareEnabled(enabled: Boolean, params: ScreenCaptureParams?) {
+        setScreenShareFn(enabled, params)
     }
 
     override fun selectAudioDevice(audioDevice: AudioDevice) {
@@ -142,6 +132,10 @@ fun rememberLocalMedia(room: Room? = null): LocalMedia {
     val screenShareState = remember {
         derivedStateOf { localScreenShareTrack.firstOrNull() }
     }
+
+    val isMicrophoneEnabledState = room.localParticipant::isMicrophoneEnabled.flow.collectAsState()
+    val isCameraEnabledState = room.localParticipant::isCameraEnabled.flow.collectAsState()
+    val isScreenShareEnabledState = room.localParticipant::isScreenShareEnabled.flow.collectAsState()
 
     // Audio
     val selectedAudioDeviceState = remember {
@@ -258,6 +252,9 @@ fun rememberLocalMedia(room: Room? = null): LocalMedia {
             selectCameraFn = selectCameraFn,
             switchCameraFn = switchCameraFn,
             cameraEnumerator = enumerator,
+            isMicrophoneEnabledState = isMicrophoneEnabledState,
+            isCameraEnabledState = isCameraEnabledState,
+            isScreenShareEnabledState = isScreenShareEnabledState,
         )
     }
 
