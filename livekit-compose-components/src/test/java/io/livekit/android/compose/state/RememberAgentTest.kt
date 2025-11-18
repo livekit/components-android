@@ -112,6 +112,7 @@ class RememberAgentTest : MockE2ETest() {
 
         job.join()
     }
+
     @Test
     fun agentStateWithPreconnect() = runTest {
         val job = launch {
@@ -149,7 +150,6 @@ class RememberAgentTest : MockE2ETest() {
         job.join()
     }
 
-
     @Test
     fun agentTimeoutWithPreconnect() = runTest {
         val job = launch {
@@ -183,7 +183,6 @@ class RememberAgentTest : MockE2ETest() {
 
         job.join()
     }
-
 
     @Test
     fun agentTimeoutWithoutPreconnect() = runTest {

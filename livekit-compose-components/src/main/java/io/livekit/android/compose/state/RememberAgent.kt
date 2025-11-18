@@ -237,8 +237,8 @@ fun rememberAgent(session: Session? = null): Agent {
     val isBufferingSpeech = remember {
         derivedStateOf {
             !(connectionState == ConnectionState.DISCONNECTED ||
-                    isAvailableState.value ||
-                    localMicTracks.isNotEmpty())
+                isAvailableState.value ||
+                localMicTracks.isNotEmpty())
         }
     }
 
