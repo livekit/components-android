@@ -102,7 +102,6 @@ data class SessionConnectTrackOptions(
     val microphonePublishOptions: AudioTrackPublishOptions = AudioTrackPublishOptions(),
 )
 
-
 /**
  * A Session represents a managed connection to a Room which can contain Agents.
  */
