@@ -28,6 +28,7 @@ import io.livekit.android.room.RTCEngine
 import io.livekit.android.test.MockE2ETest
 import io.livekit.android.test.mock.MockDataChannel
 import io.livekit.android.test.mock.MockPeerConnection
+import io.livekit.android.test.mock.TestData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
@@ -45,7 +46,15 @@ import java.nio.ByteBuffer
 class ChatTest : MockE2ETest() {
     @Test
     fun sendMessage() = runTest {
-        connect()
+        connect(
+            joinResponse = with(TestData.JOIN.toBuilder()) {
+                join = with(join.toBuilder()) {
+                    serverVersion = "1.9.0"
+                    build()
+                }
+                build()
+            }
+        )
 
         val messageString = "message"
         moleculeFlow(RecompositionMode.Immediate) {
@@ -83,6 +92,51 @@ class ChatTest : MockE2ETest() {
                     }
 
                 assertEquals(messageString, chatMessage.message)
+                assertEquals(true, chatMessage.ignoreLegacy)
+            }
+        }
+    }
+
+    @Test
+    fun whenSendingToLegacyServerIgnoreLegacyIsFalse() = runTest {
+        connect(
+            joinResponse = with(TestData.JOIN.toBuilder()) {
+                join = with(join.toBuilder()) {
+                    serverVersion = "1.8.0"
+                    build()
+                }
+                build()
+            }
+        )
+
+        val messageString = "message"
+        moleculeFlow(RecompositionMode.Immediate) {
+            rememberChat(room)
+        }.composeTest {
+            val chat = awaitItem()
+            assertNotNull(chat)
+
+            val result = chat.send(messageString)
+            assertTrue(result.isSuccess)
+            val pubPeerConnection = component.rtcEngine().getPublisherPeerConnection() as MockPeerConnection
+            val dataChannel = pubPeerConnection.dataChannels[RTCEngine.RELIABLE_DATA_CHANNEL_LABEL] as MockDataChannel
+
+            assertEquals(4, dataChannel.sentBuffers.size)
+
+            // Legacy chat send
+            run {
+                val data = dataChannel.sentBuffers[3].data
+                val dataPacket = LivekitModels.DataPacket.parseFrom(ByteString.copyFrom(data))
+                val chatMessage = dataPacket.user.payload!!
+                    .toByteArray()
+                    .decodeToString()
+                    .run {
+                        val json = Json { ignoreUnknownKeys = true }
+                        json.decodeFromString<LegacyChatMessage>(this)
+                    }
+
+                assertEquals(messageString, chatMessage.message)
+                assertEquals(false, chatMessage.ignoreLegacy)
             }
         }
     }
