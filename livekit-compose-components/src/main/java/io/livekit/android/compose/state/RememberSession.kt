@@ -53,6 +53,10 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * Options for creating a [Session].
+ * @see rememberSession
+ */
 data class SessionOptions(
     /**
      * The room to use. If null is passed, one will be created for you.
@@ -75,13 +79,17 @@ data class SessionOptions(
     val tokenRequestOptions: TokenRequestOptions = TokenRequestOptions()
 )
 
+/**
+ * Options for connecting to a session.
+ * @see Session.start
+ */
 data class SessionConnectOptions(
     val tracks: SessionConnectTrackOptions = SessionConnectTrackOptions(),
     val roomConnectOptions: ConnectOptions = ConnectOptions()
 )
 
 /**
- * Track options for connection
+ * Track options for session connection.
  */
 data class SessionConnectTrackOptions(
     /** Whether to enable microphone on connect. */
@@ -94,6 +102,11 @@ data class SessionConnectTrackOptions(
     val microphonePublishOptions: AudioTrackPublishOptions = AudioTrackPublishOptions(),
 )
 
+
+/**
+ * A Session represents a managed connection to a Room which can contain Agents.
+ */
+@Beta
 abstract class Session {
 
     /** The [Room] object used for this session. */
@@ -139,6 +152,7 @@ abstract class Session {
     internal abstract val agentFailure: AgentFailure?
 }
 
+@Beta
 @Stable
 internal class SessionImpl(
     override val room: Room,

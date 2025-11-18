@@ -140,6 +140,7 @@ class RememberAgentTest : MockE2ETest() {
                 .composeTest {
                     assertEquals(AgentState.DISCONNECTED, awaitItem())
                     assertEquals(AgentState.CONNECTING, awaitItem())
+                    assertEquals(AgentState.PRECONNECT_BUFFERING, awaitItem())
                     assertEquals(AgentState.LISTENING, awaitItem())
                     assertEquals(AgentState.DISCONNECTED, awaitItem())
                 }
@@ -174,7 +175,7 @@ class RememberAgentTest : MockE2ETest() {
                 .composeTest {
                     assertEquals(AgentState.DISCONNECTED, awaitItem())
                     assertEquals(AgentState.CONNECTING, awaitItem())
-                    assertEquals(AgentState.LISTENING, awaitItem())
+                    assertEquals(AgentState.PRECONNECT_BUFFERING, awaitItem())
                     assertEquals(AgentState.FAILED, awaitItem())
                 }
         }

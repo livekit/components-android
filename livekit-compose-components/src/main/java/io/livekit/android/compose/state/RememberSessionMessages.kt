@@ -36,22 +36,30 @@ import io.livekit.android.compose.types.ReceivedUserTranscriptionMessage
 import io.livekit.android.room.datastream.StreamTextOptions
 import kotlinx.coroutines.launch
 
+/**
+ * Handles all the messages that are sent and received within a [Session].
+ */
+@Beta
 abstract class SessionMessages {
     /**
      * The log of all messages sent and received.
      */
     abstract val messages: List<ReceivedMessage>
 
-//    /**
-//     * A hot flow emitting a [ReceivedMessage] for each individual message sent and received.
-//     */
-//    val messagesFlow: Flow<ReceivedMessage>
-
+    /**
+     * Indicates if currently sending a chat message.
+     */
     abstract val isSending: Boolean
 
+    /**
+     * Send a message through LiveKit.
+     *
+     * @param message
+     */
     abstract suspend fun send(message: String, options: StreamTextOptions = StreamTextOptions()): Result<ReceivedChatMessage>
 }
 
+@Beta
 internal class SessionMessagesImpl(
     messagesState: State<List<ReceivedMessage>>,
     isSendingState: State<Boolean>,

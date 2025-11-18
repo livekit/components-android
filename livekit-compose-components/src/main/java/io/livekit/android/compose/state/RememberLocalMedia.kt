@@ -28,6 +28,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.platform.LocalContext
 import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioDeviceChangeListener
+import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.local.requireRoom
 import io.livekit.android.compose.types.LocalMedia
 import io.livekit.android.compose.types.TrackReference
@@ -40,6 +41,7 @@ import io.livekit.android.room.track.video.CameraCapturerUtils
 import io.livekit.android.util.LKLog
 import livekit.org.webrtc.CameraEnumerator
 
+@Beta
 internal class LocalMediaImpl(
     microphoneTrackState: State<TrackReference?>,
     cameraTrackState: State<TrackReference?>,
@@ -61,22 +63,19 @@ internal class LocalMediaImpl(
     override val cameraTrack by cameraTrackState
     override val screenShareTrack by screenShareTrackState
 
-    override val isMicrophoneEnabled by derivedStateOf {
-        microphoneTrack?.isSubscribed() == true
-    }
-    override val isCameraEnabled by derivedStateOf {
-        cameraTrack?.isSubscribed() == true
-    }
-    override val isScreenShareEnabled by derivedStateOf {
-        screenShareTrack?.isSubscribed() == true
-    }
+    override val isMicrophoneEnabled: Boolean
+        get() = microphoneTrack?.isSubscribed() == true && microphoneTrack?.publication?.muted == false
+    override val isCameraEnabled: Boolean
+        get() = cameraTrack?.isSubscribed() == true && cameraTrack?.publication?.muted == false
+    override val isScreenShareEnabled: Boolean
+        get() = screenShareTrack?.isSubscribed() == true && screenShareTrack?.publication?.muted == false
 
     override val audioDevices = audioDevicesState
     override val cameraDevices = cameraDevicesState
 
     override val selectedAudioDevice by selectedAudioDeviceState
     override val selectedCameraId by selectedCameraState
-    override val canSwitchPosition by canSwitchPositionState
+    override val cameraCanSwitchPosition by canSwitchPositionState
 
     override suspend fun startMicrophone() {
         setMicrophoneFn(true)
@@ -115,6 +114,7 @@ internal class LocalMediaImpl(
     }
 }
 
+@Beta
 @Composable
 fun rememberLocalMedia(room: Room? = null): LocalMedia {
     val room = requireRoom(room)

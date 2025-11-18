@@ -39,27 +39,65 @@ import io.livekit.android.util.flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
 
+/**
+ * A representation of an LiveKit agent participant.
+ * @see rememberAgent
+ */
 abstract class Agent {
+
+    /**
+     * The [io.livekit.android.room.participant.Participant] for this agent.
+     */
     abstract val agentParticipant: RemoteParticipant?
 
+    /**
+     * The worker participant that publishes on behalf of this agent.
+     */
     internal abstract val workerParticipant: RemoteParticipant?
 
+    /**
+     * The agent attributes for the agent.
+     */
     abstract val attributes: AgentAttributes?
 
+    /**
+     * A list of failure reasons that have occurred for this agent.
+     */
     abstract val failureReasons: List<String>
 
+    /**
+     * The state of the agent.
+     */
     abstract val agentState: AgentState
 
+    /**
+     * The agent's audio track if available.
+     */
     abstract val audioTrack: TrackReference?
 
+    /**
+     * The agent's video track if available.
+     */
     abstract val videoTrack: TrackReference?
 
+    /**
+     * Whether the agent is connected and available.
+     */
     abstract val isAvailable: Boolean
 
-    abstract val isBufferingSpeech: Boolean
-
+    /**
+     * A helper function that suspends until the agent is available.
+     */
     abstract suspend fun waitUntilAvailable()
+
+    /**
+     * A helper function that suspends until the agent's video track is available.
+     */
     abstract suspend fun waitUntilCamera()
+
+    /**
+     * A helper function that suspends until the agent's audio track is available.
+     */
     abstract suspend fun waitUntilMicrophone()
 }
 
@@ -72,7 +110,6 @@ internal class AgentImpl(
     videoTrackState: State<TrackReference?>,
     agentStateState: State<AgentState>,
     isAvailableState: State<Boolean>,
-    isBufferingSpeechState: State<Boolean>,
     attributesState: State<AgentAttributes?>,
     private val waitUntilAvailableFn: suspend () -> Unit,
     private val waitUntilCameraFn: suspend () -> Unit,
@@ -93,8 +130,6 @@ internal class AgentImpl(
     override val videoTrack by videoTrackState
 
     override val isAvailable by isAvailableState
-
-    override val isBufferingSpeech by isBufferingSpeechState
 
     override suspend fun waitUntilAvailable() {
         waitUntilAvailableFn()
@@ -216,7 +251,7 @@ fun rememberAgent(session: Session? = null): Agent {
             var state = AgentState.CONNECTING
 
             if (localMicTracks.isNotEmpty()) {
-                state = AgentState.LISTENING
+                state = AgentState.PRECONNECT_BUFFERING
             }
 
             val agentParticipant = agentParticipantState.value
@@ -228,14 +263,6 @@ fun rememberAgent(session: Session? = null): Agent {
             }
 
             return@derivedStateOf state
-        }
-    }
-
-    val isBufferingSpeech = remember {
-        derivedStateOf {
-            !(connectionState == ConnectionState.DISCONNECTED ||
-                isAvailableState.value ||
-                localMicTracks.isNotEmpty())
         }
     }
 
@@ -287,7 +314,6 @@ fun rememberAgent(session: Session? = null): Agent {
                 videoTrackState = videoTrackState,
                 agentStateState = combinedAgentState,
                 isAvailableState = isAvailableState,
-                isBufferingSpeechState = isBufferingSpeech,
                 failureReasons = failureReasons,
                 waitUntilAvailableFn = waitUntilAvailableFn,
                 waitUntilCameraFn = waitUntilCameraFn,
@@ -308,6 +334,7 @@ internal fun calculateIsAvailable(agentState: AgentState): Boolean {
         AgentState.SPEAKING -> true
 
         AgentState.CONNECTING,
+        AgentState.PRECONNECT_BUFFERING,
         AgentState.INITIALIZING,
         AgentState.DISCONNECTED,
         AgentState.FAILED,

@@ -18,6 +18,7 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
+import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.compose.test.util.withLocalContext
 import io.livekit.android.room.track.TrackPublication
@@ -29,6 +30,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mockito.kotlin.mock
 
+@OptIn(Beta::class)
 class RememberLocalMediaTest : MockE2ETest() {
     @Test
     fun basicLocalMedia() = runTest {
