@@ -170,9 +170,9 @@ fun rememberLiveKitRoom(
     val audioOnce = remember(connect, audio) {
         var once = true
         val ret: suspend CoroutineScope.(Room, Room.State) -> Unit = { r: Room, _: Room.State ->
-            if (once) {
+            if (once && audio) {
                 once = false
-                r.localParticipant.setMicrophoneEnabled(audio)
+                r.localParticipant.setMicrophoneEnabled(true)
             }
         }
         return@remember ret
@@ -188,9 +188,9 @@ fun rememberLiveKitRoom(
     val videoOnce = remember(connect, video) {
         var once = true
         val ret: suspend CoroutineScope.(Room, Room.State) -> Unit = { r: Room, _: Room.State ->
-            if (once) {
+            if (once && video) {
                 once = false
-                r.localParticipant.setCameraEnabled(video)
+                r.localParticipant.setCameraEnabled(true)
             }
         }
         return@remember ret

@@ -88,37 +88,24 @@ abstract class LocalMedia {
     internal abstract val cameraEnumerator: CameraEnumerator
 
     /**
-     * Starts the microphone track and publishes it if needed.
+     * Enables/disables the microphone track and publishes it if needed.
      */
-    abstract suspend fun startMicrophone()
+    abstract suspend fun setMicrophoneEnabled(enabled: Boolean)
 
     /**
-     * Stops the microphone.
+     * Enables/disables the camera track and publishes it if needed.
      */
-    abstract suspend fun stopMicrophone()
+    abstract suspend fun setCameraEnabled(enabled: Boolean)
 
     /**
-     * Starts the camera track and publishes it if needed.
-     */
-    abstract suspend fun startCamera()
-
-    /**
-     * Stops the camera.
-     */
-    abstract suspend fun stopCamera()
-
-    /**
-     * Starts screensharing track and publishes it if needed. The result intent from starting a
-     * [android.media.projection.MediaProjectionManager.createScreenCaptureIntent] is required.
+     * Enables/disables screen share track and publishes it if needed.
+     *
+     * The result intent from starting
+     * [android.media.projection.MediaProjectionManager.createScreenCaptureIntent] is required for enabling this.
      *
      * @see android.media.projection.MediaProjectionManager.createScreenCaptureIntent
      */
-    abstract suspend fun startScreenShare(params: ScreenCaptureParams)
-
-    /**
-     * Stops screensharing.
-     */
-    abstract suspend fun stopScreenShare()
+    abstract suspend fun setScreenShareEnabled(enabled: Boolean, params: ScreenCaptureParams? = null)
 
     /**
      * Selects the audio device to be used.
