@@ -23,9 +23,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.chat.rememberChat
@@ -38,30 +36,29 @@ import io.livekit.android.compose.types.ReceivedUserTranscriptionMessage
 import io.livekit.android.room.datastream.StreamTextOptions
 import kotlinx.coroutines.launch
 
-interface SessionMessages {
+abstract class SessionMessages {
     /**
      * The log of all messages sent and received.
      */
-    val messages: List<ReceivedMessage>
+    abstract val messages: List<ReceivedMessage>
 
-    /**
-     * A hot flow emitting a [ReceivedMessage] for each individual message sent and received.
-     */
-    // TODO val messagesFlow: Flow<ReceivedMessage>
+//    /**
+//     * A hot flow emitting a [ReceivedMessage] for each individual message sent and received.
+//     */
+//    val messagesFlow: Flow<ReceivedMessage>
 
-    val isSending: Boolean
+    abstract val isSending: Boolean
 
-    suspend fun send(message: String, options: StreamTextOptions = StreamTextOptions()): Result<ReceivedChatMessage>
+    abstract suspend fun send(message: String, options: StreamTextOptions = StreamTextOptions()): Result<ReceivedChatMessage>
 }
 
 internal class SessionMessagesImpl(
-    private val messagesState: State<List<ReceivedMessage>>,
+    messagesState: State<List<ReceivedMessage>>,
+    isSendingState: State<Boolean>,
     val sendImpl: suspend (message: String, options: StreamTextOptions) -> Result<ReceivedChatMessage>
-) : SessionMessages {
-    override val messages
-        get() = messagesState.value
-    override var isSending by mutableStateOf(false) // TOD
-        internal set
+) : SessionMessages() {
+    override val messages by messagesState
+    override val isSending by isSendingState
 
     override suspend fun send(
         message: String,
@@ -80,6 +77,7 @@ fun rememberSessionMessages(session: Session? = null): SessionMessages {
 
     val transcriptions by rememberTranscriptions(room)
     val chat = rememberChat(room = room)
+    val isSendingState = chat.isSending
     val transcriptionMessages by remember(room) {
         derivedStateOf {
             transcriptions.map { transcription ->
@@ -156,6 +154,7 @@ fun rememberSessionMessages(session: Session? = null): SessionMessages {
     val sessionMessages = remember(chat) {
         SessionMessagesImpl(
             messagesState = receivedMessages,
+            isSendingState = isSendingState,
             { message, options ->
                 chat.send(message, options)
             }
