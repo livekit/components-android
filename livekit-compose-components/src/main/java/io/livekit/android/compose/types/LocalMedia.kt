@@ -21,30 +21,30 @@ import com.twilio.audioswitch.AudioDevice
 import io.livekit.android.room.track.screencapture.ScreenCaptureParams
 import livekit.org.webrtc.CameraEnumerator
 
-interface LocalMedia {
-    val microphoneTrack: TrackReference?
-    val cameraTrack: TrackReference?
-    val screenShareTrack: TrackReference?
+abstract class LocalMedia {
+    abstract val microphoneTrack: TrackReference?
+    abstract val cameraTrack: TrackReference?
+    abstract val screenShareTrack: TrackReference?
 
-    val isMicrophoneEnabled: Boolean
-    val isCameraEnabled: Boolean
-    val isScreenShareEnabled: Boolean
+    abstract val isMicrophoneEnabled: Boolean
+    abstract val isCameraEnabled: Boolean
+    abstract val isScreenShareEnabled: Boolean
 
-    val audioDevices: List<AudioDevice>
-    val cameraDevices: SnapshotStateList<String>
-    val selectedAudioDevice: AudioDevice?
-    val selectedCameraId: String?
-    val canSwitchPosition: Boolean
+    abstract val audioDevices: List<AudioDevice>
+    abstract val cameraDevices: SnapshotStateList<String>
+    abstract val selectedAudioDevice: AudioDevice?
+    abstract val selectedCameraId: String?
+    abstract val canSwitchPosition: Boolean
 
-    val cameraEnumerator: CameraEnumerator
+    abstract val cameraEnumerator: CameraEnumerator
 
-    suspend fun startMicrophone()
-    suspend fun stopMicrophone()
-    suspend fun startCamera()
-    suspend fun stopCamera()
-    suspend fun startScreenShare(params: ScreenCaptureParams)
-    suspend fun stopScreenShare()
-    fun selectAudioDevice(audioDevice: AudioDevice)
-    fun selectCamera(deviceName: String)
-    fun switchCamera()
+    abstract suspend fun startMicrophone()
+    abstract suspend fun stopMicrophone()
+    abstract suspend fun startCamera()
+    abstract suspend fun stopCamera()
+    abstract suspend fun startScreenShare(params: ScreenCaptureParams)
+    abstract suspend fun stopScreenShare()
+    abstract fun selectAudioDevice(audioDevice: AudioDevice)
+    abstract fun selectCamera(deviceName: String)
+    abstract fun switchCamera()
 }

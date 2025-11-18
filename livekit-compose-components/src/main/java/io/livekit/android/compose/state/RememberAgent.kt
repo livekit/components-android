@@ -39,31 +39,28 @@ import io.livekit.android.util.flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
 
-interface Agent {
-    val agentParticipant: RemoteParticipant?
+abstract class Agent {
+    abstract val agentParticipant: RemoteParticipant?
 
-    /**
-     * @suppress
-     */
-    val workerParticipant: RemoteParticipant?
+    internal abstract val workerParticipant: RemoteParticipant?
 
-    val attributes: AgentAttributes?
+    abstract val attributes: AgentAttributes?
 
-    val failureReasons: List<String>
+    abstract val failureReasons: List<String>
 
-    val agentState: AgentState
+    abstract val agentState: AgentState
 
-    val audioTrack: TrackReference?
+    abstract val audioTrack: TrackReference?
 
-    val videoTrack: TrackReference?
+    abstract val videoTrack: TrackReference?
 
-    val isAvailable: Boolean
+    abstract val isAvailable: Boolean
 
-    val isBufferingSpeech: Boolean
+    abstract val isBufferingSpeech: Boolean
 
-    suspend fun waitUntilAvailable()
-    suspend fun waitUntilCamera()
-    suspend fun waitUntilMicrophone()
+    abstract suspend fun waitUntilAvailable()
+    abstract suspend fun waitUntilCamera()
+    abstract suspend fun waitUntilMicrophone()
 }
 
 @Stable
@@ -80,7 +77,7 @@ internal class AgentImpl(
     private val waitUntilAvailableFn: suspend () -> Unit,
     private val waitUntilCameraFn: suspend () -> Unit,
     private val waitUntilMicrophoneFn: suspend () -> Unit,
-) : Agent {
+) : Agent() {
     override val agentParticipant by agentParticipantState
 
     override val workerParticipant by workerParticipantState
