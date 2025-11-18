@@ -1,5 +1,19 @@
 # components-android
 
+## 2.1.0
+
+### Minor Changes
+
+- Change the LocalMedia API to use setEnabled rather than start/stop methods to make clear that they are idempotent. - [#52](https://github.com/livekit/components-android/pull/52) ([@davidliu](https://github.com/davidliu))
+
+### Patch Changes
+
+- Remove Immutable annotation from TrackReference as the contained objects are not immutable - [#52](https://github.com/livekit/components-android/pull/52) ([@davidliu](https://github.com/davidliu))
+
+- Fix rememberLiveKitRoom disabling audio/video if enabled from outside the composable - [#52](https://github.com/livekit/components-android/pull/52) ([@davidliu](https://github.com/davidliu))
+
+- Fix isDeviceEnabled states not properly updating - [#52](https://github.com/livekit/components-android/pull/52) ([@davidliu](https://github.com/davidliu))
+
 ## 2.0.0
 
 ### Major Changes
