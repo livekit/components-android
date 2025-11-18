@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,23 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import io.livekit.android.compose.types.TrackReference
+import io.livekit.android.compose.util.rememberStateOrDefault
 import io.livekit.android.util.flow
 
 /**
  * @return true if the referenced track is muted or is a placeholder
  */
 @Composable
-fun rememberTrackMuted(trackRef: TrackReference): Boolean {
-    return if (trackRef.isPlaceholder()) {
-        true
-    } else {
+fun rememberTrackMuted(trackRef: TrackReference): State<Boolean> {
+    return rememberStateOrDefault(true) {
         val publication = trackRef.publication
         if (publication != null) {
-            publication::muted.flow.collectAsState().value
+            publication::muted.flow.collectAsState()
         } else {
-            true
+            null
         }
     }
 }

@@ -22,7 +22,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import io.livekit.android.ConnectOptions
 import io.livekit.android.LiveKit
@@ -30,6 +33,7 @@ import io.livekit.android.LiveKitOverrides
 import io.livekit.android.RoomOptions
 import io.livekit.android.room.Room
 import io.livekit.android.room.RoomException
+import io.livekit.android.room.participant.LocalParticipant
 import io.livekit.android.util.LKLog
 import io.livekit.android.util.flow
 import kotlinx.coroutines.CoroutineScope
@@ -96,7 +100,7 @@ private val DEFAULT_ERROR_HANDLER: ((Room, Exception?) -> Unit) = { _, e ->
  * @param token the token to connect to livekit with.
  * @param audio enable or disable audio. Defaults to false.
  * @param video enable or disable video. Defaults to false.
- * @param connect whether the room should automatically connect to the server. Defaults to true.
+ * @param connect whether the room should be automatically connected to the server. Defaults to true.
  * @param roomOptions options to pass to the [Room].
  * @param liveKitOverrides overrides to pass to the [Room].
  * @param connectOptions options to use when connecting. Will not reflect changes if already connected.
@@ -125,10 +129,14 @@ fun rememberLiveKitRoom(
     passedRoom: Room? = null,
     disconnectOnDispose: Boolean = true,
 ): Room {
-    val context = LocalContext.current
+    val context = if (passedRoom == null) {
+        LocalContext.current
+    } else {
+        null
+    }
     val room = remember(passedRoom) {
         passedRoom ?: LiveKit.create(
-            appContext = context.applicationContext,
+            appContext = context!!.applicationContext,
             options = roomOptions ?: RoomOptions(),
             overrides = liveKitOverrides ?: LiveKitOverrides(),
         )
@@ -196,8 +204,12 @@ fun rememberLiveKitRoom(
 
     HandleRoomState(Room.State.DISCONNECTED, room) { _, _ -> onDisconnected?.invoke(this, room) }
 
+    var hasConnected by remember(room) {
+        mutableStateOf(false)
+    }
     LaunchedEffect(room, connect, url, token, connectOptions) {
-        if (!connect) {
+        // Only disconnect if we've connected before.
+        if (!connect && hasConnected) {
             room.disconnect()
             return@LaunchedEffect
         }
@@ -207,6 +219,7 @@ fun rememberLiveKitRoom(
         }
 
         try {
+            hasConnected = true
             room.connect(url, token, connectOptions ?: ConnectOptions())
         } catch (e: Exception) {
             onError?.invoke(room, RoomException.ConnectException(e.message, e))
@@ -301,6 +314,11 @@ fun requireRoom(passedRoom: Room? = null): Room {
     return passedRoom ?: RoomLocal.current
 }
 
+/**
+ * CompositionLocal for the [Room] currently provided by [RoomScope]
+ *
+ * Not to be confused with [LocalParticipant].
+ */
 @SuppressLint("CompositionLocalNaming")
 val RoomLocal =
     compositionLocalOf<Room> { throw IllegalStateException("No Room object available. This should only be used within a RoomScope.") }

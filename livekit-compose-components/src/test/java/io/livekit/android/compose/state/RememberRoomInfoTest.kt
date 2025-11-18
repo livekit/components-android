@@ -18,11 +18,10 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.test.MockE2ETest
 import io.livekit.android.test.mock.TestData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -34,7 +33,7 @@ class RememberRoomInfoTest : MockE2ETest() {
     fun initialState() = runTest {
         moleculeFlow(RecompositionMode.Immediate) {
             rememberRoomInfo(room)
-        }.test {
+        }.composeTest {
             val info = awaitItem()
             assertEquals(room.name, info.name)
             assertEquals(room.metadata, info.metadata)
@@ -45,14 +44,16 @@ class RememberRoomInfoTest : MockE2ETest() {
     fun getRoomInfoChanges() = runTest {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberRoomInfo(room)
-            }.test {
-                delay(100)
-
-                val info = expectMostRecentItem()
+                val info = rememberRoomInfo(room)
+                info.name to info.metadata
+            }.composeTest {
+                awaitItem()
+                val (name, metadata) = awaitItem()
                 val expectedRoom = TestData.JOIN.join.room
-                assertEquals(expectedRoom.name, info.name)
-                assertEquals(expectedRoom.metadata, info.metadata)
+                assertEquals(expectedRoom.name, name)
+                assertEquals(expectedRoom.metadata, metadata)
+
+                expectNoEvents()
             }
         }
         connect()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 LiveKit, Inc.
+ * Copyright 2023-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import io.livekit.android.room.participant.LocalParticipant
 import io.livekit.android.room.participant.Participant
 
 /**
+ * CompositionLocal for the [Participant] currently provided by [ParticipantScope]
+ *
  * Not to be confused with [LocalParticipant].
  */
 @SuppressLint("CompositionLocalNaming")
@@ -43,14 +45,13 @@ fun ParticipantScope(
 
 /**
  * Returns the [passedParticipant] or the currently provided [ParticipantLocal].
- * @throws IllegalStateException if passedParticipant is null and no ParticipantLocal is available (e.g. not inside a [RoomScope]).
+ * @throws IllegalStateException if passedParticipant is null and no ParticipantLocal is available (e.g. not inside a [ParticipantScope]).
  */
 @Composable
 @Throws(IllegalStateException::class)
 fun requireParticipant(passedParticipant: Participant? = null): Participant {
     return passedParticipant ?: ParticipantLocal.current
 }
-
 
 /**
  * A simple way to loop over participants that creates a [ParticipantScope] for each participant and calls [content].

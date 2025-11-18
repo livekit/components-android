@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,96 +17,96 @@
 package io.livekit.android.compose.state.transcriptions
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import io.livekit.android.annotations.Beta
-import io.livekit.android.compose.flow.rememberEventSelector
+import io.livekit.android.compose.flow.DataTopic
+import io.livekit.android.compose.flow.TextStreamData
 import io.livekit.android.compose.local.requireParticipant
 import io.livekit.android.compose.local.requireRoom
+import io.livekit.android.compose.stream.rememberTextStream
 import io.livekit.android.compose.types.TrackReference
-import io.livekit.android.events.ParticipantEvent
-import io.livekit.android.events.RoomEvent
-import io.livekit.android.events.TrackPublicationEvent
+import io.livekit.android.compose.util.rememberStateOrDefault
 import io.livekit.android.room.Room
 import io.livekit.android.room.participant.Participant
-import io.livekit.android.room.types.TranscriptionSegment
-import io.livekit.android.room.types.mergeNewSegments
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import io.livekit.android.util.flow
 
 /**
  * Collect all the transcriptions for the room.
  *
- * @return Returns the collected transcriptions, ordered by [TranscriptionSegment.firstReceivedTime].
+ * @return Returns the collected transcriptions, ordered by timestamp.
  */
 @Beta
 @Composable
-fun rememberTranscriptions(passedRoom: Room? = null): List<TranscriptionSegment> {
-    val room = requireRoom(passedRoom)
-    val events = rememberEventSelector<RoomEvent.TranscriptionReceived>(room)
-    val flow by remember(events) {
+fun rememberTranscriptions(
+    room: Room? = null,
+    participantIdentities: List<Participant.Identity>? = null,
+    trackSids: List<String>? = null,
+): State<List<TextStreamData>> {
+    val room = requireRoom(room)
+    val textStreams by rememberTextStream(room = room, topic = DataTopic.TRANSCRIPTION.value)
+
+    val filteredTextStreams = remember {
         derivedStateOf {
-            events.map { it.transcriptionSegments }
+            textStreams
+                .filter { streamData ->
+                    participantIdentities?.contains(streamData.participantIdentity)
+                        ?: true
+                }
+                .filter { streamData ->
+                    trackSids?.contains(streamData.streamInfo.attributes["lk.transcribed_track_id"])
+                        ?: true
+                }
         }
     }
 
-    return rememberTranscriptionsImpl(transcriptionsFlow = flow)
+    return filteredTextStreams
 }
 
 /**
  * Collect all the transcriptions for a track reference.
  *
- * @return Returns the collected transcriptions, ordered by [TranscriptionSegment.firstReceivedTime].
+ * @return Returns the collected transcriptions, ordered by timestamp.
  */
 @Beta
 @Composable
-fun rememberTrackTranscriptions(trackReference: TrackReference): List<TranscriptionSegment> {
-    val publication = trackReference.publication ?: return emptyList()
-    val events = rememberEventSelector<TrackPublicationEvent.TranscriptionReceived>(publication)
-    val flow by remember(events) {
-        derivedStateOf {
-            events.map { it.transcriptions }
+fun rememberTrackTranscriptions(trackReference: TrackReference, room: Room? = null): State<List<TextStreamData>> {
+    val publication = trackReference.publication
+    return rememberStateOrDefault(emptyList()) {
+        if (publication == null) {
+            null
+        } else {
+            rememberTranscriptions(
+                trackSids = listOf(publication.sid),
+                room = room
+            )
         }
     }
-
-    return rememberTranscriptionsImpl(transcriptionsFlow = flow)
 }
 
 /**
  * Collect all the transcriptions for a participant.
  *
- * @return Returns the collected transcriptions, ordered by [TranscriptionSegment.firstReceivedTime].
+ * @return Returns the collected transcriptions, ordered by timestamp.
  */
 @Beta
 @Composable
-fun rememberParticipantTranscriptions(passedParticipant: Participant? = null): List<TranscriptionSegment> {
+fun rememberParticipantTranscriptions(passedParticipant: Participant? = null, room: Room? = null): State<List<TextStreamData>> {
     val participant = requireParticipant(passedParticipant)
-    val events = rememberEventSelector<ParticipantEvent.TranscriptionReceived>(participant)
-    val flow by remember(events) {
-        derivedStateOf {
-            events.map { it.transcriptions }
-        }
-    }
+    val identity = participant::identity.flow.collectAsState().value
 
-    return rememberTranscriptionsImpl(transcriptionsFlow = flow)
-}
-
-@Composable
-internal fun rememberTranscriptionsImpl(transcriptionsFlow: Flow<List<TranscriptionSegment>>): List<TranscriptionSegment> {
-    val segments = remember(transcriptionsFlow) { mutableStateMapOf<String, TranscriptionSegment>() }
-    val orderedSegments = remember(segments) {
-        derivedStateOf {
-            segments.values.sortedBy { segment -> segment.firstReceivedTime }
+    return rememberUpdatedState(
+        if (identity == null) {
+            emptyList()
+        } else {
+            rememberTranscriptions(
+                participantIdentities = listOf(identity),
+                room = room,
+            ).value
         }
-    }
-    LaunchedEffect(transcriptionsFlow) {
-        transcriptionsFlow.collect {
-            segments.mergeNewSegments(it)
-        }
-    }
-
-    return orderedSegments.value
+    )
 }

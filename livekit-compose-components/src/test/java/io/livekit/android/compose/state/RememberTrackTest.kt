@@ -18,7 +18,7 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.compose.types.TrackReference
 import io.livekit.android.room.track.RemoteVideoTrack
 import io.livekit.android.room.track.Track
@@ -52,8 +52,8 @@ class RememberTrackTest : MockE2ETest() {
             publication = publication,
         )
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberTrack<VideoTrack>(trackReference)
-        }.test {
+            rememberTrack<VideoTrack>(trackReference).value
+        }.composeTest {
             val track = awaitItem()
             assertNull(track)
         }
@@ -76,8 +76,8 @@ class RememberTrackTest : MockE2ETest() {
 
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberTrack<VideoTrack>(trackReference)
-            }.test {
+                rememberTrack<VideoTrack>(trackReference).value
+            }.composeTest {
                 delay(10)
                 val track = expectMostRecentItem()
                 assertIsClass(RemoteVideoTrack::class.java, track!!)

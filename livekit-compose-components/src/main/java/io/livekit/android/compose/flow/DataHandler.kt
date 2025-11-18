@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 LiveKit, Inc.
+ * Copyright 2023-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 data class DataSendOptions(val reliability: DataPublishReliability, val identities: List<Participant.Identity>? = null)
 
@@ -49,11 +50,11 @@ class DataHandler(
     private val mutex = Mutex()
 
     suspend fun sendMessage(payload: ByteArray, options: DataSendOptions) {
-        mutex.lock()
-        isSending.value = true
-        send(payload, options)
-        isSending.value = false
-        mutex.unlock()
+        mutex.withLock {
+            isSending.value = true
+            send(payload, options)
+            isSending.value = false
+        }
     }
 }
 
@@ -102,7 +103,7 @@ data class DataMessage(
  * will be sent on the specified topic.
  */
 @Composable
-fun rememberDataMessageHandler(room: Room, topic: DataTopic): DataHandler {
+fun rememberDataMessageHandler(room: Room, topic: LegacyDataTopic): DataHandler {
     return rememberDataMessageHandler(room, topic.value)
 }
 

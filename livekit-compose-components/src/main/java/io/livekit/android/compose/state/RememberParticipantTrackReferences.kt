@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 LiveKit, Inc.
+ * Copyright 2024-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import io.livekit.android.compose.local.ParticipantLocal
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.requireParticipant
@@ -49,12 +51,14 @@ fun rememberParticipantTrackReferences(
     passedRoom: Room? = null,
     usePlaceholders: Set<Track.Source> = emptySet(),
     onlySubscribed: Boolean = true,
-): List<TrackReference> {
+): State<List<TrackReference>> {
     val room = requireRoom(passedRoom)
-    val participant = if (participantIdentity != null) {
-        room.getParticipantByIdentity(participantIdentity)
-    } else {
-        null
+    val participant = remember(participantIdentity) {
+        if (participantIdentity != null) {
+            room.getParticipantByIdentity(participantIdentity)
+        } else {
+            null
+        }
     }
 
     return rememberParticipantTrackReferences(
@@ -84,17 +88,19 @@ fun rememberParticipantTrackReferences(
     usePlaceholders: Set<Track.Source> = emptySet(),
     passedParticipant: Participant? = null,
     onlySubscribed: Boolean = true,
-): List<TrackReference> {
+): State<List<TrackReference>> {
     val participant = requireParticipant(passedParticipant)
 
-    return participantTrackReferencesFlow(
-        participant = participant,
-        sources = sources,
-        usePlaceholders = usePlaceholders,
-        onlySubscribed = onlySubscribed
-    )
+    val flow = remember(participant, sources, usePlaceholders, onlySubscribed) {
+        participantTrackReferencesFlow(
+            participant = participant,
+            sources = sources,
+            usePlaceholders = usePlaceholders,
+            onlySubscribed = onlySubscribed
+        )
+    }
+    return flow
         .collectAsState(initial = participant.getTrackReferencesBySource(sources, usePlaceholders, onlySubscribed))
-        .value
 }
 
 /**

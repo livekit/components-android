@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 LiveKit, Inc.
+ * Copyright 2023-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.livekit.android.compose.types
 
+import androidx.compose.runtime.Immutable
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.room.track.Track
 import io.livekit.android.room.track.TrackPublication
@@ -59,6 +60,7 @@ data class TrackSource(
 /**
  * A reference to a [Track], or a placeholder.
  */
+@Immutable
 data class TrackReference(
     override val participant: Participant,
     override val publication: TrackPublication?,

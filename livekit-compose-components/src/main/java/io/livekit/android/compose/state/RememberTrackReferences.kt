@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 LiveKit, Inc.
+ * Copyright 2023-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import io.livekit.android.compose.local.RoomLocal
 import io.livekit.android.compose.local.requireRoom
@@ -53,9 +54,10 @@ fun rememberTracks(
     usePlaceholders: Set<Track.Source> = emptySet(),
     passedRoom: Room? = null,
     onlySubscribed: Boolean = true,
-): List<TrackReference> {
+): State<List<TrackReference>> {
     val room = requireRoom(passedRoom)
 
+    // TODO: check for flow operator correctness
     return trackReferencesFlow(
         room = room,
         sources = sources,
@@ -63,7 +65,6 @@ fun rememberTracks(
         onlySubscribed = onlySubscribed
     )
         .collectAsState(initial = room.getTrackReferences(sources, usePlaceholders, onlySubscribed))
-        .value
 }
 
 /**

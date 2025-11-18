@@ -38,6 +38,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import io.livekit.android.compose.local.requireRoom
 import io.livekit.android.compose.state.rememberTrack
 import io.livekit.android.compose.types.TrackReference
+import io.livekit.android.compose.util.rememberStateOrDefault
 import io.livekit.android.renderer.SurfaceViewRenderer
 import io.livekit.android.renderer.TextureViewRenderer
 import io.livekit.android.room.Room
@@ -69,10 +70,12 @@ fun VideoTrackView(
     rendererType: RendererType = RendererType.Texture,
     onFirstFrameRendered: () -> Unit = {}
 ) {
-    val track = if (trackReference != null) {
-        rememberTrack<VideoTrack>(trackIdentifier = trackReference)
-    } else {
-        null
+    val track by rememberStateOrDefault(null) {
+        if (trackReference != null) {
+            rememberTrack<VideoTrack>(trackIdentifier = trackReference)
+        } else {
+            null
+        }
     }
 
     VideoTrackView(

@@ -18,7 +18,7 @@ package io.livekit.android.compose.state
 
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
-import app.cash.turbine.test
+import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.room.participant.LocalParticipant
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.test.MockE2ETest
@@ -36,8 +36,8 @@ class RememberParticipantsTest : MockE2ETest() {
     @Test
     fun initialState() = runTest {
         moleculeFlow(RecompositionMode.Immediate) {
-            rememberParticipants(room)
-        }.test {
+            rememberParticipants(room).value
+        }.composeTest {
             val participants = awaitItem()
             assertEquals(participants.size, 1)
             assertEquals(participants.first(), room.localParticipant)
@@ -48,10 +48,10 @@ class RememberParticipantsTest : MockE2ETest() {
     fun participantJoin() = runTest {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberParticipants(room)
-            }.test {
-                delay(10)
-                val participants = expectMostRecentItem()
+                rememberParticipants(room).value
+            }.composeTest {
+                assertEquals(1, awaitItem().size)
+                val participants = awaitItem()
                 assertEquals(participants.size, 2)
                 assertTrue(participants.contains(room.localParticipant))
 
@@ -70,8 +70,8 @@ class RememberParticipantsTest : MockE2ETest() {
     fun participantLeave() = runTest {
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
-                rememberParticipants(room)
-            }.test {
+                rememberParticipants(room).value
+            }.composeTest {
                 delay(10)
                 val participants = expectMostRecentItem()
                 assertEquals(participants.size, 1)
