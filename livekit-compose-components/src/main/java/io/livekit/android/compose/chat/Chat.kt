@@ -65,7 +65,7 @@ import java.util.UUID
 class Chat(
     private val localParticipant: LocalParticipant,
     private val dataHandler: DataHandler,
-    private val serverSupportsDataStreams: () -> Boolean, // TODO
+    private val serverSupportsDataStreams: () -> Boolean,
 ) {
     private val stateLock = Mutex()
 

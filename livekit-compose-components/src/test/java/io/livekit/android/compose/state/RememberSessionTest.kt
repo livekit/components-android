@@ -39,6 +39,8 @@ class RememberSessionTest : MockE2ETest() {
 
     @Test
     fun basicSession() = runTest {
+        val start by mutableStateOf(true)
+        var end by mutableStateOf(false)
         val job = coroutineRule.scope.launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 val session = rememberSession(
@@ -48,9 +50,16 @@ class RememberSessionTest : MockE2ETest() {
                     )
                 )
 
-                LaunchedEffect(Unit) {
-                    session.start()
-                    session.end()
+                LaunchedEffect(start) {
+                    if (start) {
+                        assertTrue(session.start().isSuccess)
+                    }
+                }
+
+                LaunchedEffect(end) {
+                    if (end) {
+                        session.end()
+                    }
                 }
                 session.isConnected
             }.composeTest {
@@ -61,11 +70,16 @@ class RememberSessionTest : MockE2ETest() {
         }
 
         sessionConnect()
+
+        @Suppress("AssignedValueIsNeverRead")
+        end = true
+
         job.join()
     }
 
     @Test
     fun waitFunctions() = runTest {
+        var end by mutableStateOf(false)
         val job = launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 val session = rememberSession(
@@ -78,20 +92,26 @@ class RememberSessionTest : MockE2ETest() {
                 var state by remember {
                     mutableStateOf(0)
                 }
+
                 LaunchedEffect(Unit) {
-                    val waitUntilConnectedJob = launch {
+                    launch {
                         session.waitUntilConnected()
                         state = 1
                     }
-                    session.start()
-                    waitUntilConnectedJob.join()
-
-                    val waitUntilDisconnectedJob = launch {
+                }
+                LaunchedEffect(Unit) {
+                    launch {
                         session.waitUntilDisconnected()
                         state = 2
                     }
-                    session.end()
-                    waitUntilDisconnectedJob.join()
+                }
+                LaunchedEffect(Unit) {
+                    assertTrue(session.start().isSuccess)
+                }
+                LaunchedEffect(end) {
+                    if (end) {
+                        session.end()
+                    }
                 }
 
                 state
@@ -103,6 +123,10 @@ class RememberSessionTest : MockE2ETest() {
         }
 
         sessionConnect()
+
+        @Suppress("AssignedValueIsNeverRead")
+        end = true
+
         job.join()
     }
 }

@@ -102,6 +102,11 @@ class ChatTest : MockE2ETest() {
         connect(
             joinResponse = with(TestData.JOIN.toBuilder()) {
                 join = with(join.toBuilder()) {
+                    serverInfo = with(serverInfo.toBuilder()) {
+                        serverVersion = "1.8.0"
+                        edition = LivekitModels.ServerInfo.Edition.Standard
+                        build()
+                    }
                     serverVersion = "1.8.0"
                     build()
                 }
