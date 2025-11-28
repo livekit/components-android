@@ -39,7 +39,6 @@ class RememberSessionTest : MockE2ETest() {
 
     @Test
     fun basicSession() = runTest {
-
         val start by mutableStateOf(true)
         var end by mutableStateOf(false)
         val job = coroutineRule.scope.launch {
