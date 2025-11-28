@@ -17,6 +17,9 @@
 package io.livekit.android.compose.state
 
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
 import io.livekit.android.annotations.Beta
@@ -35,6 +38,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class RememberAgentTest : MockE2ETest() {
     @Test
     fun basicSession() = runTest {
+        var end by mutableStateOf(false)
         val job = launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 val session = rememberSession(
@@ -52,9 +56,13 @@ class RememberAgentTest : MockE2ETest() {
 
                     val agentJoin = TestData.AGENT_JOIN
                     simulateMessageFromServer(agentJoin)
-
-                    session.end()
                 }
+                LaunchedEffect(end) {
+                    if (end) {
+                        session.end()
+                    }
+                }
+
                 agent.agentParticipant
             }.distinctUntilChanged().composeTest {
                 assertEquals(null, awaitItem())
@@ -65,11 +73,15 @@ class RememberAgentTest : MockE2ETest() {
 
         sessionConnect()
 
+        @Suppress("AssignedValueIsNeverRead")
+        end = true
+
         job.join()
     }
 
     @Test
     fun agentStateWithoutPreconnect() = runTest {
+        var end by mutableStateOf(false)
         val job = launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 val session = rememberSession(
@@ -94,8 +106,11 @@ class RememberAgentTest : MockE2ETest() {
 
                     val agentJoin = TestData.AGENT_JOIN
                     simulateMessageFromServer(agentJoin)
-
-                    session.end()
+                }
+                LaunchedEffect(end) {
+                    if (end) {
+                        session.end()
+                    }
                 }
                 agent.agentState
             }
@@ -110,11 +125,15 @@ class RememberAgentTest : MockE2ETest() {
 
         sessionConnect()
 
+        @Suppress("AssignedValueIsNeverRead")
+        end = true
+
         job.join()
     }
 
     @Test
     fun agentStateWithPreconnect() = runTest {
+        var end by mutableStateOf(false)
         val job = launch {
             moleculeFlow(RecompositionMode.Immediate) {
                 val session = rememberSession(
@@ -131,8 +150,11 @@ class RememberAgentTest : MockE2ETest() {
 
                     val agentJoin = TestData.AGENT_JOIN
                     simulateMessageFromServer(agentJoin)
-
-                    session.end()
+                }
+                LaunchedEffect(end) {
+                    if (end) {
+                        session.end()
+                    }
                 }
                 agent.agentState
             }
@@ -147,6 +169,9 @@ class RememberAgentTest : MockE2ETest() {
         }
 
         sessionConnect()
+
+        @Suppress("AssignedValueIsNeverRead")
+        end = true
 
         job.join()
     }
