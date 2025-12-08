@@ -18,14 +18,40 @@ package io.livekit.android.compose.types
 
 import io.livekit.android.room.participant.Participant
 
+/**
+ * A representation of a message.
+ */
 sealed class ReceivedMessage {
+    /**
+     * The id for the message.
+     */
     abstract val id: String
+
+    /**
+     * The message.
+     */
     abstract val message: String
+
+    /**
+     * The timestamp associated for this message,
+     * measured in milliseconds since Unix epoch.
+     */
     abstract val timestamp: Long
+
+    /**
+     * The participant this message belongs to.
+     */
     abstract val fromParticipant: Participant?
+
+    /**
+     * A map of user defined attributes that are associated with the message.
+     */
     abstract val attributes: Map<String, String>
 }
 
+/**
+ * A [io.livekit.android.compose.chat.Chat] message.
+ */
 data class ReceivedChatMessage(
     override val id: String,
     override val message: String,
@@ -35,6 +61,9 @@ data class ReceivedChatMessage(
     val editTimestamp: Long? = null,
 ) : ReceivedMessage()
 
+/**
+ * A transcription of a user's audio.
+ */
 data class ReceivedUserTranscriptionMessage(
     override val id: String,
     override val message: String,
@@ -43,6 +72,9 @@ data class ReceivedUserTranscriptionMessage(
     override val attributes: Map<String, String> = emptyMap(),
 ) : ReceivedMessage()
 
+/**
+ * A transcription of an agent's audio.
+ */
 data class ReceivedAgentTranscriptionMessage(
     override val id: String,
     override val message: String,

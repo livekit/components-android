@@ -164,7 +164,7 @@ private fun calculateAmplitudeBarsFromFFT(
         return amplitudes
     }
 
-    // We average out the values over 3 occurences (plus the current one), so big jumps are smoothed out
+    // We average out the values over 3 occurrences (plus the current one), so big jumps are smoothed out
     // Iterate over the entire FFT result array.
     for (barIndex in 0 until barCount) {
         // Note: each FFT is a real and imaginary pair.

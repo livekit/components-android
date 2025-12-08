@@ -32,6 +32,9 @@ import io.livekit.android.room.participant.Participant
 val ParticipantLocal =
     compositionLocalOf<Participant> { throw IllegalStateException("No Participant object available. This should only be used within a ParticipantScope.") }
 
+/**
+ * Wraps [content] with a [CompositionLocalProvider] that binds [participant] to [ParticipantLocal].
+ */
 @Composable
 fun ParticipantScope(
     participant: Participant,

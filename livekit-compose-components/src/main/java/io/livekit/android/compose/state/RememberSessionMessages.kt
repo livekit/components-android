@@ -76,6 +76,11 @@ internal class SessionMessagesImpl(
     }
 }
 
+/**
+ * Handles all the chat and transcription messages that are sent and received within a [Session].
+ *
+ * @param session The session object to handle, or [io.livekit.android.compose.local.SessionLocal]
+ */
 @Beta
 @Composable
 fun rememberSessionMessages(session: Session? = null): SessionMessages {
@@ -141,6 +146,8 @@ fun rememberSessionMessages(session: Session? = null): SessionMessages {
         }
     }
 
+    // Note the received timestamps for new messages so that we can sort in received time order.
+    // Timestamps are based on sender's clock, so cannot be relied on for sorting.
     LaunchedEffect(Unit) {
         launch {
             snapshotFlow { transcriptionMessages }

@@ -59,12 +59,12 @@ import kotlin.time.Duration.Companion.seconds
  */
 data class SessionOptions(
     /**
-     * The room to use. If null is passed, one will be created for you.
+     * The [Room] to use. If null is passed, one will be created for you.
      */
     val room: Room? = null,
 
     /**
-     * Amount of time to wait for an agent to join the room, before transitioning
+     * Amount of time to wait for an agent to join the room, before transitioning the [Agent]
      * to the failure state.
      */
     // TODO: make this 10 seconds once room dispatch booting info is discoverable
@@ -103,7 +103,7 @@ data class SessionConnectTrackOptions(
 )
 
 /**
- * A Session represents a managed connection to a Room which can contain Agents.
+ * Represents a managed connection to a [Room] which can contain an [Agent].
  */
 @Beta
 abstract class Session {
@@ -210,6 +210,12 @@ internal class SessionImpl(
     override val agentFailure: AgentFailure? by agentFailureState
 }
 
+/**
+ * Creates and manages a [Session] object.
+ *
+ * @param tokenSource The [TokenSource] that should be used to connect to the [Room]
+ * @param options Options to be used for this session.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 @Beta
 @Composable
@@ -226,7 +232,6 @@ fun rememberSession(tokenSource: TokenSource, options: SessionOptions = SessionO
                 }
             }
             .collect {
-                println("emitting connstate: $it")
                 value = it
             }
     }

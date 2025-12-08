@@ -28,9 +28,7 @@ enum class DataTopic(val value: String) {
 }
 
 /**
- * Standard topics for use with [rememberDataMessageHandler]
- *
- *
+ * Legacy topics for use with [rememberDataMessageHandler]
  */
 @Deprecated(message = "Use DataTopic")
 enum class LegacyDataTopic(val value: String) {

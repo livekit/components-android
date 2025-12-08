@@ -53,7 +53,7 @@ abstract class LocalMedia {
     abstract val isCameraEnabled: Boolean
 
     /**
-     * Whether the screenshare is enabled.
+     * Whether screen sharing is enabled.
      */
     abstract val isScreenShareEnabled: Boolean
 

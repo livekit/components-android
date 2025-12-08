@@ -31,7 +31,23 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-data class DataSendOptions(val reliability: DataPublishReliability, val identities: List<Participant.Identity>? = null)
+/**
+ * Options for publishing data channel messages.
+ */
+data class DataSendOptions(
+    /**
+     * The reliability to use.
+     * @see DataPublishReliability
+     */
+    val reliability: DataPublishReliability,
+    /**
+     * The specific participant identities to send to.
+     * If null is passed, will broadcast the message to all participants in the room.
+     *
+     * Defaults to null.
+     */
+    val identities: List<Participant.Identity>? = null
+)
 
 /**
  * A state holder for handling data messages.
