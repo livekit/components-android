@@ -1,5 +1,11 @@
 # components-android
 
+## 2.1.2
+
+### Patch Changes
+
+- rememberTextStream: room argument is changed to an optional argument. - [#57](https://github.com/livekit/components-android/pull/57) ([@davidliu](https://github.com/davidliu))
+
 ## 2.1.1
 
 ### Patch Changes
