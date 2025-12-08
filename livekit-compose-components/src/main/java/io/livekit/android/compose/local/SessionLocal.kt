@@ -22,10 +22,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.state.Session
-import io.livekit.android.room.participant.LocalParticipant
 
 /**
- * Not to be confused with [LocalParticipant].
+ * CompositionLocal for the [Session] currently provided by [SessionScope]
  */
 @Beta
 @SuppressLint("CompositionLocalNaming")
@@ -33,9 +32,9 @@ val SessionLocal =
     compositionLocalOf<Session> { throw IllegalStateException("No Session object available. This should only be used within a SessionScope.") }
 
 /**
- * Establishes a session scope which allows the current [Session] that can be accessed
- * through the [SessionLocal] composition local, as well as the session's room object
- * through the [RoomLocal] composition local.
+ * Wraps [content] with a [CompositionLocalProvider] which allows the current [Session]
+ * to be accessed through the [SessionLocal] composition local, as well as the session's
+ * room object through the [RoomLocal] composition local.
  */
 @Beta
 @Composable

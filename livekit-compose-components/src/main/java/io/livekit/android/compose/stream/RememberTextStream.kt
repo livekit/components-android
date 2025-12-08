@@ -26,8 +26,15 @@ import io.livekit.android.compose.flow.setupTextStream
 import io.livekit.android.compose.local.requireRoom
 import io.livekit.android.room.Room
 
+/**
+ * Registers a text stream handler for [topic], and returns a state containing a list
+ * with a [TextStreamData] for each received stream.
+ *
+ * @param topic The topic to listen for text streams.
+ * @param room The room to register on, or [io.livekit.android.compose.local.RoomLocal] if none is passed.
+ */
 @Composable
-fun rememberTextStream(topic: String, room: Room?): State<List<TextStreamData>> {
+fun rememberTextStream(topic: String, room: Room? = null): State<List<TextStreamData>> {
     val room = requireRoom(room)
 
     val coroutineScope = rememberCoroutineScope()

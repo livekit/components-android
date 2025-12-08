@@ -27,7 +27,7 @@ import io.livekit.android.room.participant.Participant
 import io.livekit.android.util.flow
 
 /**
- * Keeps track of the agent state for a participant.
+ * Keeps track of the [AgentState] for a participant.
  */
 @Beta
 @Composable

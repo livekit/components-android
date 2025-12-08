@@ -31,9 +31,21 @@ import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.launch
 import java.util.Collections
 
+/**
+ * A representation of the aggregated data from a text stream.
+ */
 data class TextStreamData(
+    /**
+     * The aggregated text.
+     */
     val text: String,
+    /**
+     * The participant
+     */
     val participantIdentity: Participant.Identity,
+    /**
+     * The info for a stream.
+     */
     val streamInfo: StreamInfo
 )
 

@@ -46,7 +46,7 @@ import kotlinx.coroutines.flow.takeWhile
 abstract class Agent {
 
     /**
-     * The [io.livekit.android.room.participant.Participant] for this agent.
+     * The [io.livekit.android.room.participant.RemoteParticipant] for this agent.
      */
     abstract val agentParticipant: RemoteParticipant?
 
@@ -67,6 +67,7 @@ abstract class Agent {
 
     /**
      * The state of the agent.
+     * @see AgentState
      */
     abstract val agentState: AgentState
 
@@ -148,6 +149,8 @@ internal class AgentImpl(
  * This looks for the first agent-participant in the room.
  *
  * Requires an agent running with livekit-agents \>= 0.9.0.
+ *
+ * @return An [Agent] representing an agent participant.
  */
 @Beta
 @Composable
@@ -168,10 +171,7 @@ fun rememberAgent(session: Session? = null): Agent {
 
     val workerParticipantState = remember {
         derivedStateOf {
-            val curAgentParticipant = agentParticipantState.value
-            if (curAgentParticipant == null) {
-                return@derivedStateOf null
-            }
+            val curAgentParticipant = agentParticipantState.value ?: return@derivedStateOf null
             remoteParticipants.values
                 .filter { p -> p.agentAttributes.lkPublishOnBehalf != null && p.agentAttributes.lkPublishOnBehalf == curAgentParticipant.identity?.value }
                 .firstOrNull { p -> p.isAgent }

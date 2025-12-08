@@ -183,6 +183,7 @@ class Chat(
 @Deprecated(message = "Deprecated in favor of ReceivedChatMessage")
 @Serializable
 data class LegacyChatMessage(
+    /** The identifier for the message */
     val id: String? = null,
     /** Millis since UNIX epoch */
     val timestamp: Long,

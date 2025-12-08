@@ -24,6 +24,9 @@ import io.livekit.android.room.Room
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.util.flow
 
+/**
+ * @return A [State] of all the active speakers in the room.
+ */
 @Composable
 fun rememberSpeakingParticipants(room: Room? = null): State<List<Participant>> {
     val room = requireRoom(room)

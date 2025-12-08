@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 LiveKit, Inc.
+ * Copyright 2023-2025 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,6 +92,14 @@ inline fun <reified T : TrackEvent> rememberEventSelector(track: Track): Flow<T>
     return rememberEventSelector<T, TrackEvent>(eventListenable = track.events)
 }
 
+/**
+ * A utility method to obtain a flow for events.
+ *
+ * ```
+ * // Receive only stream state changed events.
+ * val eventFlow = rememberEventSelector<TrackEvent.StreamStateChanged>(track.events)
+ * ```
+ */
 @Composable
 inline fun <reified T, U> rememberEventSelector(eventListenable: EventListenable<U>): Flow<T>
     where T : U {
