@@ -27,7 +27,9 @@ import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.test.util.composeTest
 import io.livekit.android.test.MockE2ETest
 import io.livekit.android.test.mock.TestData
+import io.livekit.android.token.TokenRequestOptions
 import io.livekit.android.token.TokenSource
+import io.livekit.android.token.TokenSourceResponse
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -77,6 +79,63 @@ class RememberSessionTest : MockE2ETest() {
         job.join()
     }
 
+    @Test
+    fun passesTokenOptions() = runTest {
+
+        var wasCalled = false
+        val tokenSource = TokenSource.fromCustom { options ->
+            assertEquals("customRoom", options.roomName)
+            wasCalled = true
+            return@fromCustom Result.success(
+                TokenSourceResponse(
+                    serverUrl = TestData.EXAMPLE_URL,
+                    participantToken = "token"
+                )
+            )
+        }
+
+        val start by mutableStateOf(true)
+        var end by mutableStateOf(false)
+        val job = coroutineRule.scope.launch {
+            moleculeFlow(RecompositionMode.Immediate) {
+
+                val tokenOptions = remember { TokenRequestOptions(roomName = "customRoom") }
+                val session = rememberSession(
+                    tokenSource = tokenSource,
+                    options = SessionOptions(
+                        room = room,
+                        tokenRequestOptions = tokenOptions
+                    )
+                )
+
+                LaunchedEffect(start) {
+                    if (start) {
+                        assertTrue(session.start().isSuccess)
+                    }
+                }
+
+                LaunchedEffect(end) {
+                    if (end) {
+                        session.end()
+                    }
+                }
+                session.isConnected
+            }.composeTest {
+                assertFalse(awaitItem())
+                assertTrue(awaitItem())
+                assertFalse(awaitItem())
+            }
+        }
+
+        sessionConnect()
+
+        @Suppress("AssignedValueIsNeverRead")
+        end = true
+
+        job.join()
+
+        assertTrue(wasCalled)
+    }
     @Test
     fun waitFunctions() = runTest {
         var end by mutableStateOf(false)
