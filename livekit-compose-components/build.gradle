@@ -86,7 +86,7 @@ dokkaHtml {
     }
 }
 
-var livekitVersion = "2.23.1"
+var livekitVersion = "2.23.3"
 dependencies {
     // For local development with the LiveKit Android SDK only.
     // api "io.livekit:livekit-android-sdk"

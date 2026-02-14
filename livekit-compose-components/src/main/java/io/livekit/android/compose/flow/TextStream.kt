@@ -21,7 +21,7 @@ import io.livekit.android.room.datastream.StreamInfo
 import io.livekit.android.room.datastream.incoming.TextStreamReceiver
 import io.livekit.android.room.participant.Participant
 import io.livekit.android.room.types.TranscriptionAttributes
-import io.livekit.android.room.types.fromMap
+import io.livekit.android.room.types.fromStringMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -59,7 +59,7 @@ internal fun setupTextStream(room: Room, topic: String, coroutineScope: Coroutin
 
     val textStreams = Collections.synchronizedList(mutableListOf<TextStreamData>())
     room.registerTextStreamHandler(topic) { reader: TextStreamReceiver, fromIdentity: Participant.Identity ->
-        val transcriptionAttributes = TranscriptionAttributes.fromMap(reader.info.attributes)
+        val transcriptionAttributes = TranscriptionAttributes.fromStringMap(reader.info.attributes)
         val isTranscription = transcriptionAttributes.lkSegmentID != null
 
         var index = -1
@@ -74,7 +74,7 @@ internal fun setupTextStream(room: Room, topic: String, coroutineScope: Coroutin
                         if (index == -1) {
                             index = textStreams.indexOfFirst { stream ->
                                 val streamTranscriptionAttributes = if (isTranscription) {
-                                    TranscriptionAttributes.fromMap(stream.streamInfo.attributes)
+                                    TranscriptionAttributes.fromStringMap(stream.streamInfo.attributes)
                                 } else {
                                     null
                                 }

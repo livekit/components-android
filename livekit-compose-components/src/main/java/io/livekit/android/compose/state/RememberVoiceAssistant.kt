@@ -171,6 +171,7 @@ enum class AgentState {
                 AgentSdkState.Listening -> LISTENING
                 AgentSdkState.Speaking -> SPEAKING
                 AgentSdkState.Thinking -> THINKING
+                AgentSdkState.Unknown,
                 null -> UNKNOWN
             }
         }
