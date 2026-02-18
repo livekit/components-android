@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 LiveKit, Inc.
+ * Copyright 2024-2026 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.types.TrackReference
 import io.livekit.android.compose.ui.BarVisualizer
 import io.livekit.android.compose.ui.defaultBarVisualizerAnimationSpec
@@ -53,7 +52,6 @@ import kotlin.math.sqrt
  *
  * @see AudioBarVisualizer
  */
-@Beta
 @Composable
 fun AudioVisualizer(
     audioTrackRef: TrackReference?,
@@ -115,7 +113,6 @@ fun AudioVisualizer(
  * @param hiPass the end index of the FFT samples to use (exclusive). [loPass] < hiPass <= [FFTAudioAnalyzer.SAMPLE_SIZE].
  * @param alphas Alphas of the bars, between 0.0f and 1.0f. Defaults to 1.0f if null or not enough values are passed.
  */
-@Beta
 @Composable
 fun AudioBarVisualizer(
     audioTrackRef: TrackReference?,
