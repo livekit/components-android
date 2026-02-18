@@ -42,7 +42,6 @@ package io.livekit.android.compose.ui.audio
 
 import android.media.AudioTrack
 import com.paramsen.noise.Noise
-import io.livekit.android.annotations.Beta
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -51,7 +50,6 @@ import java.nio.ByteOrder
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
-@Beta
 /**
  * A Fast Fourier Transform analyzer for audio bytes.
  *

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 LiveKit, Inc.
+ * Copyright 2024-2026 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.state.AgentState
 import io.livekit.android.compose.state.VoiceAssistant
 import io.livekit.android.compose.state.rememberVoiceAssistant
@@ -47,7 +46,6 @@ private const val OFF = 0.3f
  *
  * @see [rememberVoiceAssistant]
  */
-@Beta
 @Composable
 fun VoiceAssistantBarVisualizer(
     voiceAssistant: VoiceAssistant,
@@ -81,7 +79,6 @@ fun VoiceAssistantBarVisualizer(
  *
  * @see [rememberVoiceAssistant]
  */
-@Beta
 @Composable
 fun VoiceAssistantBarVisualizer(
     agentState: AgentState?,
