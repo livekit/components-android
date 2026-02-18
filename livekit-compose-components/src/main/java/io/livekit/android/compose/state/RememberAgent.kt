@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 LiveKit, Inc.
+ * Copyright 2025-2026 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,10 +43,11 @@ import kotlinx.coroutines.flow.takeWhile
  * A representation of an LiveKit agent participant.
  * @see rememberAgent
  */
+@Beta
 abstract class Agent {
 
     /**
-     * The [io.livekit.android.room.participant.RemoteParticipant] for this agent.
+     * The [RemoteParticipant] for this agent.
      */
     abstract val agentParticipant: RemoteParticipant?
 
@@ -82,9 +83,27 @@ abstract class Agent {
     abstract val videoTrack: TrackReference?
 
     /**
-     * Whether the agent is connected and available.
+     * Whether the agent is connected.
      */
-    abstract val isAvailable: Boolean
+    abstract val isConnected: Boolean
+
+    /**
+     * Whether the agent is capable of accepting input (including while the agent is thinking or speaking).
+     *
+     * Note that this may not the agent is actually connected - the audio pre-connect buffer
+     * could be active and recording user input before the agent actually connects.
+     */
+    abstract val canListen: Boolean
+
+    /**
+     * Indicates when the client has diconnected from the agent.
+     * */
+    abstract val isFinished: Boolean
+
+    /**
+     * Indicates when the agent currently connecting or setting itself up.
+     */
+    abstract val isPending: Boolean
 
     /**
      * A helper function that suspends until the agent is available.
@@ -102,6 +121,7 @@ abstract class Agent {
     abstract suspend fun waitUntilMicrophone()
 }
 
+@OptIn(Beta::class)
 @Stable
 internal class AgentImpl(
     agentParticipantState: State<RemoteParticipant?>,
@@ -110,11 +130,14 @@ internal class AgentImpl(
     audioTrackState: State<TrackReference?>,
     videoTrackState: State<TrackReference?>,
     agentStateState: State<AgentState>,
-    isAvailableState: State<Boolean>,
+    isConnectedState: State<Boolean>,
     attributesState: State<AgentAttributes?>,
     private val waitUntilAvailableFn: suspend () -> Unit,
     private val waitUntilCameraFn: suspend () -> Unit,
     private val waitUntilMicrophoneFn: suspend () -> Unit,
+    canListenState: State<Boolean>,
+    isFinishedState: State<Boolean>,
+    isPendingState: State<Boolean>,
 ) : Agent() {
     override val agentParticipant by agentParticipantState
 
@@ -130,7 +153,13 @@ internal class AgentImpl(
 
     override val videoTrack by videoTrackState
 
-    override val isAvailable by isAvailableState
+    override val isConnected by isConnectedState
+
+    override val canListen by canListenState
+
+    override val isFinished by isFinishedState
+
+    override val isPending by isPendingState
 
     override suspend fun waitUntilAvailable() {
         waitUntilAvailableFn()
@@ -161,11 +190,18 @@ fun rememberAgent(session: Session? = null): Agent {
 
     // Gather participant info
     val remoteParticipants by room::remoteParticipants.flow.collectAsState()
+
     val agentParticipantState = remember {
         derivedStateOf {
-            remoteParticipants.values
-                .filter { p -> p.agentAttributes.lkPublishOnBehalf == null }
-                .firstOrNull { p -> p.isAgent }
+            // Due to code ordering issues, remoteParticipants may not be cleaned up by the time this code triggers.
+            // Check connectionState to be safe.
+            if (connectionState != ConnectionState.DISCONNECTED) {
+                remoteParticipants.values
+                    .filter { p -> p.agentAttributes.lkPublishOnBehalf == null }
+                    .firstOrNull { p -> p.isAgent }
+            } else {
+                null
+            }
         }
     }
 
@@ -225,18 +261,19 @@ fun rememberAgent(session: Session? = null): Agent {
     )
 
     // Attributes and states
+    // Note: agentState does not represent the full state while connecting. You probably want combinedAgentState below.
     val agentState by rememberAgentState(participant = agentParticipantState.value)
-    val isAvailableState = remember {
+    val isConnectedState = remember {
         derivedStateOf {
-            calculateIsAvailable(agentState)
+            calculateIsConnected(agentState)
         }
     }
 
-    val hasAgentConnectedOnce by produceState(false, isAvailableState.value, connectionState) {
+    val hasAgentConnectedOnce by produceState(false, isConnectedState.value, connectionState) {
         if (connectionState == ConnectionState.DISCONNECTED) {
             value = false
         } else {
-            value = value || isAvailableState.value
+            value = value || isConnectedState.value
         }
     }
     val combinedAgentState = remember {
@@ -266,6 +303,24 @@ fun rememberAgent(session: Session? = null): Agent {
         }
     }
 
+    val canListenState = remember {
+        derivedStateOf {
+            calculateCanListen(combinedAgentState.value)
+        }
+    }
+
+    val isFinishedState = remember {
+        derivedStateOf {
+            calculateIsFinished(combinedAgentState.value)
+        }
+    }
+
+    val isPendingState = remember {
+        derivedStateOf {
+            calculateIsPending(combinedAgentState.value)
+        }
+    }
+
     val attributesState = rememberStateOrDefault(null) {
         val curAgentParticipant = agentParticipantState.value
         if (curAgentParticipant != null) {
@@ -280,7 +335,7 @@ fun rememberAgent(session: Session? = null): Agent {
     val waitUntilAvailableFn = remember(room) {
         suspend waitUntilAvailable@{
             snapshotFlow { combinedAgentState.value }
-                .takeWhile { !calculateIsAvailable(it) }
+                .takeWhile { !calculateIsConnected(it) }
                 .collect()
         }
     }
@@ -313,12 +368,15 @@ fun rememberAgent(session: Session? = null): Agent {
                 audioTrackState = audioTrackState,
                 videoTrackState = videoTrackState,
                 agentStateState = combinedAgentState,
-                isAvailableState = isAvailableState,
+                isConnectedState = isConnectedState,
                 failureReasons = failureReasons,
                 waitUntilAvailableFn = waitUntilAvailableFn,
                 waitUntilCameraFn = waitUntilCameraFn,
                 waitUntilMicrophoneFn = waitUntilMicrophoneFn,
                 attributesState = attributesState,
+                canListenState = canListenState,
+                isFinishedState = isFinishedState,
+                isPendingState = isPendingState,
             )
         }
     }
@@ -326,18 +384,50 @@ fun rememberAgent(session: Session? = null): Agent {
     return agent.value
 }
 
-internal fun calculateIsAvailable(agentState: AgentState): Boolean {
+internal fun calculateIsConnected(agentState: AgentState): Boolean {
+    println("isConnected: $agentState")
     return when (agentState) {
-        AgentState.IDLE,
         AgentState.LISTENING,
         AgentState.THINKING,
         AgentState.SPEAKING -> true
 
+        AgentState.IDLE,
         AgentState.CONNECTING,
         AgentState.PRECONNECT_BUFFERING,
         AgentState.INITIALIZING,
         AgentState.DISCONNECTED,
         AgentState.FAILED,
         AgentState.UNKNOWN -> false
+    }
+}
+
+internal fun calculateCanListen(state: AgentState): Boolean {
+    println("canListen: $state")
+    return when (state) {
+        AgentState.PRECONNECT_BUFFERING,
+        AgentState.LISTENING,
+        AgentState.THINKING,
+        AgentState.SPEAKING -> true
+
+        else -> false
+    }
+}
+
+internal fun calculateIsFinished(state: AgentState): Boolean {
+    return when (state) {
+        AgentState.DISCONNECTED,
+        AgentState.FAILED -> true
+
+        else -> false
+    }
+}
+
+internal fun calculateIsPending(state: AgentState): Boolean {
+    return when (state) {
+        AgentState.CONNECTING,
+        AgentState.INITIALIZING,
+        AgentState.IDLE -> true
+
+        else -> false
     }
 }

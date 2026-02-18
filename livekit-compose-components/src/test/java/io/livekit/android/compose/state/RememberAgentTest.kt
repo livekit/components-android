@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 LiveKit, Inc.
+ * Copyright 2025-2026 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import io.livekit.android.token.TokenSource
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.time.Duration.Companion.milliseconds
@@ -131,6 +132,14 @@ class RememberAgentTest : MockE2ETest() {
         job.join()
     }
 
+    data class AgentGetterValues(
+        val currentState: AgentState,
+        val isConnected: Boolean,
+        val canListen: Boolean,
+        val isFinished: Boolean,
+        val isPending: Boolean,
+    )
+
     @Test
     fun agentStateWithPreconnect() = runTest {
         var end by mutableStateOf(false)
@@ -156,15 +165,56 @@ class RememberAgentTest : MockE2ETest() {
                         session.end()
                     }
                 }
-                agent.agentState
+                return@moleculeFlow AgentGetterValues(
+                    agent.agentState,
+                    agent.isConnected,
+                    agent.canListen,
+                    agent.isFinished,
+                    agent.isPending
+                )
             }
                 .distinctUntilChanged()
                 .composeTest {
-                    assertEquals(AgentState.DISCONNECTED, awaitItem())
-                    assertEquals(AgentState.CONNECTING, awaitItem())
-                    assertEquals(AgentState.PRECONNECT_BUFFERING, awaitItem())
-                    assertEquals(AgentState.LISTENING, awaitItem())
-                    assertEquals(AgentState.DISCONNECTED, awaitItem())
+                    awaitItem().run {
+                        println("test: $currentState, $isConnected, $canListen, $isFinished, $isPending")
+                        assertEquals(AgentState.DISCONNECTED, currentState)
+                        assertFalse(isConnected)
+                        assertFalse(canListen)
+                        assertTrue(isFinished)
+                        assertFalse(isPending)
+                    }
+                    awaitItem().run {
+                        println("test: $currentState, $isConnected, $canListen, $isFinished, $isPending")
+                        assertEquals(AgentState.CONNECTING, currentState)
+                        assertFalse(isConnected)
+                        assertFalse(canListen)
+                        assertFalse(isFinished)
+                        assertTrue(isPending)
+                    }
+                    awaitItem().run {
+                        println("test: $currentState, $isConnected, $canListen, $isFinished, $isPending")
+                        assertEquals(AgentState.PRECONNECT_BUFFERING, currentState)
+                        assertFalse(isConnected)
+                        assertTrue(canListen)
+                        assertFalse(isFinished)
+                        assertFalse(isPending)
+                    }
+                    awaitItem().run {
+                        println("test: $currentState, $isConnected, $canListen, $isFinished, $isPending")
+                        assertEquals(AgentState.LISTENING, currentState)
+                        assertTrue(isConnected)
+                        assertTrue(canListen)
+                        assertFalse(isFinished)
+                        assertFalse(isPending)
+                    }
+                    awaitItem().run {
+                        println("test: $currentState, $isConnected, $canListen, $isFinished, $isPending, actual room: ${room.remoteParticipants.size}")
+                        assertEquals(AgentState.DISCONNECTED, currentState)
+                        assertFalse(isConnected)
+                        assertFalse(canListen)
+                        assertTrue(isFinished)
+                        assertFalse(isPending)
+                    }
                 }
         }
 

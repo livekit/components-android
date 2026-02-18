@@ -42,7 +42,7 @@ import io.livekit.android.util.flow
  *
  * Requires an agent running with livekit-agents \>= 0.9.0.
  */
-@Beta
+@OptIn(Beta::class)
 @Composable
 fun rememberVoiceAssistant(passedRoom: Room? = null): VoiceAssistant {
     val room = requireRoom(passedRoom)
