@@ -1,5 +1,22 @@
 # components-android
 
+## 2.2.0
+
+### Minor Changes
+
+- Add new state getters to the `Agent` interface - [#62](https://github.com/livekit/components-android/pull/62) ([@davidliu](https://github.com/davidliu))
+
+  - isConnected (replacing isAvailable)
+  - canListen
+  - isFinished
+  - isPending
+
+### Patch Changes
+
+- Remove `@Beta` annotation from BarVisualizer related composables - [#62](https://github.com/livekit/components-android/pull/62) ([@davidliu](https://github.com/davidliu))
+
+- Mark the `Agent` interface as `@Beta` - [#62](https://github.com/livekit/components-android/pull/62) ([@davidliu](https://github.com/davidliu))
+
 ## 2.1.3
 
 ### Patch Changes
