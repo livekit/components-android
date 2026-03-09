@@ -1,5 +1,11 @@
 # components-android
 
+## 2.2.1
+
+### Patch Changes
+
+- Update LiveKit SDK to 2.23.5 - [#67](https://github.com/livekit/components-android/pull/67) ([@davidliu](https://github.com/davidliu))
+
 ## 2.2.0
 
 ### Minor Changes
