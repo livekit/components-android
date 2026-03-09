@@ -3,6 +3,11 @@ name: Update LiveKit SDK version
 on:
   repository_dispatch:
     types: [update-livekit-version]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'LiveKit SDK version'
+        required: true
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -14,18 +19,20 @@ jobs:
   update-version:
     name: Update LiveKit SDK
     runs-on: ubuntu-latest
+    env:
+      NEW_VERSION: ${{ github.event.client_payload.version || github.event.inputs.version }}
 
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
       - name: Update LiveKit Version
-        run: ./ci/update_livekit_version.sh "${{ github.event.client_payload.version }}"
+        run: ./ci/update_livekit_version.sh "${{ env.NEW_VERSION }}"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.CHANGESET_GH_TOKEN }}
-          branch: update-livekit-sdk/${{ github.event.client_payload.version }}
-          title: Update LiveKit SDK to ${{ github.event.client_payload.version }}
-          commit-message: Update LiveKit SDK to ${{ github.event.client_payload.version }}
+          branch: update-livekit-sdk/${{ env.NEW_VERSION }}
+          title: Update LiveKit SDK to ${{ env.NEW_VERSION }}
+          commit-message: Update LiveKit SDK to ${{ env.NEW_VERSION }}
