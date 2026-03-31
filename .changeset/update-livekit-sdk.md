@@ -1,5 +1,5 @@
 ---
-"components-android": minor
+"components-android": patch
 ---
 
-Update LiveKit SDK to 2.24.0
+Update LiveKit SDK to 2.24.1
