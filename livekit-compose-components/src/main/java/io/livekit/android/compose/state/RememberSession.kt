@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 LiveKit, Inc.
+ * Copyright 2025-2026 LiveKit, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,11 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import io.livekit.android.ConnectOptions
+import io.livekit.android.RoomOptions
 import io.livekit.android.annotations.Beta
 import io.livekit.android.compose.local.rememberLiveKitRoom
 import io.livekit.android.compose.types.AgentFailure
+import io.livekit.android.e2ee.E2EEOptions
 import io.livekit.android.room.ConnectionState
 import io.livekit.android.room.Room
 import io.livekit.android.room.participant.AudioTrackPublishOptions
@@ -76,7 +78,14 @@ data class SessionOptions(
      *
      * These options will be ignored for a [FixedTokenSource].
      */
-    val tokenRequestOptions: TokenRequestOptions = TokenRequestOptions()
+    val tokenRequestOptions: TokenRequestOptions = TokenRequestOptions(),
+
+    /**
+     * End-to-end encryption options for the [Room] created when [room] is null.
+     *
+     * Ignored when [room] is non-null; configure E2EE on that [Room] yourself if needed.
+     */
+    val e2eeOptions: E2EEOptions? = null,
 )
 
 /**
@@ -220,7 +229,16 @@ internal class SessionImpl(
 @Beta
 @Composable
 fun rememberSession(tokenSource: TokenSource, options: SessionOptions = SessionOptions()): Session {
-    val room = rememberLiveKitRoom(passedRoom = options.room, connect = false)
+    val roomOptions = if (options.room == null && options.e2eeOptions != null) {
+        RoomOptions(e2eeOptions = options.e2eeOptions)
+    } else {
+        null
+    }
+    val room = rememberLiveKitRoom(
+        passedRoom = options.room,
+        connect = false,
+        roomOptions = roomOptions,
+    )
     val connectionState = produceState(ConnectionState.DISCONNECTED, room) {
         room::state.flow
             .map { state ->
