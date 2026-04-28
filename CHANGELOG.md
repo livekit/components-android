@@ -1,5 +1,15 @@
 # components-android
 
+## 2.4.0
+
+### Minor Changes
+
+- Add passing in end-to-end encryption options to rememberSession through `SessionOptions` - [#77](https://github.com/livekit/components-android/pull/77) ([@davidliu](https://github.com/davidliu))
+
+### Patch Changes
+
+- Update LiveKit SDK to 2.25.1 - [#75](https://github.com/livekit/components-android/pull/75) ([@davidliu](https://github.com/davidliu))
+
 ## 2.3.0
 
 ### Minor Changes
