@@ -81,11 +81,18 @@ data class SessionOptions(
     val tokenRequestOptions: TokenRequestOptions = TokenRequestOptions(),
 
     /**
-     * End-to-end encryption options for the [Room] created when [room] is null.
+     * End-to-end encryption options. Use the convenience constructor for [E2EEOptions]
+     * to enable simple encryption with a shared key.
      *
-     * Ignored when [room] is non-null; configure E2EE on that [Room] yourself if needed.
+     * ```
+     * val options = SessionOptions(encryption = E2EEOptions(sharedKey = "your-shared-key"))
+     * ```
+     *
+     * Ignored when [room] is non-null; configure E2EE on that [Room] as needed.
+     *
+     * If null is passed, encryption is disabled for the session.
      */
-    val e2eeOptions: E2EEOptions? = null,
+    val encryption: E2EEOptions? = null,
 )
 
 /**
@@ -153,6 +160,14 @@ abstract class Session {
     abstract suspend fun start(options: SessionConnectOptions = SessionConnectOptions()): Result<Unit>
 
     /**
+     * Enables/disables encryption.
+     *
+     * Requires that encryption was configured by setting [SessionOptions.encryption] when creating
+     * the session. Otherwise this is a no-op.
+     */
+    abstract fun setEncryptionEnabled(enabled: Boolean)
+
+    /**
      * Disconnect from the session.
      */
     abstract fun end()
@@ -212,6 +227,10 @@ internal class SessionImpl(
         return startFn(options)
     }
 
+    override fun setEncryptionEnabled(enabled: Boolean) {
+        room.e2eeManager?.enabled = enabled
+    }
+
     override fun end() {
         endFn()
     }
@@ -229,8 +248,8 @@ internal class SessionImpl(
 @Beta
 @Composable
 fun rememberSession(tokenSource: TokenSource, options: SessionOptions = SessionOptions()): Session {
-    val roomOptions = if (options.room == null && options.e2eeOptions != null) {
-        RoomOptions(e2eeOptions = options.e2eeOptions)
+    val roomOptions = if (options.room == null && options.encryption != null) {
+        RoomOptions(e2eeOptions = options.encryption)
     } else {
         null
     }
