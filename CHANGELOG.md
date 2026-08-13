@@ -1,5 +1,11 @@
 # components-android
 
+## 2.4.2
+
+### Patch Changes
+
+- Update LiveKit SDK to 2.28.0 - [#88](https://github.com/livekit/components-android/pull/88) ([@davidliu](https://github.com/davidliu))
+
 ## 2.4.1
 
 ### Patch Changes
